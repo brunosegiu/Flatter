@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -11,7 +13,7 @@ class Queue {
 
   void searchSuitableFamily(
       const std::vector<VkQueueFamilyProperties> &properties);
-  const VkDeviceQueueCreateInfo &getInfo() const;
+  const VkDeviceQueueCreateInfo getInfo() const;
   void init(const VkDevice &device);
 
   virtual ~Queue();

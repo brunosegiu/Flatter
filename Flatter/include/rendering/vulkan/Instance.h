@@ -1,10 +1,12 @@
 #pragma once
 
+#include "rendering/vulkan/Configuration.h"
+
 #include <string>
 
-#define VK_USE_PLATFORM_WIN32_KHR
-
 #include <vulkan/vulkan.h>
+
+#include "rendering/vulkan/Device.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -20,6 +22,16 @@ class Instance {
  private:
   VkInstance mInstance;
   Instance(const Instance&) = delete;
+
+#ifdef VK_USE_LUNARG_VALIDATION
+  VkDebugReportCallbackCreateInfoEXT mDebugCallbackCreate;
+  VkDebugReportCallbackEXT mDebugCallback = VK_NULL_HANDLE;
+
+  static VKAPI_ATTR VkBool32 VKAPI_CALL
+  Report(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
+         uint64_t obj, size_t location, int32_t code, const char* layerPrefix,
+         const char* msg, void* userData);
+#endif
 };
 
 }  // namespace Vulkan

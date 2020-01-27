@@ -154,14 +154,17 @@
     <ClCompile Include="source\WindowManager.cpp" />
     <ClCompile Include="source\rendering\vulkan\Device.cpp" />
     <ClCompile Include="source\rendering\vulkan\Queue.cpp" />
+    <ClCompile Include="source\rendering\vulkan\SwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\rendering\vulkan\Configuration.h" />
     <ClInclude Include="include\rendering\vulkan\Instance.h" />
     <ClInclude Include="include\WindowManager.h" />
     <ClInclude Include="include\rendering\vulkan\Surface.h" />
     <ClInclude Include="include\rendering\vulkan\SDLSurface.h" />
     <ClInclude Include="include\rendering\vulkan\Device.h" />
     <ClInclude Include="include\rendering\vulkan\Queue.h" />
+    <ClInclude Include="include\rendering\vulkan\SwapChain.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

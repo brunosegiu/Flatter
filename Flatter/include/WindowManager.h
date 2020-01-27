@@ -1,10 +1,14 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include <SDL2/SDL.h>
 
 #include "rendering/vulkan/Instance.h"
+#include "rendering/vulkan/SDLSurface.h"
+
+namespace Game {
 
 class WindowManager {
  public:
@@ -17,7 +21,13 @@ class WindowManager {
 
   virtual ~WindowManager();
 
+  using SDLSurfaceRef = std::unique_ptr<Rendering::Vulkan::SDLSurface>;
+  using DeviceRef = std::unique_ptr<Rendering::Vulkan::Device>;
+
  private:
   SDL_Window* mWindow;
-  Rendering::Vulkan::Instance mVkInstance;
+  Rendering::Vulkan::Instance mInstance;
+  SDLSurfaceRef mSurface;
+  DeviceRef mDevice;
 };
+}  // namespace Game

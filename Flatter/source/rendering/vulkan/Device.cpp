@@ -3,9 +3,11 @@
 #include <assert.h>
 #include <vector>
 
+#include "rendering/vulkan/Instance.h"
+
 using namespace Rendering::Vulkan;
 
-Device::Device(const Instance &vkInstance) {
+Rendering::Vulkan::Device::Device(const Instance &vkInstance) {
   unsigned int deviceCount = 0;
   vkEnumeratePhysicalDevices(vkInstance.getInternalInstance(), &deviceCount,
                              nullptr);
@@ -26,19 +28,15 @@ Device::Device(const Instance &vkInstance) {
   assert(mPhysicalDevice != VK_NULL_HANDLE);
 
   // Initialize logical device
-  VkDeviceCreateInfo deviceCreateInfo = {};
+  VkDeviceCreateInfo deviceCreateInfo{};
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  deviceCreateInfo.queueCreateInfoCount = 1;
-  deviceCreateInfo.pQueueCreateInfos = 0;
-  deviceCreateInfo.enabledLayerCount = 0;
-  deviceCreateInfo.ppEnabledLayerNames = 0;
-  deviceCreateInfo.enabledExtensionCount = 1;
-  const char *pDeviceExtensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-  deviceCreateInfo.ppEnabledExtensionNames = pDeviceExtensions;
-  deviceCreateInfo.pEnabledFeatures = 0;
+  const std::vector<const char *> extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  deviceCreateInfo.enabledExtensionCount =
+      static_cast<unsigned int>(extensions.size());
+  deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
   const std::vector<VkQueueFamilyProperties> properties =
-      getAvailableQueueFamilies();
+      this->getAvailableQueueFamilies();
   mQueue.searchSuitableFamily(properties);
   deviceCreateInfo.pQueueCreateInfos = &mQueue.getInfo();
 
@@ -51,7 +49,7 @@ Device::Device(const Instance &vkInstance) {
 }
 
 const std::vector<VkQueueFamilyProperties>
-    &Device::getAvailableQueueFamilies() {
+Rendering::Vulkan::Device::getAvailableQueueFamilies() {
   unsigned int familyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &familyCount,
                                            nullptr);
@@ -62,4 +60,4 @@ const std::vector<VkQueueFamilyProperties>
   return queueFamilies;
 }
 
-Device::~Device() {}
+Rendering::Vulkan::Device::~Device() {}

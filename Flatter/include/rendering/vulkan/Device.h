@@ -1,17 +1,20 @@
+#pragma once
+
 #include <vector>
 
 #include <vulkan/vulkan.h>
 
-#include "rendering/vulkan/Instance.h"
 #include "rendering/vulkan/Queue.h"
 
 namespace Rendering {
 namespace Vulkan {
 
+class Instance;
+
 class Device {
  public:
-  Device(const Instance& vkInstance);
-  const std::vector<VkQueueFamilyProperties>& getAvailableQueueFamilies();
+  Device(const Rendering::Vulkan::Instance& vkInstance);
+  const std::vector<VkQueueFamilyProperties> getAvailableQueueFamilies();
   virtual ~Device();
 
  private:

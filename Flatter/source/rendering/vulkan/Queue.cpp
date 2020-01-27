@@ -20,7 +20,7 @@ void Queue::searchSuitableFamily(
   mIndex = index;
 }
 
-const VkDeviceQueueCreateInfo& Queue::getInfo() const {
+const VkDeviceQueueCreateInfo Queue::getInfo() const {
   VkDeviceQueueCreateInfo queueCreateInfo = {};
   queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queueCreateInfo.queueFamilyIndex = mIndex;
