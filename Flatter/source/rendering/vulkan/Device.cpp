@@ -41,9 +41,9 @@ Rendering::Vulkan::Device::Device(const Instance &vkInstance) {
   deviceCreateInfo.pQueueCreateInfos = &mQueue.getInfo();
 
   VkResult result =
-      vkCreateDevice(mPhysicalDevice, &deviceCreateInfo, nullptr, &mVkDevice);
+      vkCreateDevice(mPhysicalDevice, &deviceCreateInfo, nullptr, &mDevice);
 
-  mQueue.init(mVkDevice);
+  mQueue.init(mDevice);
 
   assert(result == VK_SUCCESS);
 }

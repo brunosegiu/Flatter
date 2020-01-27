@@ -2,16 +2,26 @@
 
 #include <vulkan/vulkan.h>
 
+#include <rendering/vulkan/Device.h>
+#include <rendering/vulkan/Surface.h>
+
 namespace Rendering {
 namespace Vulkan {
 
 class SwapChain {
  public:
-  SwapChain() = default;
+  SwapChain(const Rendering::Vulkan::Device &device,
+            const Rendering::Vulkan::Surface &surface, const unsigned int width,
+            const unsigned int height);
+
   virtual ~SwapChain() = default;
 
  private:
-  SwapChain(const SwapChain&) = delete;
+  VkSwapchainKHR mSwapChain;
+  std::vector<VkImage> mSwapChainImages;
+  const VkPresentModeKHR getPresentMode(
+      const std::vector<VkPresentModeKHR> &presentModes) const;
+  SwapChain(const SwapChain &) = delete;
 };
 
 }  // namespace Vulkan

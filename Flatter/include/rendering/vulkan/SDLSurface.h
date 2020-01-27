@@ -14,11 +14,10 @@ namespace Vulkan {
 class SDLSurface : public Surface {
  public:
   SDLSurface(SDL_Window* window, const Instance& vkInstance);
+
   virtual ~SDLSurface();
 
  private:
-  VkSurfaceKHR mSurface;
-
   SDLSurface(const SDLSurface&) = delete;
 };
 

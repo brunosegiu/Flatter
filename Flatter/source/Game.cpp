@@ -72,89 +72,6 @@ void fini_window() {
 
 void fini_device() { vkDestroyDevice(device, 0); }
 
-//----------------------------------------------------------
-
-VkSwapchainKHR swapchain;
-uint32_t swapchainImageCount;
-VkImage swapchainImages[MAX_SWAPCHAIN_IMAGES];
-VkExtent2D swapchainExtent;
-VkSurfaceFormatKHR surfaceFormat;
-
-bool init_swapchain() {
-  // Use first available format
-  uint32_t formatCount = 1;
-  vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
-                                       0);  // suppress validation layer
-  vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
-                                       &surfaceFormat);
-  surfaceFormat.format = surfaceFormat.format == VK_FORMAT_UNDEFINED
-                             ? VK_FORMAT_B8G8R8A8_UNORM
-                             : surfaceFormat.format;
-
-  uint32_t presentModeCount = 0;
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface,
-                                            &presentModeCount, NULL);
-  VkPresentModeKHR presentModes[MAX_PRESENT_MODE_COUNT];
-  presentModeCount = presentModeCount > MAX_PRESENT_MODE_COUNT
-                         ? MAX_PRESENT_MODE_COUNT
-                         : presentModeCount;
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface,
-                                            &presentModeCount, presentModes);
-
-  VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;  // always supported.
-  for (uint32_t i = 0; i < presentModeCount; ++i) {
-    if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-      presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-      break;
-    }
-  }
-  swapchainImageCount = presentMode == VK_PRESENT_MODE_MAILBOX_KHR
-                            ? PRESENT_MODE_MAILBOX_IMAGE_COUNT
-                            : PRESENT_MODE_DEFAULT_IMAGE_COUNT;
-
-  VkSurfaceCapabilitiesKHR surfaceCapabilities;
-  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface,
-                                            &surfaceCapabilities);
-
-  swapchainExtent = surfaceCapabilities.currentExtent;
-  if (swapchainExtent.width == UINT32_MAX) {
-    swapchainExtent.width =
-        clamp_u32(width, surfaceCapabilities.minImageExtent.width,
-                  surfaceCapabilities.maxImageExtent.width);
-    swapchainExtent.height =
-        clamp_u32(height, surfaceCapabilities.minImageExtent.height,
-                  surfaceCapabilities.maxImageExtent.height);
-  }
-
-  VkSwapchainCreateInfoKHR swapChainCreateInfo{};
-  swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  swapChainCreateInfo.surface = surface;
-  swapChainCreateInfo.minImageCount = swapchainImageCount;
-  swapChainCreateInfo.imageFormat = surfaceFormat.format;
-  swapChainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-  swapChainCreateInfo.imageExtent = swapchainExtent;
-  swapChainCreateInfo.imageArrayLayers = 1;
-  swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-  swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  swapChainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
-  swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  swapChainCreateInfo.presentMode = presentMode;
-  swapChainCreateInfo.clipped = VK_TRUE;
-  swapChainCreateInfo.pNext = 0;
-
-  VkResult result =
-      vkCreateSwapchainKHR(device, &swapChainCreateInfo, 0, &swapchain);
-  if (result != VK_SUCCESS) {
-    return 0;
-  }
-
-  vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, NULL);
-  vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount,
-                          swapchainImages);
-
-  return 1;
-}
-
 void fini_swapchain() { vkDestroySwapchainKHR(device, swapchain, 0); }
 
 //----------------------------------------------------------
@@ -534,7 +451,6 @@ void draw_frame() {
 int main(int argc, char* argv[]) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   Game::WindowManager wm();
-  assert(init_swapchain());
   assert(init_render());
   int run = 1;
 
