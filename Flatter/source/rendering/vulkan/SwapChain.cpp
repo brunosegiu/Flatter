@@ -1,16 +1,21 @@
-#include "rendering/vulkan/SwapChain.h"
+﻿#include "rendering/vulkan/SwapChain.h"
 
 #include <assert.h>
+
 #include <algorithm>
 
 using namespace Rendering::Vulkan;
 
-SwapChain::SwapChain(const Rendering::Vulkan::Device &device,
+SwapChain::SwapChain(const Rendering::Vulkan::DeviceRef &device,
                      const Rendering::Vulkan::Surface &surface,
-                     const unsigned int width, const unsigned int height) {
+                     unsigned int frameCount, const unsigned int width,
+                     const unsigned int height)
+    : mDevice(device),
+      mSwapChainImages(frameCount, nullptr),
+      mImageSemaphores(frameCount, nullptr) {
   unsigned int formatCount = 1;
   VkSurfaceFormatKHR surfaceFormat;
-  const VkPhysicalDevice physicalDevice(device.getPhysicalDeviceHandle());
+  const VkPhysicalDevice physicalDevice(device->getPhysicalDeviceHandle());
   const VkSurfaceKHR surfaceHandle(surface.getSurfaceHandle());
   vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surfaceHandle,
                                        &formatCount, &surfaceFormat);
@@ -26,7 +31,6 @@ SwapChain::SwapChain(const Rendering::Vulkan::Device &device,
       physicalDevice, surfaceHandle, &presentModeCount, presentModes.data());
 
   const VkPresentModeKHR presentMode(getPresentMode(presentModes));
-  unsigned int swapchainImageCount = 2;
 
   VkSurfaceCapabilitiesKHR surfaceCapabilities;
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surfaceHandle,
@@ -44,7 +48,7 @@ SwapChain::SwapChain(const Rendering::Vulkan::Device &device,
   VkSwapchainCreateInfoKHR swapChainCreateInfo{};
   swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swapChainCreateInfo.surface = surfaceHandle;
-  swapChainCreateInfo.minImageCount = swapchainImageCount;
+  swapChainCreateInfo.minImageCount = frameCount;
   swapChainCreateInfo.imageFormat = surfaceFormat.format;
   swapChainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
   swapChainCreateInfo.imageExtent = swapchainExtent;
@@ -55,18 +59,17 @@ SwapChain::SwapChain(const Rendering::Vulkan::Device &device,
   swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   swapChainCreateInfo.presentMode = presentMode;
   swapChainCreateInfo.clipped = VK_TRUE;
-  swapChainCreateInfo.pNext = 0;
+  swapChainCreateInfo.pNext = nullptr;
 
-  const VkDevice deviceHandle(device.getDeviceHandle());
+  const VkDevice deviceHandle(device->getNativeHandle());
 
-  VkResult result =
-      vkCreateSwapchainKHR(deviceHandle, &swapChainCreateInfo, 0, &mSwapChain);
+  VkResult result = vkCreateSwapchainKHR(deviceHandle, &swapChainCreateInfo, 0,
+                                         &mSwapChainHandle);
 
   assert(result == VK_SUCCESS);
 
-  vkGetSwapchainImagesKHR(deviceHandle, mSwapChain, &swapchainImageCount, NULL);
-  mSwapChainImages = std::vector<VkImage>(swapchainImageCount, nullptr);
-  vkGetSwapchainImagesKHR(deviceHandle, mSwapChain, &swapchainImageCount,
+  vkGetSwapchainImagesKHR(deviceHandle, mSwapChainHandle, &frameCount, NULL);
+  vkGetSwapchainImagesKHR(deviceHandle, mSwapChainHandle, &frameCount,
                           mSwapChainImages.data());
 }
 
@@ -81,4 +84,15 @@ const VkPresentModeKHR SwapChain::getPresentMode(
                                      ? VK_PRESENT_MODE_FIFO_KHR
                                      : VK_PRESENT_MODE_MAILBOX_KHR;
   return presentMode;
+}
+
+void SwapChain::acquireImage(const unsigned int &currentFrameIndex) {
+  unsigned int imageIndex;
+  vkAcquireNextImageKHR(mDevice->getNativeHandle(), mSwapChainHandle,
+                        UINT64_MAX, mImageSemaphores[currentFrameIndex],
+                        VK_NULL_HANDLE, &imageIndex);
+}
+
+SwapChain::~SwapChain() {
+  vkDestroySwapchainKHR(mDevice->getNativeHandle(), mSwapChainHandle, 0);
 }

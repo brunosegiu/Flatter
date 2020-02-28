@@ -1,8 +1,7 @@
-#include "WindowManager.h"
-
-#include <assert.h>
+﻿#include "WindowManager.h"
 
 #include <SDL2/SDL_syswm.h>
+#include <assert.h>
 
 using namespace Game;
 using namespace Rendering::Vulkan;
@@ -17,7 +16,7 @@ WindowManager::WindowManager(const unsigned int width,
                              SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
   mSurface = std::make_unique<SDLSurface>(mWindow, mInstance);
   assert(mWindow);
-  mDevice = std::make_unique<Device>(mInstance);
+  mDevice = std::make_shared<Device>(mInstance);
   assert(mDevice);
 }
 

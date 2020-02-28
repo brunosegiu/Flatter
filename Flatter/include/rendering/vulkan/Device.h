@@ -1,8 +1,9 @@
-#pragma once
-
-#include <vector>
+﻿#pragma once
 
 #include <vulkan/vulkan.h>
+
+#include <memory>
+#include <vector>
 
 #include "rendering/vulkan/Queue.h"
 
@@ -10,6 +11,8 @@ namespace Rendering {
 namespace Vulkan {
 
 class Instance;
+class Queue;
+using QueueRef = std::shared_ptr<Queue>;
 
 class Device {
  public:
@@ -18,14 +21,19 @@ class Device {
   const VkPhysicalDevice& getPhysicalDeviceHandle() const {
     return mPhysicalDevice;
   };
-  const VkDevice& getDeviceHandle() const { return mDevice; };
+  const VkDevice& getNativeHandle() const { return mDeviceHandle; };
+  const unsigned int getQueueIndex() const { return mQueue->getIndex(); }
+  void submitCommand(const VkSubmitInfo& submitInfo, const VkFence& fence);
+  void present(const VkPresentInfoKHR& presentInfo) const;
   virtual ~Device();
 
  private:
   VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-  VkDevice mDevice;
-  Queue mQueue;
+  VkDevice mDeviceHandle;
+  QueueRef mQueue;
 };
+
+using DeviceRef = std::shared_ptr<Device>;
 
 }  // namespace Vulkan
 }  // namespace Rendering

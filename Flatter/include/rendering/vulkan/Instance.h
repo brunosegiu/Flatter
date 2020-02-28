@@ -1,11 +1,10 @@
-#pragma once
-
-#include "rendering/vulkan/Configuration.h"
-
-#include <string>
+﻿#pragma once
 
 #include <vulkan/vulkan.h>
 
+#include <string>
+
+#include "rendering/vulkan/Configuration.h"
 #include "rendering/vulkan/Device.h"
 
 namespace Rendering {
@@ -15,7 +14,7 @@ class Instance {
  public:
   Instance(const std::string appName);
 
-  const VkInstance& getInternalInstance() const;
+  const VkInstance& getNativeHandle() const;
 
   virtual ~Instance();
 

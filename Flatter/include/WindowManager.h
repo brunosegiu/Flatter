@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
+
+#include <SDL2/SDL.h>
 
 #include <memory>
 #include <string>
-
-#include <SDL2/SDL.h>
 
 #include "rendering/vulkan/Instance.h"
 #include "rendering/vulkan/SDLSurface.h"
@@ -22,7 +22,6 @@ class WindowManager {
   virtual ~WindowManager();
 
   using SDLSurfaceRef = std::unique_ptr<Rendering::Vulkan::SDLSurface>;
-  using DeviceRef = std::unique_ptr<Rendering::Vulkan::Device>;
 
  private:
   SDL_Window* mWindow;

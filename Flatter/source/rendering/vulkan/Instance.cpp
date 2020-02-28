@@ -1,11 +1,11 @@
-#include "rendering/vulkan/Configuration.h"
-
-#include "rendering/vulkan/Instance.h"
-
-#include <assert.h>
-#include <iostream>
+﻿#include "rendering/vulkan/Instance.h"
 
 #include <SDL2/SDL_vulkan.h>
+#include <assert.h>
+
+#include <iostream>
+
+#include "rendering/vulkan/Configuration.h"
 
 using namespace Rendering::Vulkan;
 
@@ -62,6 +62,6 @@ Instance::Instance(const std::string appName) {
   assert(result == VK_SUCCESS);
 }
 
-const VkInstance& Instance::getInternalInstance() const { return mInstance; }
+const VkInstance& Instance::getNativeHandle() const { return mInstance; }
 
 Instance::~Instance() { vkDestroyInstance(mInstance, nullptr); }

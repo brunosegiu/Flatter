@@ -1,6 +1,7 @@
-#include "rendering/vulkan/Device.h"
+﻿#include "rendering/vulkan/Device.h"
 
 #include <assert.h>
+
 #include <vector>
 
 #include "rendering/vulkan/Instance.h"
@@ -9,12 +10,12 @@ using namespace Rendering::Vulkan;
 
 Rendering::Vulkan::Device::Device(const Instance &vkInstance) {
   unsigned int deviceCount = 0;
-  vkEnumeratePhysicalDevices(vkInstance.getInternalInstance(), &deviceCount,
+  vkEnumeratePhysicalDevices(vkInstance.getNativeHandle(), &deviceCount,
                              nullptr);
   assert(deviceCount);
   std::vector<VkPhysicalDevice> vkDevices(deviceCount);
   // Pick phyisical device
-  vkEnumeratePhysicalDevices(vkInstance.getInternalInstance(), &deviceCount,
+  vkEnumeratePhysicalDevices(vkInstance.getNativeHandle(), &deviceCount,
                              vkDevices.data());
   for (const auto &vkDevice : vkDevices) {
     VkPhysicalDeviceProperties vkDeviceProperties;
@@ -37,13 +38,13 @@ Rendering::Vulkan::Device::Device(const Instance &vkInstance) {
 
   const std::vector<VkQueueFamilyProperties> properties =
       this->getAvailableQueueFamilies();
-  mQueue.searchSuitableFamily(properties);
-  deviceCreateInfo.pQueueCreateInfos = &mQueue.getInfo();
+  const unsigned int queueIndex = Queue::searchSuitableFamily(properties);
+  deviceCreateInfo.pQueueCreateInfos = &Queue::getInfo(queueIndex);
 
-  VkResult result =
-      vkCreateDevice(mPhysicalDevice, &deviceCreateInfo, nullptr, &mDevice);
+  VkResult result = vkCreateDevice(mPhysicalDevice, &deviceCreateInfo, nullptr,
+                                   &mDeviceHandle);
 
-  mQueue.init(mDevice);
+  mQueue = std::make_shared<Queue>(this, queueIndex);
 
   assert(result == VK_SUCCESS);
 }
@@ -60,4 +61,14 @@ Rendering::Vulkan::Device::getAvailableQueueFamilies() {
   return queueFamilies;
 }
 
-Rendering::Vulkan::Device::~Device() {}
+void Rendering::Vulkan::Device::submitCommand(const VkSubmitInfo &submitInfo,
+                                              const VkFence &fence) {
+  mQueue->submit(submitInfo, fence);
+}
+
+void Rendering::Vulkan::Device::present(
+    const VkPresentInfoKHR &presentInfo) const {
+  mQueue->present(presentInfo);
+}
+
+Rendering::Vulkan::Device::~Device() { vkDestroyDevice(mDeviceHandle, 0); }
