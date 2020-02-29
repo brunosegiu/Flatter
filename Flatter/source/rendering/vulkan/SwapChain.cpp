@@ -6,15 +6,16 @@
 
 using namespace Rendering::Vulkan;
 
-Swapchain::Swapchain(const Device& device, Surface& surface) {
+Swapchain::Swapchain(const DeviceRef& device, Surface& surface)
+    : mDevice(device) {
   unsigned int presentModeCount = 0;
-  vkGetPhysicalDeviceSurfacePresentModesKHR(device.mPhysicalDeviceHandle,
-                                            surface.mSurfaceHandle,
-                                            &presentModeCount, nullptr);
+  const VkPhysicalDevice& physicalDeviceHandle = device->getPhysicalHandle();
+  vkGetPhysicalDeviceSurfacePresentModesKHR(
+      physicalDeviceHandle, surface.mSurfaceHandle, &presentModeCount, nullptr);
   std::vector<VkPresentModeKHR> presentModes(presentModeCount,
                                              VK_PRESENT_MODE_FIFO_KHR);
   vkGetPhysicalDeviceSurfacePresentModesKHR(
-      device.mPhysicalDeviceHandle, surface.mSurfaceHandle, &presentModeCount,
+      physicalDeviceHandle, surface.mSurfaceHandle, &presentModeCount,
       presentModes.data());
 
   VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -57,16 +58,29 @@ Swapchain::Swapchain(const Device& device, Surface& surface) {
   swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   swapChainCreateInfo.presentMode = presentMode;
   swapChainCreateInfo.clipped = VK_TRUE;
-  VkResult result = vkCreateSwapchainKHR(
-      device.mDeviceHandle, &swapChainCreateInfo, 0, &mSwapchainHandle);
+  const VkDevice& deviceHandle = device->getHandle();
+  VkResult result = vkCreateSwapchainKHR(deviceHandle, &swapChainCreateInfo, 0,
+                                         &mSwapchainHandle);
   assert(result == VK_SUCCESS);
-  vkGetSwapchainImagesKHR(device.mDeviceHandle, mSwapchainHandle,
-                          &mSwapchainImageCount, NULL);
+  vkGetSwapchainImagesKHR(deviceHandle, mSwapchainHandle, &mSwapchainImageCount,
+                          NULL);
   mSwapchainImages = std::vector<VkImage>(mSwapchainImageCount, nullptr);
-  vkGetSwapchainImagesKHR(device.mDeviceHandle, mSwapchainHandle,
-                          &mSwapchainImageCount, mSwapchainImages.data());
+  vkGetSwapchainImagesKHR(deviceHandle, mSwapchainHandle, &mSwapchainImageCount,
+                          mSwapchainImages.data());
+}
+
+const unsigned int Swapchain::acquireNextImage(
+    const VkFence& waitFor,
+    const VkSemaphore& signalSemaphore) const {
+  const VkDevice& deviceHandle = mDevice->getHandle();
+  vkWaitForFences(deviceHandle, 1, &waitFor, VK_TRUE, UINT64_MAX);
+  vkResetFences(deviceHandle, 1, &waitFor);
+  unsigned int imageIndex = 0;
+  vkAcquireNextImageKHR(deviceHandle, mSwapchainHandle, UINT64_MAX,
+                        signalSemaphore, VK_NULL_HANDLE, &imageIndex);
+  return imageIndex;
 }
 
 Swapchain ::~Swapchain() {
-  //  vkDestroySwapchainKHR(device, mSwapchainHandle, 0);
+  vkDestroySwapchainKHR(mDevice->getHandle(), mSwapchainHandle, 0);
 }

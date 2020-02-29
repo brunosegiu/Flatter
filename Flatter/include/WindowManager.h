@@ -18,9 +18,9 @@ namespace Game {
 class WindowManager {
  public:
   SDL_Window* mWindow;
-  Instance* mInstance;
+  InstanceRef mInstance;
   Surface* mSurface;
-  Device* mDevice;
+  DeviceRef mDevice;
   Swapchain* mSwapchain;
   Renderer* mRenderer;
 

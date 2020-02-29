@@ -11,7 +11,9 @@
 
 namespace Rendering {
 namespace Vulkan {
+
 class Device;
+using DeviceRef = std::shared_ptr<Device>;
 
 class Surface {
  public:
@@ -21,13 +23,16 @@ class Surface {
   unsigned int mWidth, mHeight;
 
   Surface(const SDL_SysWMinfo& info,
-          const Instance& instance,
+          const InstanceRef& instance,
           const unsigned int width,
           const unsigned int height);
-  const VkSurfaceCapabilitiesKHR getCapabilities(const Device& device) const;
-  const VkSurfaceFormatKHR getSurfaceFormat(const Device& device);
+  const VkSurfaceCapabilitiesKHR getCapabilities(const DeviceRef& device) const;
+  const VkSurfaceFormatKHR getSurfaceFormat(const DeviceRef& device);
 
   virtual ~Surface();
+
+ private:
+  InstanceRef mInstance;
 };
 
 }  // namespace Vulkan

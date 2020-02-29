@@ -17,10 +17,13 @@ class Swapchain {
   unsigned int mSwapchainImageCount;
   std::vector<VkImage> mSwapchainImages;  // MAX_SWAPCHAIN_IMAGES
   VkExtent2D mSwapchainExtent;
-
-  Swapchain(const Device& device, Surface& surface);
-
+  Swapchain(const DeviceRef& device, Surface& surface);
+  const unsigned int acquireNextImage(const VkFence& waitFor,
+                                      const VkSemaphore& signalSemaphore) const;
   virtual ~Swapchain();
+
+ private:
+  DeviceRef mDevice;
 };
 
 }  // namespace Vulkan

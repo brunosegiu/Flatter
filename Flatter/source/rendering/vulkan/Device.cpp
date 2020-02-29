@@ -13,12 +13,8 @@ Device::Device(const Instance& instance, const Surface& surface) {
   deviceCreateInfo.enabledExtensionCount = extensions.size();
   deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
-  unsigned int physicalDeviceCount = 0;
-  vkEnumeratePhysicalDevices(instance.mInstanceHandle, &physicalDeviceCount, 0);
-  std::vector<VkPhysicalDevice> physicalDeviceHandles(physicalDeviceCount,
-                                                      nullptr);
-  vkEnumeratePhysicalDevices(instance.mInstanceHandle, &physicalDeviceCount,
-                             physicalDeviceHandles.data());
+  const std::vector<VkPhysicalDevice> physicalDeviceHandles =
+      instance.getAvailablePhisicalDevices();
 
   Device::PhysicalDeviceInfo deviceInfo =
       this->findPhysicalDevice(physicalDeviceHandles, surface.mSurfaceHandle);
@@ -78,6 +74,10 @@ int Device::findQueueFamily(
     }
   }
   return -1;
+}
+
+void Device::waitIdle() {
+  vkDeviceWaitIdle(mDeviceHandle);
 }
 
 Device::~Device() {

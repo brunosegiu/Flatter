@@ -69,6 +69,17 @@ Instance::Instance() {
 #endif
 }
 
+const std::vector<VkPhysicalDevice> Instance::getAvailablePhisicalDevices()
+    const {
+  unsigned int physicalDeviceCount = 0;
+  vkEnumeratePhysicalDevices(mInstanceHandle, &physicalDeviceCount, 0);
+  std::vector<VkPhysicalDevice> physicalDeviceHandles(physicalDeviceCount,
+                                                      nullptr);
+  vkEnumeratePhysicalDevices(mInstanceHandle, &physicalDeviceCount,
+                             physicalDeviceHandles.data());
+  return physicalDeviceHandles;
+}
+
 Instance::~Instance() {
   /*
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION

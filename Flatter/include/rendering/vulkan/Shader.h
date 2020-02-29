@@ -17,11 +17,14 @@ class Shader {
  public:
   VkShaderModule mShaderHandle;
 
-  static Shader* fromFile(const std::string& path, const Device& device);
+  static Shader* fromFile(const std::string& path, const DeviceRef& device);
 
-  Shader(const unsigned int* code, const size_t size, const Device& device);
+  Shader(const DeviceRef& device, const unsigned int* code, const size_t size);
 
   virtual ~Shader();
+
+ private:
+  DeviceRef mDevice;
 };
 
 }  // namespace Vulkan

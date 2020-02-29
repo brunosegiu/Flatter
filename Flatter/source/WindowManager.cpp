@@ -8,16 +8,17 @@ WindowManager::WindowManager(const unsigned int width,
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   mWindow = SDL_CreateWindow("Vulkan Sample", SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED, width, height, 0);
-  mInstance = new Instance();
+  assert(mWindow != nullptr);
 
+  mInstance = std::make_shared<Instance>();
   SDL_SysWMinfo info;
   SDL_VERSION(&info.version);
   SDL_GetWindowWMInfo(mWindow, &info);
-  mSurface = new Surface(info, *mInstance, width, height);
-  mDevice = new Device(*mInstance, *mSurface);
-  assert(mWindow != nullptr);
-  mSwapchain = new Swapchain(*mDevice, *mSurface);
-  mRenderer = new Renderer(*mDevice, *mSurface, *mSwapchain, 2);
+  mSurface = new Surface(info, mInstance, width, height);
+
+  mDevice = std::make_shared<Device>(*mInstance, *mSurface);
+  mSwapchain = new Swapchain(mDevice, *mSurface);
+  mRenderer = new Renderer(mDevice, *mSurface, *mSwapchain, 2);
 }
 
 void WindowManager::loop() {

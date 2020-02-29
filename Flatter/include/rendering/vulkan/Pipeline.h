@@ -14,14 +14,16 @@ namespace Vulkan {
 
 class Pipeline {
  public:
+  Pipeline(const DeviceRef& device, const RenderPass& renderPass);
+  void bind(const VkCommandBuffer& command);
+  virtual ~Pipeline();
+
+ private:
   Shader* mVertexShader;
   Shader* mFragmentShader;
   VkPipeline mPipelineHandle;
   VkPipelineLayout mPipelineLayoutHandle;
-
-  Pipeline(const Device& device, const RenderPass& renderPass);
-
-  virtual ~Pipeline();
+  DeviceRef mDevice;
 };
 
 using PipelineRef = std::shared_ptr<Pipeline>;

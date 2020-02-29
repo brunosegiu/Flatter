@@ -31,15 +31,17 @@ class Renderer {
   std::vector<Framebuffer*> mFramebuffers;
   Pipeline* mPipeline;
 
-  const Device* mDevice;
   const Swapchain* mSwapchain;
 
-  Renderer(const Device& device,
+  Renderer(const DeviceRef& device,
            Surface& surface,
            const Swapchain& swapchain,
            const unsigned int frameCount);
   void draw();
   virtual ~Renderer();
+
+ private:
+  const DeviceRef mDevice;
 };
 
 using RendererRef = std::shared_ptr<Renderer>;

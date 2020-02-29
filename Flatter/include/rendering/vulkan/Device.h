@@ -15,15 +15,23 @@ class Surface;
 
 class Device {
  public:
-  VkPhysicalDevice mPhysicalDeviceHandle;
-  VkDevice mDeviceHandle;
-  unsigned int mQueueFamilyIndex;
-  VkQueue mQueueHandle;
-
   Device(const Instance& instance, const Surface& surface);
+  const VkDevice& getHandle() const { return mDeviceHandle; };
+  const VkPhysicalDevice& getPhysicalHandle() const {
+    return mPhysicalDeviceHandle;
+  };
+  const unsigned int getQueueFamilyIndex() const { return mQueueFamilyIndex; };
+  const VkQueue& getQueueHandle() const { return mQueueHandle; };
+  void waitIdle();
   ~Device();
 
  private:
+  VkPhysicalDevice mPhysicalDeviceHandle;
+  VkDevice mDeviceHandle;
+
+  unsigned int mQueueFamilyIndex;
+  VkQueue mQueueHandle;
+
   using PhysicalDeviceInfo =
       const std::pair<const VkPhysicalDevice, const unsigned int>;
   int findQueueFamily(
@@ -34,6 +42,8 @@ class Device {
       const std::vector<VkPhysicalDevice>& devices,
       const VkSurfaceKHR& surfaceHandle);
 };
+
+using DeviceRef = std::shared_ptr<Device>;
 
 }  // namespace Vulkan
 }  // namespace Rendering

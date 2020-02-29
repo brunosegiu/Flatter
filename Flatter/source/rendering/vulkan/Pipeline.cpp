@@ -2,7 +2,8 @@
 
 using namespace Rendering::Vulkan;
 
-Pipeline::Pipeline(const Device& device, const RenderPass& renderPass) {
+Pipeline::Pipeline(const DeviceRef& device, const RenderPass& renderPass)
+    : mDevice(device) {
   mVertexShader = Shader::fromFile("shaders\\main.vert.spv", device);
   mFragmentShader = Shader::fromFile("shaders\\main.frag.spv", device);
 
@@ -93,8 +94,8 @@ Pipeline::Pipeline(const Device& device, const RenderPass& renderPass) {
   VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
   pipelineLayoutCreateInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-
-  vkCreatePipelineLayout(device.mDeviceHandle, &pipelineLayoutCreateInfo, 0,
+  const VkDevice& deviceHandle = device->getHandle();
+  vkCreatePipelineLayout(deviceHandle, &pipelineLayoutCreateInfo, 0,
                          &mPipelineLayoutHandle);
 
   VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
@@ -111,11 +112,16 @@ Pipeline::Pipeline(const Device& device, const RenderPass& renderPass) {
   pipelineCreateInfo.layout = mPipelineLayoutHandle;
   pipelineCreateInfo.renderPass = renderPass.mRenderPassHandle;
 
-  vkCreateGraphicsPipelines(device.mDeviceHandle, VK_NULL_HANDLE, 1,
+  vkCreateGraphicsPipelines(deviceHandle, VK_NULL_HANDLE, 1,
                             &pipelineCreateInfo, 0, &mPipelineHandle);
 }
 
+void Pipeline::bind(const VkCommandBuffer& command) {
+  vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineHandle);
+}
+
 Pipeline ::~Pipeline() {
-  // vkDestroyPipeline(device, pipeline, 0);
-  // vkDestroyPipelineLayout(device, pipelineLayout, 0);
+  const VkDevice& deviceHandle = mDevice->getHandle();
+  vkDestroyPipeline(deviceHandle, mPipelineHandle, nullptr);
+  vkDestroyPipelineLayout(deviceHandle, mPipelineLayoutHandle, nullptr);
 }
