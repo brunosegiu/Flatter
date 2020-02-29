@@ -19,7 +19,7 @@ class Shader {
 
   static Shader* fromFile(const std::string& path, const Device& device);
 
-  Shader(unsigned int* code, const size_t size, const Device& device);
+  Shader(const unsigned int* code, const size_t size, const Device& device);
 
   virtual ~Shader();
 };

@@ -45,7 +45,7 @@ Renderer::Renderer(const Device& device,
     vkCreateSemaphore(device.mDeviceHandle, &semaphoreCreateInfo, 0,
                       &mFinishedRenderSemaphore[frameIndex]);
     vkCreateFence(device.mDeviceHandle, &fenceCreateInfo, 0,
-                  &mFrameFenceHandles[0]);
+                  &mFrameFenceHandles[frameIndex]);
   }
 
   mRenderPass = new RenderPass(surface, device);
