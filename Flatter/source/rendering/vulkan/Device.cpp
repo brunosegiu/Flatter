@@ -6,7 +6,7 @@
 
 using namespace Rendering::Vulkan;
 
-Device::Device(const Instance& instance, const Surface& surface) {
+Device::Device(const InstanceRef& instance, const SurfaceRef& surface) {
   VkDeviceCreateInfo deviceCreateInfo{};
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   const std::vector<const char*> extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -14,10 +14,10 @@ Device::Device(const Instance& instance, const Surface& surface) {
   deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
   const std::vector<VkPhysicalDevice> physicalDeviceHandles =
-      instance.getAvailablePhisicalDevices();
+      instance->getAvailablePhisicalDevices();
 
   Device::PhysicalDeviceInfo deviceInfo =
-      this->findPhysicalDevice(physicalDeviceHandles, surface.mSurfaceHandle);
+      this->findPhysicalDevice(physicalDeviceHandles, surface->mSurfaceHandle);
   assert(deviceInfo.first != nullptr);
   mPhysicalDeviceHandle = deviceInfo.first;
   mQueueFamilyIndex = deviceInfo.second;

@@ -13,18 +13,25 @@
 namespace Rendering {
 namespace Vulkan {
 
+class Shader;
+using ShaderRef = std::shared_ptr<Shader>;
+
 class Shader {
  public:
-  VkShaderModule mShaderHandle;
+  static Rendering::Vulkan::ShaderRef fromFile(const std::string& path,
+                                               const DeviceRef& device);
 
-  static Shader* fromFile(const std::string& path, const DeviceRef& device);
+  Shader(const DeviceRef& device,
+         const std::vector<char>& code,
+         const size_t size);
 
-  Shader(const DeviceRef& device, const unsigned int* code, const size_t size);
+  const VkShaderModule& getHandle() const { return mShaderHandle; };
 
   virtual ~Shader();
 
  private:
-  DeviceRef mDevice;
+  const DeviceRef mDevice;
+  VkShaderModule mShaderHandle;
 };
 
 }  // namespace Vulkan

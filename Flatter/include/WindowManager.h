@@ -17,18 +17,19 @@ namespace Game {
 
 class WindowManager {
  public:
-  SDL_Window* mWindow;
-  InstanceRef mInstance;
-  Surface* mSurface;
-  DeviceRef mDevice;
-  Swapchain* mSwapchain;
-  Renderer* mRenderer;
-
   WindowManager(const unsigned int width, const unsigned int height);
 
   void loop();
 
   virtual ~WindowManager();
+
+ private:
+  SDL_Window* mWindow;
+  InstanceRef mInstance;
+  SurfaceRef mSurface;
+  DeviceRef mDevice;
+  SwapchainRef mSwapchain;
+  RendererRef mRenderer;
 };
 
 }  // namespace Game

@@ -13,14 +13,15 @@ namespace Rendering {
 namespace Vulkan {
 
 class Framebuffer;
+using FramebufferRef = std::shared_ptr<Framebuffer>;
 
 class RenderPass {
  public:
   VkRenderPass mRenderPassHandle;
-  RenderPass(const DeviceRef& device, Surface& surface);
+  RenderPass(const DeviceRef& device, const SurfaceRef& surface);
 
-  void begin(const Framebuffer& framebuffer,
-             const Swapchain& swapchain,
+  void begin(const FramebufferRef& framebuffer,
+             const SwapchainRef& swapchain,
              const VkCommandBuffer& command);
 
   virtual ~RenderPass();
@@ -28,6 +29,8 @@ class RenderPass {
  private:
   DeviceRef mDevice;
 };
+
+using RenderPassRef = std::shared_ptr<RenderPass>;
 
 }  // namespace Vulkan
 }  // namespace Rendering

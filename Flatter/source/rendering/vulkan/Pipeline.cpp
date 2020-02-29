@@ -2,22 +2,22 @@
 
 using namespace Rendering::Vulkan;
 
-Pipeline::Pipeline(const DeviceRef& device, const RenderPass& renderPass)
+Pipeline::Pipeline(const DeviceRef& device, const RenderPassRef& renderPass)
     : mDevice(device) {
-  mVertexShader = Shader::fromFile("shaders\\main.vert.spv", device);
-  mFragmentShader = Shader::fromFile("shaders\\main.frag.spv", device);
+  mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", device);
+  mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", device);
 
   VkPipelineShaderStageCreateInfo vertexShaderStage{};
   vertexShaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   vertexShaderStage.stage = VK_SHADER_STAGE_VERTEX_BIT;
-  vertexShaderStage.module = mVertexShader->mShaderHandle;
+  vertexShaderStage.module = mVertexShader->getHandle();
   vertexShaderStage.pName = "main";
 
   VkPipelineShaderStageCreateInfo fragmentShaderStage{};
   fragmentShaderStage.sType =
       VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   fragmentShaderStage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-  fragmentShaderStage.module = mFragmentShader->mShaderHandle;
+  fragmentShaderStage.module = mFragmentShader->getHandle();
   fragmentShaderStage.pName = "main";
 
   const std::vector<VkPipelineShaderStageCreateInfo> stages{
@@ -110,7 +110,7 @@ Pipeline::Pipeline(const DeviceRef& device, const RenderPass& renderPass)
   pipelineCreateInfo.pColorBlendState = &colorBlendState;
   pipelineCreateInfo.pDynamicState = &dynamicState;
   pipelineCreateInfo.layout = mPipelineLayoutHandle;
-  pipelineCreateInfo.renderPass = renderPass.mRenderPassHandle;
+  pipelineCreateInfo.renderPass = renderPass->mRenderPassHandle;
 
   vkCreateGraphicsPipelines(deviceHandle, VK_NULL_HANDLE, 1,
                             &pipelineCreateInfo, 0, &mPipelineHandle);

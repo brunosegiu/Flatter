@@ -71,17 +71,21 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
+    <PreBuildEventUseInBuild />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
+    <PreBuildEventUseInBuild />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\VulkanSDK\1.1.121.2\Include;D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\Flatter\vcpkg\packages\sdl2_x64-windows\lib\manual-link;C:\VulkanSDK\1.1.121.2\Bin;C:\VulkanSDK\1.1.121.2\Lib;$(LibraryPath)</LibraryPath>
+    <PreBuildEventUseInBuild />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\VulkanSDK\1.1.121.2\Include;D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\Flatter\vcpkg\packages\sdl2_x64-windows\lib\manual-link;C:\VulkanSDK\1.1.121.2\Bin;C:\VulkanSDK\1.1.121.2\Lib;$(LibraryPath)</LibraryPath>
+    <PreBuildEventUseInBuild />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,6 +100,16 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep />
+    <CustomBuildStep />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>
+      </Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -111,6 +125,16 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>vulkan-1.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep />
+    <CustomBuildStep />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>
+      </Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -129,6 +153,16 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep />
+    <CustomBuildStep />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>
+      </Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -147,6 +181,16 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>vulkan-1.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep />
+    <CustomBuildStep />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>
+      </Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Game.cpp" />
@@ -173,6 +217,46 @@
     <ClInclude Include="include\rendering\vulkan\Surface.h" />
     <ClInclude Include="include\rendering\vulkan\Swapchain.h" />
     <ClInclude Include="include\WindowManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\source\main.frag">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling shader</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling shader</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling shader</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling shader</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+    <CustomBuild Include="shaders\source\main.vert">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling shader</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling shader</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling shader</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling shader</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -11,14 +11,15 @@ namespace Rendering {
 namespace Vulkan {
 
 class RenderPass;
+using RenderPassRef = std::shared_ptr<RenderPass>;
 
 class Framebuffer {
  public:
   Framebuffer(const VkImage& swapchainImage,
               const DeviceRef& device,
-              Surface& surface,
-              const Swapchain& swapchain,
-              const RenderPass& renderPass);
+              const SurfaceRef& surface,
+              const SwapchainRef& swapchain,
+              const RenderPassRef& renderPass);
   const VkFramebuffer& getHandle() const { return mFramebufferHandle; };
   virtual ~Framebuffer();
 

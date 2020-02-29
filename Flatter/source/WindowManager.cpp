@@ -14,24 +14,21 @@ WindowManager::WindowManager(const unsigned int width,
   SDL_SysWMinfo info;
   SDL_VERSION(&info.version);
   SDL_GetWindowWMInfo(mWindow, &info);
-  mSurface = new Surface(info, mInstance, width, height);
-
-  mDevice = std::make_shared<Device>(*mInstance, *mSurface);
-  mSwapchain = new Swapchain(mDevice, *mSurface);
-  mRenderer = new Renderer(mDevice, *mSurface, *mSwapchain, 2);
+  mSurface = std::make_shared<Surface>(info, mInstance, width, height);
+  mDevice = std::make_shared<Device>(mInstance, mSurface);
+  mSwapchain = std::make_shared<Swapchain>(mDevice, mSurface);
+  mRenderer = std::make_shared<Renderer>(mDevice, mSurface, mSwapchain, 2);
 }
 
 void WindowManager::loop() {
-  bool run = 1;
-  while (run) {
+  bool open = true;
+  do {
     SDL_Event evt;
     while (SDL_PollEvent(&evt)) {
-      if (evt.type == SDL_QUIT) {
-        run = 0;
-      }
+      open = !(evt.type == SDL_QUIT);
     }
     mRenderer->draw();
-  }
+  } while (open);
   SDL_Quit();
 }
 

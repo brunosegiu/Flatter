@@ -3,12 +3,12 @@
 using namespace Rendering::Vulkan;
 
 Renderer::Renderer(const DeviceRef& device,
-                   Surface& surface,
-                   const Swapchain& swapchain,
+                   const SurfaceRef& surface,
+                   const SwapchainRef& swapchain,
                    const unsigned int frameCount)
-    : mFramebuffers(swapchain.mSwapchainImageCount, nullptr),
+    : mFramebuffers(swapchain->getImageCount(), nullptr),
       mDevice(device),
-      mSwapchain(&swapchain),
+      mSwapchain(swapchain),
       mCurrentFrameIndex(0),
       mFrameCount(frameCount),
       mCommandBufferHandles(frameCount, nullptr),
@@ -49,13 +49,13 @@ Renderer::Renderer(const DeviceRef& device,
                   &mFrameFenceHandles[frameIndex]);
   }
 
-  mRenderPass = new RenderPass(device, surface);
+  mRenderPass = std::make_shared<RenderPass>(device, surface);
   for (size_t frameIndex = 0; frameIndex < mFramebuffers.size(); ++frameIndex) {
     mFramebuffers[frameIndex] =
-        new Framebuffer(swapchain.mSwapchainImages[frameIndex], device, surface,
-                        swapchain, *mRenderPass);
+        std::make_shared<Framebuffer>(swapchain->getImage(frameIndex), device,
+                                      surface, swapchain, mRenderPass);
   }
-  mPipeline = new Pipeline(device, *mRenderPass);
+  mPipeline = std::make_shared<Pipeline>(device, mRenderPass);
 }
 
 void Renderer::draw() {
@@ -68,19 +68,19 @@ void Renderer::draw() {
   beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
   vkBeginCommandBuffer(mCommandBufferHandles[frameIndex], &beginInfo);
 
-  mRenderPass->begin(*mFramebuffers[imageIndex], *mSwapchain,
+  mRenderPass->begin(mFramebuffers[imageIndex], mSwapchain,
                      mCommandBufferHandles[frameIndex]);
   mPipeline->bind(mCommandBufferHandles[frameIndex]);
-
+  const VkExtent2D& swapchainExtent = mSwapchain->getExtent();
   VkViewport viewport{0.0f,
                       0.0f,
-                      (float)mSwapchain->mSwapchainExtent.width,
-                      (float)mSwapchain->mSwapchainExtent.height,
+                      static_cast<float>(swapchainExtent.width),
+                      static_cast<float>(swapchainExtent.height),
                       0.0f,
                       1.0f};
 
   vkCmdSetViewport(mCommandBufferHandles[frameIndex], 0, 1, &viewport);
-  VkRect2D scissors{{0, 0}, mSwapchain->mSwapchainExtent};
+  VkRect2D scissors{{0, 0}, swapchainExtent};
   vkCmdSetScissor(mCommandBufferHandles[frameIndex], 0, 1, &scissors);
   vkCmdDraw(mCommandBufferHandles[frameIndex], 3, 1, 0, 0);
 
@@ -109,13 +109,13 @@ void Renderer::draw() {
   presentInfo.waitSemaphoreCount = 1;
   presentInfo.pWaitSemaphores = &mFinishedRenderSemaphore[frameIndex];
   presentInfo.swapchainCount = 1;
-  presentInfo.pSwapchains = &mSwapchain->mSwapchainHandle;
+  presentInfo.pSwapchains = &mSwapchain->getHandle();
   presentInfo.pImageIndices = &imageIndex;
 
   vkQueuePresentKHR(queueHandle, &presentInfo);
 }
 
-Renderer ::~Renderer() {
+Renderer::~Renderer() {
   const VkDevice& deviceHandle = mDevice->getHandle();
   for (VkFence& fenceHandle : mFrameFenceHandles) {
     vkDestroyFence(deviceHandle, fenceHandle, 0);

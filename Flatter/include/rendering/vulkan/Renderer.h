@@ -17,6 +17,14 @@ namespace Vulkan {
 
 class Renderer {
  public:
+  Renderer(const DeviceRef& device,
+           const SurfaceRef& surface,
+           const SwapchainRef& swapchain,
+           const unsigned int frameCount);
+  void draw();
+  virtual ~Renderer();
+
+ private:
   unsigned int mFrameCount;
   unsigned int mCurrentFrameIndex;
 
@@ -27,21 +35,11 @@ class Renderer {
   std::vector<VkSemaphore> mAvailableImageSemaphore;
   std::vector<VkSemaphore> mFinishedRenderSemaphore;
 
-  RenderPass* mRenderPass;
-  std::vector<Framebuffer*> mFramebuffers;
-  Pipeline* mPipeline;
-
-  const Swapchain* mSwapchain;
-
-  Renderer(const DeviceRef& device,
-           Surface& surface,
-           const Swapchain& swapchain,
-           const unsigned int frameCount);
-  void draw();
-  virtual ~Renderer();
-
- private:
+  RenderPassRef mRenderPass;
+  std::vector<FramebufferRef> mFramebuffers;
+  PipelineRef mPipeline;
   const DeviceRef mDevice;
+  const SwapchainRef mSwapchain;
 };
 
 using RendererRef = std::shared_ptr<Renderer>;

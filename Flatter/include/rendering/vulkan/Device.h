@@ -11,11 +11,13 @@
 
 namespace Rendering {
 namespace Vulkan {
+
 class Surface;
+using SurfaceRef = std::shared_ptr<Surface>;
 
 class Device {
  public:
-  Device(const Instance& instance, const Surface& surface);
+  Device(const InstanceRef& instance, const SurfaceRef& surface);
   const VkDevice& getHandle() const { return mDeviceHandle; };
   const VkPhysicalDevice& getPhysicalHandle() const {
     return mPhysicalDeviceHandle;

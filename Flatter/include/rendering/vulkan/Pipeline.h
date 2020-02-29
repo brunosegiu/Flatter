@@ -14,13 +14,13 @@ namespace Vulkan {
 
 class Pipeline {
  public:
-  Pipeline(const DeviceRef& device, const RenderPass& renderPass);
+  Pipeline(const DeviceRef& device, const RenderPassRef& renderPass);
   void bind(const VkCommandBuffer& command);
   virtual ~Pipeline();
 
  private:
-  Shader* mVertexShader;
-  Shader* mFragmentShader;
+  ShaderRef mVertexShader;
+  ShaderRef mFragmentShader;
   VkPipeline mPipelineHandle;
   VkPipelineLayout mPipelineLayoutHandle;
   DeviceRef mDevice;

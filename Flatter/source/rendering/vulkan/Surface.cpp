@@ -26,19 +26,19 @@ const VkSurfaceCapabilitiesKHR Surface::getCapabilities(
 
 const VkSurfaceFormatKHR Surface::getSurfaceFormat(const DeviceRef& device) {
   uint32_t formatCount = 1;
-  if (surfaceFormat == nullptr) {
-    this->surfaceFormat = new VkSurfaceFormatKHR();
+  if (mSurfaceFormat == nullptr) {
+    this->mSurfaceFormat = std::make_unique<VkSurfaceFormatKHR>();
     const VkPhysicalDevice& deviceHandle = device->getPhysicalHandle();
     vkGetPhysicalDeviceSurfaceFormatsKHR(deviceHandle, mSurfaceHandle,
                                          &formatCount,
                                          0);  // suppress validation layer
     vkGetPhysicalDeviceSurfaceFormatsKHR(deviceHandle, mSurfaceHandle,
-                                         &formatCount, surfaceFormat);
-    surfaceFormat->format = surfaceFormat->format == VK_FORMAT_UNDEFINED
-                                ? VK_FORMAT_B8G8R8A8_UNORM
-                                : surfaceFormat->format;
+                                         &formatCount, mSurfaceFormat.get());
+    mSurfaceFormat->format = mSurfaceFormat->format == VK_FORMAT_UNDEFINED
+                                 ? VK_FORMAT_B8G8R8A8_UNORM
+                                 : mSurfaceFormat->format;
   }
-  return *surfaceFormat;
+  return *mSurfaceFormat;
 }
 
 Surface ::~Surface() {

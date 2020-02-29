@@ -18,7 +18,6 @@ using DeviceRef = std::shared_ptr<Device>;
 class Surface {
  public:
   VkSurfaceKHR mSurfaceHandle;
-  VkSurfaceFormatKHR* surfaceFormat;
 
   unsigned int mWidth, mHeight;
 
@@ -33,7 +32,10 @@ class Surface {
 
  private:
   InstanceRef mInstance;
+  std::unique_ptr<VkSurfaceFormatKHR> mSurfaceFormat;
 };
+
+using SurfaceRef = std::shared_ptr<Surface>;
 
 }  // namespace Vulkan
 }  // namespace Rendering

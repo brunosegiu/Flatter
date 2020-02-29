@@ -6,16 +6,17 @@
 
 using namespace Rendering::Vulkan;
 
-Swapchain::Swapchain(const DeviceRef& device, Surface& surface)
+Swapchain::Swapchain(const DeviceRef& device, const SurfaceRef& surface)
     : mDevice(device) {
   unsigned int presentModeCount = 0;
   const VkPhysicalDevice& physicalDeviceHandle = device->getPhysicalHandle();
-  vkGetPhysicalDeviceSurfacePresentModesKHR(
-      physicalDeviceHandle, surface.mSurfaceHandle, &presentModeCount, nullptr);
+  vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDeviceHandle,
+                                            surface->mSurfaceHandle,
+                                            &presentModeCount, nullptr);
   std::vector<VkPresentModeKHR> presentModes(presentModeCount,
                                              VK_PRESENT_MODE_FIFO_KHR);
   vkGetPhysicalDeviceSurfacePresentModesKHR(
-      physicalDeviceHandle, surface.mSurfaceHandle, &presentModeCount,
+      physicalDeviceHandle, surface->mSurfaceHandle, &presentModeCount,
       presentModes.data());
 
   VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -30,24 +31,24 @@ Swapchain::Swapchain(const DeviceRef& device, Surface& surface)
                              : PRESENT_MODE_DEFAULT_IMAGE_COUNT;
 
   const VkSurfaceCapabilitiesKHR surfaceCapabilities =
-      surface.getCapabilities(device);
+      surface->getCapabilities(device);
 
   mSwapchainExtent = surfaceCapabilities.currentExtent;
   if (mSwapchainExtent.width == UINT32_MAX) {
     mSwapchainExtent.width = std::clamp<unsigned int>(
-        surface.mWidth, surfaceCapabilities.minImageExtent.width,
+        surface->mWidth, surfaceCapabilities.minImageExtent.width,
         surfaceCapabilities.maxImageExtent.width);
     mSwapchainExtent.height = std::clamp<unsigned int>(
-        surface.mHeight, surfaceCapabilities.minImageExtent.height,
+        surface->mHeight, surfaceCapabilities.minImageExtent.height,
         surfaceCapabilities.maxImageExtent.height);
   }
 
   VkSwapchainCreateInfoKHR swapChainCreateInfo{};
 
   swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  swapChainCreateInfo.surface = surface.mSurfaceHandle;
+  swapChainCreateInfo.surface = surface->mSurfaceHandle;
   swapChainCreateInfo.minImageCount = mSwapchainImageCount;
-  const VkSurfaceFormatKHR surfaceFormat = surface.getSurfaceFormat(device);
+  const VkSurfaceFormatKHR surfaceFormat = surface->getSurfaceFormat(device);
   swapChainCreateInfo.imageFormat = surfaceFormat.format;
   swapChainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
   swapChainCreateInfo.imageExtent = mSwapchainExtent;
