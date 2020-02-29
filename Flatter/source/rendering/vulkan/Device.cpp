@@ -4,73 +4,82 @@
 
 #include <vector>
 
-#include "rendering/vulkan/Instance.h"
-
 using namespace Rendering::Vulkan;
 
-Rendering::Vulkan::Device::Device(const Instance &vkInstance) {
-  unsigned int deviceCount = 0;
-  vkEnumeratePhysicalDevices(vkInstance.getNativeHandle(), &deviceCount,
-                             nullptr);
-  assert(deviceCount);
-  std::vector<VkPhysicalDevice> vkDevices(deviceCount);
-  // Pick phyisical device
-  vkEnumeratePhysicalDevices(vkInstance.getNativeHandle(), &deviceCount,
-                             vkDevices.data());
-  for (const auto &vkDevice : vkDevices) {
-    VkPhysicalDeviceProperties vkDeviceProperties;
-    vkGetPhysicalDeviceProperties(vkDevice, &vkDeviceProperties);
-    if (vkDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-      mPhysicalDevice = vkDevice;
-      break;
-    }
-  }
-
-  assert(mPhysicalDevice != VK_NULL_HANDLE);
-
-  // Initialize logical device
+Device::Device(const Instance& instance, const Surface& surface) {
   VkDeviceCreateInfo deviceCreateInfo{};
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  const std::vector<const char *> extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-  deviceCreateInfo.enabledExtensionCount =
-      static_cast<unsigned int>(extensions.size());
+  const std::vector<const char*> extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  deviceCreateInfo.enabledExtensionCount = extensions.size();
   deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
-  const std::vector<VkQueueFamilyProperties> properties =
-      this->getAvailableQueueFamilies();
-  const unsigned int queueIndex = Queue::searchSuitableFamily(properties);
-  deviceCreateInfo.pQueueCreateInfos = &Queue::getInfo(queueIndex);
+  unsigned int physicalDeviceCount = 0;
+  vkEnumeratePhysicalDevices(instance.mInstanceHandle, &physicalDeviceCount, 0);
+  std::vector<VkPhysicalDevice> physicalDeviceHandles(physicalDeviceCount,
+                                                      nullptr);
+  vkEnumeratePhysicalDevices(instance.mInstanceHandle, &physicalDeviceCount,
+                             physicalDeviceHandles.data());
 
-  VkResult result = vkCreateDevice(mPhysicalDevice, &deviceCreateInfo, nullptr,
-                                   &mDeviceHandle);
+  Device::PhysicalDeviceInfo deviceInfo =
+      this->findPhysicalDevice(physicalDeviceHandles, surface.mSurfaceHandle);
+  assert(deviceInfo.first != nullptr);
+  mPhysicalDeviceHandle = deviceInfo.first;
+  mQueueFamilyIndex = deviceInfo.second;
 
-  mQueue = std::make_shared<Queue>(this, queueIndex);
-
+  VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
+  deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  deviceQueueCreateInfo.queueFamilyIndex = this->mQueueFamilyIndex;
+  deviceQueueCreateInfo.queueCount = 1;
+  deviceQueueCreateInfo.pQueuePriorities = std::vector<float>{1.0f}.data();
+  deviceCreateInfo.queueCreateInfoCount = 1;
+  deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
+  VkResult result = vkCreateDevice(mPhysicalDeviceHandle, &deviceCreateInfo,
+                                   nullptr, &mDeviceHandle);
+  vkGetDeviceQueue(mDeviceHandle, mQueueFamilyIndex, 0, &mQueueHandle);
   assert(result == VK_SUCCESS);
-
-  mSwapchain = std::make_shared<Swapchain>(this, 2, 1920, 1080);
 }
 
-const std::vector<VkQueueFamilyProperties>
-Rendering::Vulkan::Device::getAvailableQueueFamilies() {
-  unsigned int familyCount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &familyCount,
-                                           nullptr);
-
-  std::vector<VkQueueFamilyProperties> queueFamilies(familyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &familyCount,
-                                           queueFamilies.data());
-  return queueFamilies;
+Device::PhysicalDeviceInfo Device::findPhysicalDevice(
+    const std::vector<VkPhysicalDevice>& devices,
+    const VkSurfaceKHR& surfaceHandle) {
+  for (const VkPhysicalDevice& physicalDeviceHandle : devices) {
+    unsigned int queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
+                                             &queueFamilyCount, nullptr);
+    std::vector<VkQueueFamilyProperties> deviceQueueFamilyProperties(
+        queueFamilyCount, VkQueueFamilyProperties{});
+    vkGetPhysicalDeviceQueueFamilyProperties(
+        physicalDeviceHandle, &queueFamilyCount,
+        deviceQueueFamilyProperties.data());
+    const int queueIndex = findQueueFamily(deviceQueueFamilyProperties,
+                                           physicalDeviceHandle, surfaceHandle);
+    if (queueIndex >= 0) {
+      return Device::PhysicalDeviceInfo(physicalDeviceHandle,
+                                        static_cast<unsigned int>(queueIndex));
+    }
+  }
+  return Device::PhysicalDeviceInfo(nullptr, -1);
 }
 
-void Rendering::Vulkan::Device::submitCommand(const VkSubmitInfo &submitInfo,
-                                              const VkFence &fence) {
-  mQueue->submit(submitInfo, fence);
+int Device::findQueueFamily(
+    const std::vector<VkQueueFamilyProperties>& queueFamilyProperties,
+    const VkPhysicalDevice& physicalDeviceHandle,
+    const VkSurfaceKHR& surfaceHandle) {
+  const unsigned int queueFamilyPropertiesSize = queueFamilyProperties.size();
+  for (unsigned int queueIndex = 0; queueIndex < queueFamilyPropertiesSize;
+       ++queueIndex) {
+    const VkQueueFamilyProperties& properties =
+        queueFamilyProperties[queueIndex];
+    VkBool32 supportsPresent = VK_FALSE;
+    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDeviceHandle, queueIndex,
+                                         surfaceHandle, &supportsPresent);
+    if (supportsPresent && (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+      return queueIndex;
+    }
+  }
+  return -1;
 }
 
-void Rendering::Vulkan::Device::present(
-    const VkPresentInfoKHR &presentInfo) const {
-  mQueue->present(presentInfo);
+Device::~Device() {
+  vkDestroyDevice(mDeviceHandle, 0);
 }
-
-Rendering::Vulkan::Device::~Device() { vkDestroyDevice(mDeviceHandle, 0); }

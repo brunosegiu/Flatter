@@ -1,36 +1,39 @@
 ﻿#include "WindowManager.h"
 
-#include <SDL2/SDL_syswm.h>
-#include <assert.h>
-
 using namespace Game;
 using namespace Rendering::Vulkan;
 
 WindowManager::WindowManager(const unsigned int width,
-                             const unsigned int height,
-                             const std::string appName)
-    : mInstance(appName.c_str(), width, height) {
-  assert(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0);
-  mWindow = SDL_CreateWindow(appName.c_str(), SDL_WINDOWPOS_CENTERED,
-                             SDL_WINDOWPOS_CENTERED, width, height,
-                             SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
-  mSurface = std::make_unique<SDLSurface>(mWindow, mInstance);
-  assert(mWindow);
-  mInstance.setCurrentSurface(mSurface);
+                             const unsigned int height) {
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+  mWindow = SDL_CreateWindow("Vulkan Sample", SDL_WINDOWPOS_CENTERED,
+                             SDL_WINDOWPOS_CENTERED, width, height, 0);
+  mInstance = new Instance();
+
+  SDL_SysWMinfo info;
+  SDL_VERSION(&info.version);
+  SDL_GetWindowWMInfo(mWindow, &info);
+  mSurface = new Surface(info, *mInstance, width, height);
+  mDevice = new Device(*mInstance, *mSurface);
+  assert(mWindow != nullptr);
+  mSwapchain = new Swapchain(*mDevice, *mSurface);
+  mRenderer = new Renderer(*mDevice, *mSurface, *mSwapchain, 2);
 }
 
 void WindowManager::loop() {
-  while (1) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        return;
+  bool run = 1;
+  while (run) {
+    SDL_Event evt;
+    while (SDL_PollEvent(&evt)) {
+      if (evt.type == SDL_QUIT) {
+        run = 0;
       }
     }
+    mRenderer->draw();
   }
+  SDL_Quit();
 }
 
-WindowManager::~WindowManager() {
+WindowManager ::~WindowManager() {
   SDL_DestroyWindow(mWindow);
-  SDL_Quit();
 }

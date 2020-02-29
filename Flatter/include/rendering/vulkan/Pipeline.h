@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/RenderPass.h"
 #include "rendering/vulkan/Shader.h"
 
 namespace Rendering {
@@ -13,17 +14,14 @@ namespace Vulkan {
 
 class Pipeline {
  public:
-  Pipeline();
-  void bind(const DeviceRef device, const VkCommandBuffer& buffer);
-  virtual ~Pipeline();
-
- private:
+  Shader* mVertexShader;
+  Shader* mFragmentShader;
   VkPipeline mPipelineHandle;
+  VkPipelineLayout mPipelineLayoutHandle;
 
-  DeviceRef mDevice;
+  Pipeline(const Device& device, const RenderPass& renderPass);
 
-  ShaderRef mVertexShader;
-  ShaderRef mFragmentShader;
+  virtual ~Pipeline();
 };
 
 using PipelineRef = std::shared_ptr<Pipeline>;

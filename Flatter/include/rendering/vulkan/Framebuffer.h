@@ -3,22 +3,25 @@
 #include <vulkan/vulkan.h>
 
 #include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/RenderPass.h"
+#include "rendering/vulkan/Surface.h"
+#include "rendering/vulkan/Swapchain.h"
 
 namespace Rendering {
 namespace Vulkan {
 
 class Framebuffer {
  public:
-  Framebuffer(const DeviceRef device, const VkImage& image,
-              const VkExtent2D& extent, const VkFormat attachmentFormat);
-  const VkFramebuffer& getNativeHandle() const { return mFramebufferHandle; };
-  virtual ~Framebuffer();
-
- private:
+  VkImageView mSwapchainImageViewHandle;
   VkFramebuffer mFramebufferHandle;
-  VkImageView mImageViewHandle;
 
-  DeviceRef mDevice;
+  Framebuffer(const VkImage& swapchainImage,
+              const Device& device,
+              Surface& surface,
+              const Swapchain& swapchain,
+              const RenderPass& renderPass);
+
+  virtual ~Framebuffer();
 };
 
 using FramebufferRef = std::shared_ptr<Framebuffer>;

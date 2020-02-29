@@ -7,33 +7,39 @@
 
 #include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/Framebuffer.h"
+#include "rendering/vulkan/Pipeline.h"
 #include "rendering/vulkan/RenderPass.h"
-#include "rendering/vulkan/SwapChain.h"
+#include "rendering/vulkan/Surface.h"
+#include "rendering/vulkan/Swapchain.h"
 
 namespace Rendering {
 namespace Vulkan {
 
 class Renderer {
  public:
-  Renderer(const DeviceRef device, const SwapChainRef swapChain,
+  unsigned int mFrameCount;
+  unsigned int mCurrentFrameIndex;
+
+  VkCommandPool mCommandPoolHandle;
+
+  std::vector<VkCommandBuffer> mCommandBufferHandles;
+  std::vector<VkFence> mFrameFenceHandles;
+  std::vector<VkSemaphore> mAvailableImageSemaphore;
+  std::vector<VkSemaphore> mFinishedRenderSemaphore;
+
+  RenderPass* mRenderPass;
+  std::vector<Framebuffer*> mFramebuffers;
+  Pipeline* mPipeline;
+
+  const Device* mDevice;
+  const Swapchain* mSwapchain;
+
+  Renderer(const Device& device,
+           Surface& surface,
+           const Swapchain& swapchain,
            const unsigned int frameCount);
   void draw();
   virtual ~Renderer();
-
- private:
-  VkCommandPool mCommandPoolHandle;
-  std::vector<VkCommandBuffer> mCommandBufferHandles;
-  std::vector<FramebufferRef> mFrameBuffers;
-  RenderPassRef mRenderPass;
-  SwapChainRef mSwapChain;
-
-  std::vector<VkSemaphore> mRenderSemaphores;
-  std::vector<VkFence> mFenceHandles;
-
-  long unsigned int mFrameIndex;
-  unsigned int mFrameCount;
-
-  DeviceRef mDevice;
 };
 
 using RendererRef = std::shared_ptr<Renderer>;

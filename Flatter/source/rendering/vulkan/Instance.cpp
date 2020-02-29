@@ -1,78 +1,81 @@
 ﻿#include "rendering/vulkan/Instance.h"
 
-#include <SDL2/SDL_vulkan.h>
-#include <assert.h>
-
-#include <iostream>
-
-#include "rendering/vulkan/Configuration.h"
-
 using namespace Rendering::Vulkan;
 
-VKAPI_ATTR VkBool32 VKAPI_CALL Instance::Report(
-    VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
-    uint64_t obj, size_t location, int32_t code, const char* layerPrefix,
-    const char* msg, void* userData) {
-  std::cout << "VULKAN VALIDATION: " << msg << std::endl;
+VKAPI_ATTR VkBool32 VKAPI_CALL
+Instance::VulkanReportFunc(VkDebugReportFlagsEXT flags,
+                           VkDebugReportObjectTypeEXT objType,
+                           uint64_t obj,
+                           size_t location,
+                           int32_t code,
+                           const char* layerPrefix,
+                           const char* msg,
+                           void* userData) {
+  printf("VULKAN VALIDATION: %s\n", msg);
   return VK_FALSE;
 }
 
-Instance::Instance(const std::string appName, const int width, const int height)
-    : mWidth(width), mHeight(height) {
-  VkApplicationInfo appInfo = {};
+Instance::Instance() {
+  VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  appInfo.pNext = nullptr;
-  appInfo.pApplicationName = appName.c_str();
-  appInfo.applicationVersion = 0;
-  appInfo.pEngineName = appName.c_str();
-  appInfo.engineVersion = 0;
+  appInfo.pApplicationName = "Vulkan SDL tutorial";
+  appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+  appInfo.pEngineName = "No Engine";
+  appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
   appInfo.apiVersion = VK_API_VERSION_1_0;
 
-  VkInstanceCreateInfo instanceInfo{};
-  instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  instanceInfo.pApplicationInfo = &appInfo;
-
-#ifndef VULKAN_ENABLE_VALIDATION
+  VkInstanceCreateInfo createInfo{};
+  createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+  createInfo.pApplicationInfo = &appInfo;
+#ifndef VULKAN_ENABLE_LUNARG_VALIDATION
   const std::vector<const char*> extensions{
       VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
-  instanceInfo.enabledExtensionCount =
-      static_cast<unsigned int>(extensions.size());
-  instanceInfo.ppEnabledExtensionNames = extensions.data();
+  createInfo.enabledExtensionCount = extensions.size();
+  createInfo.ppEnabledExtensionNames = extensions.data();
 #else
-  const std::vector<const char*> validationLayers{
-      "VK_LAYER_LUNARG_standard_validation"};
-  instanceInfo.enabledLayerCount =
-      static_cast<unsigned int>(validationLayers.size());
-  instanceInfo.ppEnabledLayerNames = validationLayers.data();
   const std::vector<const char*> extensions{VK_KHR_SURFACE_EXTENSION_NAME,
                                             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
                                             VK_EXT_DEBUG_REPORT_EXTENSION_NAME};
-  instanceInfo.enabledExtensionCount =
-      static_cast<unsigned int>(extensions.size());
-
-  instanceInfo.ppEnabledExtensionNames = extensions.data();
-
-  mDebugCallbackCreate.sType =
-      VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-  mDebugCallbackCreate.flags =
-      VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-  mDebugCallbackCreate.pfnCallback = VulkanReportFunc;
+  createInfo.enabledExtensionCount = extensions.size();
+  createInfo.ppEnabledExtensionNames = extensions.data();
+  const std::vector<const char*> layers{"VK_LAYER_LUNARG_standard_validation"};
+  createInfo.enabledLayerCount = layers.size();
+  createInfo.ppEnabledLayerNames = layers.data();
 #endif
-
-  VkResult result = vkCreateInstance(&instanceInfo, nullptr, &mInstanceHandle);
+  VkResult result = VK_ERROR_INITIALIZATION_FAILED;
+  result = vkCreateInstance(&createInfo, 0, &mInstanceHandle);
   assert(result == VK_SUCCESS);
-
-  mDevice = std::make_shared<Device>(mInstanceHandle);
-  assert(mDevice);
+#ifdef VULKAN_ENABLE_LUNARG_VALIDATION
+  PFN_vkCreateDebugReportCallbackEXT vkpfn_CreateDebugReportCallbackEXT = 0;
+  PFN_vkDestroyDebugReportCallbackEXT vkpfn_DestroyDebugReportCallbackEXT = 0;
+  VkDebugReportCallbackEXT debugCallback = VK_NULL_HANDLE;
+  VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo;
+  debugCallbackCreateInfo.sType =
+      VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+  debugCallbackCreateInfo.flags =
+      VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+  debugCallbackCreateInfo.pfnCallback = VulkanReportFunc;
+  vkpfn_CreateDebugReportCallbackEXT =
+      (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(
+          mInstanceHandle, "vkCreateDebugReportCallbackEXT");
+  vkpfn_DestroyDebugReportCallbackEXT =
+      (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(
+          mInstanceHandle, "vkDestroyDebugReportCallbackEXT");
+  if (vkpfn_CreateDebugReportCallbackEXT &&
+      vkpfn_DestroyDebugReportCallbackEXT) {
+    vkpfn_CreateDebugReportCallbackEXT(
+        mInstanceHandle, &debugCallbackCreateInfo, 0, &debugCallback);
+  }
+#endif
 }
 
-const VkInstance& Instance::getNativeHandle() const { return mInstanceHandle; }
-
-void Instance::setCurrentSurface(const SDLSurfaceRef surface) {
-  mSurface = surface;
-  assert(!mSwapchain);
-  mSwapchain =
-      std::make_shared<Swapchain>(mDevice, mSurface, 2, mWidth, mHeight);
+Instance::~Instance() {
+  /*
+#ifdef VULKAN_ENABLE_LUNARG_VALIDATION
+  if (vkpfn_DestroyDebugReportCallbackEXT && debugCallback) {
+    vkpfn_DestroyDebugReportCallbackEXT(mInstance, debugCallback, 0);
+  }
+#endif
+  vkDestroyInstance(mInstance, 0);
+}*/
 }
-
-Instance::~Instance() { vkDestroyInstance(mInstanceHandle, nullptr); }

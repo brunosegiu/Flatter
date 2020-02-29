@@ -104,7 +104,8 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableModules>false</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,6 +150,29 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Game.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Device.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Framebuffer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Instance.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Pipeline.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Renderer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\RenderPass.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Shader.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Surface.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Swapchain.cpp" />
+    <ClCompile Include="source\WindowManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\rendering\vulkan\Configuration.h" />
+    <ClInclude Include="include\rendering\vulkan\Device.h" />
+    <ClInclude Include="include\rendering\vulkan\Framebuffer.h" />
+    <ClInclude Include="include\rendering\vulkan\Instance.h" />
+    <ClInclude Include="include\rendering\vulkan\Pipeline.h" />
+    <ClInclude Include="include\rendering\vulkan\Renderer.h" />
+    <ClInclude Include="include\rendering\vulkan\RenderPass.h" />
+    <ClInclude Include="include\rendering\vulkan\Shader.h" />
+    <ClInclude Include="include\rendering\vulkan\Surface.h" />
+    <ClInclude Include="include\rendering\vulkan\Swapchain.h" />
+    <ClInclude Include="include\WindowManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

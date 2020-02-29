@@ -5,26 +5,30 @@
 #include <memory>
 #include <string>
 
+#include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/Instance.h"
 #include "rendering/vulkan/Renderer.h"
-#include "rendering/vulkan/SDLSurface.h"
+#include "rendering/vulkan/Surface.h"
+#include "rendering/vulkan/Swapchain.h"
+
+using namespace Rendering::Vulkan;
 
 namespace Game {
 
 class WindowManager {
  public:
-  WindowManager(const unsigned int width = 1280,
-                const unsigned int height = 720,
-                const std::string appName = "Unknown");
-  WindowManager(const WindowManager&) = delete;
+  SDL_Window* mWindow;
+  Instance* mInstance;
+  Surface* mSurface;
+  Device* mDevice;
+  Swapchain* mSwapchain;
+  Renderer* mRenderer;
+
+  WindowManager(const unsigned int width, const unsigned int height);
 
   void loop();
 
   virtual ~WindowManager();
-
- private:
-  SDL_Window* mWindow;
-  Rendering::Vulkan::Instance mInstance;
-  Rendering::Vulkan::SDLSurfaceRef mSurface;
 };
+
 }  // namespace Game

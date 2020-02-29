@@ -2,22 +2,25 @@
 
 using namespace Rendering::Vulkan;
 
-Renderer::Renderer(const DeviceRef device, const SwapChainRef swapChain,
+Renderer::Renderer(const Device& device,
+                   Surface& surface,
+                   const Swapchain& swapchain,
                    const unsigned int frameCount)
-    : mDevice(device),
+    : mFramebuffers(swapchain.mSwapchainImageCount, nullptr),
+      mDevice(&device),
+      mSwapchain(&swapchain),
+      mCurrentFrameIndex(0),
       mFrameCount(frameCount),
-      mFrameIndex(0),
       mCommandBufferHandles(frameCount, nullptr),
-      mFenceHandles(frameCount, nullptr),
-      mRenderSemaphores(frameCount, nullptr),
-      mSwapChain(swapChain) {
-  const VkDevice& deviceHandle(mDevice->getNativeHandle());
-  VkCommandPoolCreateInfo commandPoolCreateInfo;
+      mAvailableImageSemaphore(frameCount, nullptr),
+      mFinishedRenderSemaphore(frameCount, nullptr),
+      mFrameFenceHandles(frameCount, nullptr) {
+  VkCommandPoolCreateInfo commandPoolCreateInfo{};
   commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  commandPoolCreateInfo.queueFamilyIndex = mDevice->getQueueIndex();
+  commandPoolCreateInfo.queueFamilyIndex = device.mQueueFamilyIndex;
 
-  vkCreateCommandPool(deviceHandle, &commandPoolCreateInfo, 0,
+  vkCreateCommandPool(device.mDeviceHandle, &commandPoolCreateInfo, 0,
                       &mCommandPoolHandle);
 
   VkCommandBufferAllocateInfo commandBufferAllocInfo{};
@@ -26,78 +29,119 @@ Renderer::Renderer(const DeviceRef device, const SwapChainRef swapChain,
   commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   commandBufferAllocInfo.commandBufferCount = frameCount;
 
-  vkAllocateCommandBuffers(deviceHandle, &commandBufferAllocInfo,
+  vkAllocateCommandBuffers(device.mDeviceHandle, &commandBufferAllocInfo,
                            mCommandBufferHandles.data());
 
-  VkSemaphoreCreateInfo semaphoreCreateInfo = {
+  const VkSemaphoreCreateInfo semaphoreCreateInfo = {
       VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-  for (VkSemaphore& semaphoreHandle : mRenderSemaphores) {
-    vkCreateSemaphore(deviceHandle, &semaphoreCreateInfo, 0, &semaphoreHandle);
-  }
 
   VkFenceCreateInfo fenceCreateInfo{};
   fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
   fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-  for (VkFence& fenceHandle : mFenceHandles) {
-    vkCreateFence(deviceHandle, &fenceCreateInfo, 0, &fenceHandle);
+  for (unsigned int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+    vkCreateSemaphore(device.mDeviceHandle, &semaphoreCreateInfo, 0,
+                      &mAvailableImageSemaphore[frameIndex]);
+    vkCreateSemaphore(device.mDeviceHandle, &semaphoreCreateInfo, 0,
+                      &mFinishedRenderSemaphore[frameIndex]);
+    vkCreateFence(device.mDeviceHandle, &fenceCreateInfo, 0,
+                  &mFrameFenceHandles[0]);
   }
+
+  mRenderPass = new RenderPass(surface, device);
+  for (size_t frameIndex = 0; frameIndex < mFramebuffers.size(); ++frameIndex) {
+    mFramebuffers[frameIndex] =
+        new Framebuffer(swapchain.mSwapchainImages[frameIndex], device, surface,
+                        swapchain, *mRenderPass);
+  }
+  mPipeline = new Pipeline(device, *mRenderPass);
 }
 
 void Renderer::draw() {
-  unsigned int frameIndex = (mFrameIndex++) % mFrameCount;
-  const VkDevice& deviceHandle(mDevice->getNativeHandle());
+  uint32_t chainIndex = (mCurrentFrameIndex++) % mFrameCount;
+  vkWaitForFences(mDevice->mDeviceHandle, 1, &mFrameFenceHandles[chainIndex],
+                  VK_TRUE, UINT64_MAX);
+  vkResetFences(mDevice->mDeviceHandle, 1, &mFrameFenceHandles[chainIndex]);
 
-  vkWaitForFences(deviceHandle, 1, &mFenceHandles[frameIndex], VK_TRUE,
-                  UINT64_MAX);
-  vkResetFences(deviceHandle, 1, &mFenceHandles[frameIndex]);
+  unsigned int imageIndex = 0;
+  vkAcquireNextImageKHR(mDevice->mDeviceHandle, mSwapchain->mSwapchainHandle,
+                        UINT64_MAX, mAvailableImageSemaphore[chainIndex],
+                        VK_NULL_HANDLE, &imageIndex);
 
-  mSwapChain->acquireImage(frameIndex);
-
-  const VkCommandBuffer& activeCommandBuffer(mCommandBufferHandles[frameIndex]);
   VkCommandBufferBeginInfo beginInfo{};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-  vkBeginCommandBuffer(activeCommandBuffer, &beginInfo);
+  vkBeginCommandBuffer(mCommandBufferHandles[chainIndex], &beginInfo);
 
-  mRenderPass->begin(activeCommandBuffer, mFrameBuffers[frameIndex]);
-  mPipeline->bind();
-  vkCmdDraw(activeCommandBuffer, 3, 1, 0, 0);
-  mRenderPass->end(activeCommandBuffer);
-  vkEndCommandBuffer(activeCommandBuffer);
+  VkRenderPassBeginInfo renderPassBeginInfo{};
+  renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  renderPassBeginInfo.renderPass = mRenderPass->mRenderPassHandle;
+  renderPassBeginInfo.framebuffer =
+      mFramebuffers[imageIndex]->mFramebufferHandle;
+  renderPassBeginInfo.clearValueCount = 1;
+  const VkClearValue clearValue{0.0f, 0.1f, 0.2f, 1.0f};
+  renderPassBeginInfo.pClearValues = &clearValue;
+  const VkOffset2D offset{0, 0};
+  renderPassBeginInfo.renderArea.offset = offset;
+  renderPassBeginInfo.renderArea.extent = mSwapchain->mSwapchainExtent;
+  vkCmdBeginRenderPass(mCommandBufferHandles[chainIndex], &renderPassBeginInfo,
+                       VK_SUBPASS_CONTENTS_INLINE);
+
+  vkCmdBindPipeline(mCommandBufferHandles[chainIndex],
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    mPipeline->mPipelineHandle);
+  VkViewport viewport{0.0f,
+                      0.0f,
+                      (float)mSwapchain->mSwapchainExtent.width,
+                      (float)mSwapchain->mSwapchainExtent.height,
+                      0.0f,
+                      1.0f};
+
+  vkCmdSetViewport(mCommandBufferHandles[chainIndex], 0, 1, &viewport);
+  VkRect2D scissors{{0, 0}, mSwapchain->mSwapchainExtent};
+  vkCmdSetScissor(mCommandBufferHandles[chainIndex], 0, 1, &scissors);
+  vkCmdDraw(mCommandBufferHandles[chainIndex], 3, 1, 0, 0);
+
+  vkCmdEndRenderPass(mCommandBufferHandles[chainIndex]);
+
+  vkEndCommandBuffer(mCommandBufferHandles[chainIndex]);
 
   VkSubmitInfo submitInfo{};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submitInfo.waitSemaphoreCount = 1;
-  submitInfo.pWaitSemaphores = &mSwapChain->getImageSemaphore(frameIndex);
-  submitInfo.pWaitDstStageMask =
-      std::vector<VkPipelineStageFlags>{
-          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}
-          .data();
+  submitInfo.pWaitSemaphores = &mAvailableImageSemaphore[chainIndex];
+  VkPipelineStageFlags pipelineStageFlags{
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  submitInfo.pWaitDstStageMask = &pipelineStageFlags;
   submitInfo.commandBufferCount = 1;
-  submitInfo.pCommandBuffers = &activeCommandBuffer;
+  submitInfo.pCommandBuffers = &mCommandBufferHandles[chainIndex];
   submitInfo.signalSemaphoreCount = 1;
-  submitInfo.pSignalSemaphores = &mRenderSemaphores[frameIndex];
-  mDevice->submitCommand(submitInfo, mFenceHandles[frameIndex]);
+  submitInfo.pSignalSemaphores = &mFinishedRenderSemaphore[chainIndex];
+
+  vkQueueSubmit(mDevice->mQueueHandle, 1, &submitInfo,
+                mFrameFenceHandles[chainIndex]);
 
   VkPresentInfoKHR presentInfo{};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   presentInfo.waitSemaphoreCount = 1;
-  presentInfo.pWaitSemaphores = &mRenderSemaphores[frameIndex];
+  presentInfo.pWaitSemaphores = &mFinishedRenderSemaphore[chainIndex];
   presentInfo.swapchainCount = 1;
-  presentInfo.pSwapchains = &mSwapChain->getNativeHandle();
-  presentInfo.pImageIndices = &frameIndex;
-  mDevice->present(presentInfo);
+  presentInfo.pSwapchains = &mSwapchain->mSwapchainHandle;
+  presentInfo.pImageIndices = &imageIndex;
+
+  vkQueuePresentKHR(mDevice->mQueueHandle, &presentInfo);
 }
 
-Renderer::~Renderer() {
-  const VkDevice& deviceHandle(mDevice->getNativeHandle());
-  vkDeviceWaitIdle(deviceHandle);
-  for (VkFence& fenceHandle : mFenceHandles) {
-    vkDestroyFence(deviceHandle, fenceHandle, 0);
-  }
-  for (VkSemaphore& semaphoreHandle : mRenderSemaphores) {
-    vkDestroySemaphore(deviceHandle, semaphoreHandle, 0);
-  }
-  vkDestroyCommandPool(deviceHandle, mCommandPoolHandle, 0);
+Renderer ::~Renderer() {
+  /*vkDeviceWaitIdle(device);
+  destroyPipeline();
+  destroyFramebuffers();
+  destroyRenderPass();
+  vkDestroyFence(device, frameFences[0], 0);
+  vkDestroyFence(device, frameFences[1], 0);
+  vkDestroySemaphore(device, renderFinishedSemaphores[0], 0);
+  vkDestroySemaphore(device, renderFinishedSemaphores[1], 0);
+  vkDestroySemaphore(device, imageAvailableSemaphores[0], 0);
+  vkDestroySemaphore(device, imageAvailableSemaphores[1], 0);
+  vkDestroyCommandPool(device, commandPool, 0);*/
 }
