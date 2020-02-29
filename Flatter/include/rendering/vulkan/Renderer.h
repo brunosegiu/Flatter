@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include <memory>
 #include <vector>
 
 #include "rendering/vulkan/Device.h"
@@ -34,6 +35,8 @@ class Renderer {
 
   DeviceRef mDevice;
 };
+
+using RendererRef = std::shared_ptr<Renderer>;
 
 }  // namespace Vulkan
 }  // namespace Rendering

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "rendering/vulkan/Instance.h"
+#include "rendering/vulkan/Renderer.h"
 #include "rendering/vulkan/SDLSurface.h"
 
 namespace Game {
@@ -21,12 +22,9 @@ class WindowManager {
 
   virtual ~WindowManager();
 
-  using SDLSurfaceRef = std::unique_ptr<Rendering::Vulkan::SDLSurface>;
-
  private:
   SDL_Window* mWindow;
   Rendering::Vulkan::Instance mInstance;
-  SDLSurfaceRef mSurface;
-  DeviceRef mDevice;
+  Rendering::Vulkan::SDLSurfaceRef mSurface;
 };
 }  // namespace Game

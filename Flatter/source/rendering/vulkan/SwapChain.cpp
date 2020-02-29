@@ -6,17 +6,18 @@
 
 using namespace Rendering::Vulkan;
 
-SwapChain::SwapChain(const Rendering::Vulkan::DeviceRef &device,
+Swapchain::Swapchain(const Rendering::Vulkan::DeviceRef &device,
                      const Rendering::Vulkan::Surface &surface,
                      unsigned int frameCount, const unsigned int width,
                      const unsigned int height)
     : mDevice(device),
       mSwapChainImages(frameCount, nullptr),
-      mImageSemaphores(frameCount, nullptr) {
+      mImageSemaphores(frameCount, nullptr),
+      mFramebuffers(frameCount, nullptr) {
   unsigned int formatCount = 1;
   VkSurfaceFormatKHR surfaceFormat;
-  const VkPhysicalDevice physicalDevice(device->getPhysicalDeviceHandle());
-  const VkSurfaceKHR surfaceHandle(surface.getSurfaceHandle());
+  const VkPhysicalDevice &physicalDevice(device->getPhysicalDeviceHandle());
+  const VkSurfaceKHR &surfaceHandle(surface.getSurfaceHandle());
   vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surfaceHandle,
                                        &formatCount, &surfaceFormat);
   surfaceFormat.format = surfaceFormat.format == VK_FORMAT_UNDEFINED
@@ -35,12 +36,12 @@ SwapChain::SwapChain(const Rendering::Vulkan::DeviceRef &device,
   VkSurfaceCapabilitiesKHR surfaceCapabilities;
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surfaceHandle,
                                             &surfaceCapabilities);
-  VkExtent2D swapchainExtent = surfaceCapabilities.currentExtent;
-  if (swapchainExtent.width == UINT32_MAX) {
-    swapchainExtent.width = std::clamp<unsigned int>(
+  mExtent = surfaceCapabilities.currentExtent;
+  if (mExtent.width == UINT32_MAX) {
+    mExtent.width = std::clamp<unsigned int>(
         width, surfaceCapabilities.minImageExtent.width,
         surfaceCapabilities.maxImageExtent.width);
-    swapchainExtent.height = std::clamp<unsigned int>(
+    mExtent.height = std::clamp<unsigned int>(
         height, surfaceCapabilities.minImageExtent.height,
         surfaceCapabilities.maxImageExtent.height);
   }
@@ -51,7 +52,7 @@ SwapChain::SwapChain(const Rendering::Vulkan::DeviceRef &device,
   swapChainCreateInfo.minImageCount = frameCount;
   swapChainCreateInfo.imageFormat = surfaceFormat.format;
   swapChainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-  swapChainCreateInfo.imageExtent = swapchainExtent;
+  swapChainCreateInfo.imageExtent = mExtent;
   swapChainCreateInfo.imageArrayLayers = 1;
   swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -71,9 +72,15 @@ SwapChain::SwapChain(const Rendering::Vulkan::DeviceRef &device,
   vkGetSwapchainImagesKHR(deviceHandle, mSwapChainHandle, &frameCount, NULL);
   vkGetSwapchainImagesKHR(deviceHandle, mSwapChainHandle, &frameCount,
                           mSwapChainImages.data());
+
+  for (unsigned int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+    mFramebuffers[frameIndex] = std::make_shared<Framebuffer>(
+        deviceHandle, this, mSwapChainImages[frameIndex], mExtent,
+        surfaceFormat.format);
+  }
 }
 
-const VkPresentModeKHR SwapChain::getPresentMode(
+const VkPresentModeKHR Swapchain::getPresentMode(
     const std::vector<VkPresentModeKHR> &presentModes) const {
   const auto it =
       std::find_if(presentModes.begin(), presentModes.end(),
@@ -86,13 +93,13 @@ const VkPresentModeKHR SwapChain::getPresentMode(
   return presentMode;
 }
 
-void SwapChain::acquireImage(const unsigned int &currentFrameIndex) {
+void Swapchain::acquireImage(const unsigned int &currentFrameIndex) {
   unsigned int imageIndex;
   vkAcquireNextImageKHR(mDevice->getNativeHandle(), mSwapChainHandle,
                         UINT64_MAX, mImageSemaphores[currentFrameIndex],
                         VK_NULL_HANDLE, &imageIndex);
 }
 
-SwapChain::~SwapChain() {
+Swapchain::~Swapchain() {
   vkDestroySwapchainKHR(mDevice->getNativeHandle(), mSwapChainHandle, 0);
 }

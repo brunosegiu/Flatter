@@ -2,14 +2,15 @@
 
 using namespace Rendering::Vulkan;
 
-Framebuffer::Framebuffer(const DeviceRef device, const SwapChainRef swapChain,
+Framebuffer::Framebuffer(const DeviceRef device, const VkImage& image,
+                         const VkExtent2D& extent,
                          const VkFormat attachmentFormat)
     : mDevice(device) {
-  VkImageViewCreateInfo icreateInfo{};
-  icreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-  icreateInfo.image = swapchainImages[i];
-  icreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  icreateInfo.format = attachmentFormat;
+  VkImageViewCreateInfo imageCreateInfo{};
+  imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+  imageCreateInfo.image = image;
+  imageCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  imageCreateInfo.format = attachmentFormat;
 
   VkImageSubresourceRange subresourceRange{};
   subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -17,18 +18,18 @@ Framebuffer::Framebuffer(const DeviceRef device, const SwapChainRef swapChain,
   subresourceRange.levelCount = 1;
   subresourceRange.baseArrayLayer = 0;
   subresourceRange.layerCount = 1;
-  icreateInfo.subresourceRange = subresourceRange;
+  imageCreateInfo.subresourceRange = subresourceRange;
   const VkDevice& deviceHandle(mDevice->getNativeHandle());
 
-  vkCreateImageView(deviceHandle, &icreateInfo, 0, &swapchainImageViews[i]);
+  vkCreateImageView(deviceHandle, &imageCreateInfo, 0, &mImageViewHandle);
 
   VkFramebufferCreateInfo framebufferCreateInfo{};
   framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
   framebufferCreateInfo.renderPass = renderPass;
   framebufferCreateInfo.attachmentCount = 1;
-  framebufferCreateInfo.pAttachments = &swapchainImageViews[i];
-  framebufferCreateInfo.width = swapchainExtent.width;
-  framebufferCreateInfo.height = swapchainExtent.height;
+  framebufferCreateInfo.pAttachments = &mImageViewHandle;
+  framebufferCreateInfo.width = extent.width;
+  framebufferCreateInfo.height = extent.height;
   framebufferCreateInfo.layers = 1;
   vkCreateFramebuffer(deviceHandle, &framebufferCreateInfo, 0,
                       &mFramebufferHandle);
@@ -37,5 +38,5 @@ Framebuffer::Framebuffer(const DeviceRef device, const SwapChainRef swapChain,
 Framebuffer::~Framebuffer() {
   const VkDevice& deviceHandle(mDevice->getNativeHandle());
   vkDestroyFramebuffer(deviceHandle, mFramebufferHandle, NULL);
-  vkDestroyImageView(deviceHandle, swapchainImageViews[i], NULL);
+  vkDestroyImageView(deviceHandle, mImageViewHandle, NULL);
 }

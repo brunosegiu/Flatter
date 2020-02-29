@@ -47,6 +47,8 @@ Rendering::Vulkan::Device::Device(const Instance &vkInstance) {
   mQueue = std::make_shared<Queue>(this, queueIndex);
 
   assert(result == VK_SUCCESS);
+
+  mSwapchain = std::make_shared<Swapchain>(this, 2, 1920, 1080);
 }
 
 const std::vector<VkQueueFamilyProperties>

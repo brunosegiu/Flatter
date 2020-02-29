@@ -17,7 +17,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Instance::Report(
   return VK_FALSE;
 }
 
-Instance::Instance(const std::string appName) {
+Instance::Instance(const std::string appName, const int width, const int height)
+    : mWidth(width), mHeight(height) {
   VkApplicationInfo appInfo = {};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pNext = nullptr;
@@ -58,10 +59,20 @@ Instance::Instance(const std::string appName) {
   mDebugCallbackCreate.pfnCallback = VulkanReportFunc;
 #endif
 
-  VkResult result = vkCreateInstance(&instanceInfo, nullptr, &mInstance);
+  VkResult result = vkCreateInstance(&instanceInfo, nullptr, &mInstanceHandle);
   assert(result == VK_SUCCESS);
+
+  mDevice = std::make_shared<Device>(mInstanceHandle);
+  assert(mDevice);
 }
 
-const VkInstance& Instance::getNativeHandle() const { return mInstance; }
+const VkInstance& Instance::getNativeHandle() const { return mInstanceHandle; }
 
-Instance::~Instance() { vkDestroyInstance(mInstance, nullptr); }
+void Instance::setCurrentSurface(const SDLSurfaceRef surface) {
+  mSurface = surface;
+  assert(!mSwapchain);
+  mSwapchain =
+      std::make_shared<Swapchain>(mDevice, mSurface, 2, mWidth, mHeight);
+}
+
+Instance::~Instance() { vkDestroyInstance(mInstanceHandle, nullptr); }

@@ -1,15 +1,17 @@
 ﻿#pragma once
 
-#include <rendering/vulkan/Device.h>
-#include <rendering/vulkan/Surface.h>
 #include <vulkan/vulkan.h>
+
+#include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/Framebuffer.h"
+#include "rendering/vulkan/Surface.h"
 
 namespace Rendering {
 namespace Vulkan {
 
-class SwapChain {
+class Swapchain {
  public:
-  SwapChain(const DeviceRef &device, const Rendering::Vulkan::Surface &surface,
+  Swapchain(const DeviceRef &device, const Rendering::Vulkan::Surface &surface,
             unsigned int frameCount, const unsigned int width,
             const unsigned int height);
   const VkSwapchainKHR &getNativeHandle() const { return mSwapChainHandle; };
@@ -18,20 +20,22 @@ class SwapChain {
       const unsigned int &currentFrameIndex) const {
     return mImageSemaphores[currentFrameIndex];
   };
-  virtual ~SwapChain();
+  virtual ~Swapchain();
 
  private:
   VkSwapchainKHR mSwapChainHandle;
   DeviceRef mDevice;
   std::vector<VkImage> mSwapChainImages;
   std::vector<VkSemaphore> mImageSemaphores;
+  VkExtent2D mExtent;
+  std::vector<FramebufferRef> mFramebuffers;
 
   const VkPresentModeKHR getPresentMode(
       const std::vector<VkPresentModeKHR> &presentModes) const;
-  SwapChain(const SwapChain &) = delete;
+  Swapchain(const Swapchain &) = delete;
 };
 
-using SwapChainRef = std::shared_ptr<SwapChain>;
+using SwapchainRef = std::shared_ptr<Swapchain>;
 
 }  // namespace Vulkan
 }  // namespace Rendering

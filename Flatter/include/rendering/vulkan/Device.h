@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "rendering/vulkan/Queue.h"
+#include "rendering/vulkan/Swapchain.h"
 
 namespace Rendering {
 namespace Vulkan {

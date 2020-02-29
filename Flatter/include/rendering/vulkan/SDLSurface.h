@@ -1,11 +1,12 @@
-#pragma once
-
-#include "rendering/vulkan/Surface.h"
+﻿#pragma once
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 
+#include <memory>
+
 #include "rendering/vulkan/Instance.h"
+#include "rendering/vulkan/Surface.h"
 
 namespace Rendering {
 
@@ -20,6 +21,8 @@ class SDLSurface : public Surface {
  private:
   SDLSurface(const SDLSurface&) = delete;
 };
+
+using SDLSurfaceRef = std::shared_ptr<Rendering::Vulkan::SDLSurface>;
 
 }  // namespace Vulkan
 }  // namespace Rendering
