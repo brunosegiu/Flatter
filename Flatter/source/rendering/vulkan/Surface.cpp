@@ -6,7 +6,10 @@ Surface::Surface(const SDL_SysWMinfo& info,
                  const InstanceRef& instance,
                  const unsigned int width,
                  const unsigned int height)
-    : mInstance(instance), mWidth(width), mHeight(height) {
+    : mInstance(instance),
+      mWidth(width),
+      mHeight(height),
+      mSurfaceFormat(nullptr) {
   VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {
       VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
   surfaceCreateInfo.hinstance = GetModuleHandle(0);
@@ -41,6 +44,8 @@ const VkSurfaceFormatKHR Surface::getSurfaceFormat(const DeviceRef& device) {
   return *mSurfaceFormat;
 }
 
-Surface ::~Surface() {
+Surface::~Surface() {
+  auto s = mSurfaceFormat.get();
+  mSurfaceFormat.release();
   vkDestroySurfaceKHR(mInstance->getHandle(), mSurfaceHandle, nullptr);
 }

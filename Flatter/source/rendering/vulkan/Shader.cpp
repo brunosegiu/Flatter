@@ -10,19 +10,17 @@ ShaderRef Shader::fromFile(const std::string& path, const DeviceRef& device) {
   file.seekg(0, std::ios::beg);
   std::vector<char> rawData(fileSize);
   if (file.read(rawData.data(), fileSize)) {
-    ShaderRef shader = std::make_shared<Shader>(device, rawData, fileSize);
+    ShaderRef shader = std::make_shared<Shader>(device, rawData);
     return shader;
   }
   return nullptr;
 }
 
-Shader::Shader(const DeviceRef& device,
-               const std::vector<char>& code,
-               const size_t size)
+Shader::Shader(const DeviceRef& device, const std::vector<char>& code)
     : mDevice(device) {
   VkShaderModuleCreateInfo shaderCreateInfo{};
   shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  shaderCreateInfo.codeSize = size;
+  shaderCreateInfo.codeSize = code.size() * sizeof(char);
   shaderCreateInfo.pCode = reinterpret_cast<const unsigned int*>(code.data());
   const VkDevice& deviceHandle = device->getHandle();
   vkCreateShaderModule(deviceHandle, &shaderCreateInfo, 0, &mShaderHandle);

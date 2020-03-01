@@ -21,9 +21,7 @@ class Shader {
   static Rendering::Vulkan::ShaderRef fromFile(const std::string& path,
                                                const DeviceRef& device);
 
-  Shader(const DeviceRef& device,
-         const std::vector<char>& code,
-         const size_t size);
+  Shader(const DeviceRef& device, const std::vector<char>& code);
 
   const VkShaderModule& getHandle() const { return mShaderHandle; };
 

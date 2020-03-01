@@ -26,7 +26,8 @@ Device::Device(const InstanceRef& instance, const SurfaceRef& surface) {
   deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   deviceQueueCreateInfo.queueFamilyIndex = this->mQueueFamilyIndex;
   deviceQueueCreateInfo.queueCount = 1;
-  deviceQueueCreateInfo.pQueuePriorities = std::vector<float>{1.0f}.data();
+  const std::vector<float> priorities{1.0f};
+  deviceQueueCreateInfo.pQueuePriorities = priorities.data();
   deviceCreateInfo.queueCreateInfoCount = 1;
   deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
   VkResult result = vkCreateDevice(mPhysicalDeviceHandle, &deviceCreateInfo,

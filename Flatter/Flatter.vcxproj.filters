@@ -85,7 +85,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\source\main.frag" />
-    <None Include="shaders\source\main.vert" />
+    <CustomBuild Include="shaders\source\main.frag" />
+    <CustomBuild Include="shaders\source\main.vert" />
   </ItemGroup>
 </Project>

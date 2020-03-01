@@ -29,9 +29,10 @@ void WindowManager::loop() {
     }
     mRenderer->draw();
   } while (open);
-  SDL_Quit();
 }
 
 WindowManager ::~WindowManager() {
+  mDevice->waitIdle();
   SDL_DestroyWindow(mWindow);
+  SDL_Quit();
 }

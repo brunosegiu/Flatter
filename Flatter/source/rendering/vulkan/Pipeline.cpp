@@ -120,8 +120,8 @@ void Pipeline::bind(const VkCommandBuffer& command) {
   vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineHandle);
 }
 
-Pipeline ::~Pipeline() {
+Pipeline::~Pipeline() {
   const VkDevice& deviceHandle = mDevice->getHandle();
-  vkDestroyPipeline(deviceHandle, mPipelineHandle, nullptr);
+  // vkDestroyPipeline(deviceHandle, mPipelineHandle, nullptr);
   vkDestroyPipelineLayout(deviceHandle, mPipelineLayoutHandle, nullptr);
 }

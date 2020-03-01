@@ -20,6 +20,7 @@ class Instance {
 
  private:
   VkInstance mInstanceHandle;
+#ifdef VULKAN_ENABLE_LUNARG_VALIDATION
 
   static VKAPI_ATTR VkBool32 VKAPI_CALL
   VulkanReportFunc(VkDebugReportFlagsEXT flags,
@@ -30,6 +31,11 @@ class Instance {
                    const char* layerPrefix,
                    const char* msg,
                    void* userData);
+
+  PFN_vkCreateDebugReportCallbackEXT vkpfn_CreateDebugReportCallbackEXT = 0;
+  PFN_vkDestroyDebugReportCallbackEXT vkpfn_DestroyDebugReportCallbackEXT = 0;
+  VkDebugReportCallbackEXT debugCallback = VK_NULL_HANDLE;
+#endif
 };
 
 using InstanceRef = std::shared_ptr<Instance>;

@@ -2,6 +2,8 @@
 
 using namespace Rendering::Vulkan;
 
+#ifdef VULKAN_ENABLE_LUNARG_VALIDATION
+#include <string>
 VKAPI_ATTR VkBool32 VKAPI_CALL
 Instance::VulkanReportFunc(VkDebugReportFlagsEXT flags,
                            VkDebugReportObjectTypeEXT objType,
@@ -11,9 +13,12 @@ Instance::VulkanReportFunc(VkDebugReportFlagsEXT flags,
                            const char* layerPrefix,
                            const char* msg,
                            void* userData) {
-  printf("VULKAN VALIDATION: %s\n", msg);
+  OutputDebugString(
+      (">>> VULKAN Validation Error: " + std::string(msg)).c_str());
   return VK_FALSE;
 }
+
+#endif
 
 Instance::Instance() {
   VkApplicationInfo appInfo{};
@@ -46,9 +51,6 @@ Instance::Instance() {
   result = vkCreateInstance(&createInfo, 0, &mInstanceHandle);
   assert(result == VK_SUCCESS);
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION
-  PFN_vkCreateDebugReportCallbackEXT vkpfn_CreateDebugReportCallbackEXT = 0;
-  PFN_vkDestroyDebugReportCallbackEXT vkpfn_DestroyDebugReportCallbackEXT = 0;
-  VkDebugReportCallbackEXT debugCallback = VK_NULL_HANDLE;
   VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo;
   debugCallbackCreateInfo.sType =
       VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -81,12 +83,10 @@ const std::vector<VkPhysicalDevice> Instance::getAvailablePhisicalDevices()
 }
 
 Instance::~Instance() {
-  /*
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION
   if (vkpfn_DestroyDebugReportCallbackEXT && debugCallback) {
-    vkpfn_DestroyDebugReportCallbackEXT(mInstance, debugCallback, 0);
+    vkpfn_DestroyDebugReportCallbackEXT(mInstanceHandle, debugCallback, 0);
   }
 #endif
-  vkDestroyInstance(mInstance, 0);
-}*/
+  vkDestroyInstance(mInstanceHandle, nullptr);
 }
