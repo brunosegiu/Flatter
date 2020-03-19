@@ -11,6 +11,7 @@
 
 namespace Rendering {
 namespace Vulkan {
+const int MAX_DESC_SETS = 256;
 
 class Surface;
 using SurfaceRef = std::shared_ptr<Surface>;
@@ -18,14 +19,28 @@ using SurfaceRef = std::shared_ptr<Surface>;
 class Device {
  public:
   Device(const InstanceRef& instance, const SurfaceRef& surface);
+
+  void waitIdle();
+
+  void allocBuffer(VkDeviceSize size,
+                   VkBufferUsageFlags usage,
+                   VkMemoryPropertyFlags properties,
+                   VkBuffer& buffer,
+                   VkDeviceMemory& bufferMemory) const;
+
   const VkDevice& getHandle() const { return mDeviceHandle; };
   const VkPhysicalDevice& getPhysicalHandle() const {
     return mPhysicalDeviceHandle;
   };
   const unsigned int getQueueFamilyIndex() const { return mQueueFamilyIndex; };
   const VkQueue& getQueueHandle() const { return mQueueHandle; };
-  void waitIdle();
-  ~Device();
+
+  const VkDescriptorPool& getDescriptorPool() const {
+    return mDescriptorPoolHandle;
+  };
+  const VkCommandPool& getCommandPool() const { return mCommandPoolHandle; };
+
+  virtual ~Device();
 
  private:
   VkPhysicalDevice mPhysicalDeviceHandle;
@@ -33,6 +48,9 @@ class Device {
 
   unsigned int mQueueFamilyIndex;
   VkQueue mQueueHandle;
+
+  VkDescriptorPool mDescriptorPoolHandle;
+  VkCommandPool mCommandPoolHandle;
 
   using PhysicalDeviceInfo =
       const std::pair<const VkPhysicalDevice, const unsigned int>;
@@ -43,6 +61,9 @@ class Device {
   PhysicalDeviceInfo findPhysicalDevice(
       const std::vector<VkPhysicalDevice>& devices,
       const VkSurfaceKHR& surfaceHandle);
+  unsigned int findBufferMemoryType(
+      unsigned int memoryTypeMask,
+      VkMemoryPropertyFlags requiredPropertyFlags) const;
 };
 
 using DeviceRef = std::shared_ptr<Device>;

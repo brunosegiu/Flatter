@@ -2,13 +2,13 @@
 
 using namespace Rendering::Vulkan;
 
-RenderPass::RenderPass(const DeviceRef& device, const SurfaceRef& surface)
+RenderPass::RenderPass(const DeviceRef& device, const VkFormat& surfaceFormat)
     : mDevice(device) {
   VkRenderPassCreateInfo renderPassCreateInfo{};
   renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   renderPassCreateInfo.attachmentCount = 1;
   VkAttachmentDescription attachmentDescription{};
-  attachmentDescription.format = surface->getSurfaceFormat(device).format;
+  attachmentDescription.format = surfaceFormat;
   attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
   attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -46,23 +46,6 @@ RenderPass::RenderPass(const DeviceRef& device, const SurfaceRef& surface)
 
   vkCreateRenderPass(deviceHandle, &renderPassCreateInfo, 0,
                      &mRenderPassHandle);
-}
-
-void RenderPass::begin(const FramebufferRef& framebuffer,
-                       const SwapchainRef& swapchain,
-                       const VkCommandBuffer& command) {
-  VkRenderPassBeginInfo renderPassBeginInfo{};
-  renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassBeginInfo.renderPass = mRenderPassHandle;
-  renderPassBeginInfo.framebuffer = framebuffer->getHandle();
-  renderPassBeginInfo.clearValueCount = 1;
-  const VkClearValue clearValue{0.0f, 0.1f, 0.2f, 1.0f};
-  renderPassBeginInfo.pClearValues = &clearValue;
-  const VkOffset2D offset{0, 0};
-  renderPassBeginInfo.renderArea.offset = offset;
-  renderPassBeginInfo.renderArea.extent = swapchain->getExtent();
-  vkCmdBeginRenderPass(command, &renderPassBeginInfo,
-                       VK_SUBPASS_CONTENTS_INLINE);
 }
 
 RenderPass::~RenderPass() {

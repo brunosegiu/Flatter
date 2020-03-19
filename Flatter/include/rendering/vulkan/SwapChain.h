@@ -8,6 +8,9 @@
 namespace Rendering {
 namespace Vulkan {
 
+class FrameController;
+using FrameControllerRef = std::shared_ptr<FrameController>;
+
 const unsigned int PRESENT_MODE_MAILBOX_IMAGE_COUNT = 3;
 const unsigned int PRESENT_MODE_DEFAULT_IMAGE_COUNT = 2;
 
@@ -15,7 +18,7 @@ class Swapchain {
  public:
   Swapchain(const DeviceRef& device, const SurfaceRef& surface);
   const unsigned int acquireNextImage(const VkFence& waitFor,
-                                      const VkSemaphore& signalSemaphore) const;
+                                      const VkSemaphore& signalTo) const;
   const VkSwapchainKHR& getHandle() const { return mSwapchainHandle; };
   const VkExtent2D& getExtent() const { return mSwapchainExtent; };
   const unsigned int getImageCount() const { return mSwapchainImageCount; };

@@ -1,5 +1,7 @@
 ﻿#include "rendering/vulkan/Instance.h"
 
+#include <iostream>
+
 using namespace Rendering::Vulkan;
 
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION
@@ -13,8 +15,10 @@ Instance::VulkanReportFunc(VkDebugReportFlagsEXT flags,
                            const char* layerPrefix,
                            const char* msg,
                            void* userData) {
-  OutputDebugString(
-      (">>> VULKAN Validation Error: " + std::string(msg)).c_str());
+  const std::string message =
+      ">>> VULKAN Validation Error: " + std::string(msg);
+  OutputDebugString(message.c_str());
+  std::cout << message << std::endl;
   return VK_FALSE;
 }
 
@@ -41,10 +45,11 @@ Instance::Instance() {
   const std::vector<const char*> extensions{VK_KHR_SURFACE_EXTENSION_NAME,
                                             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
                                             VK_EXT_DEBUG_REPORT_EXTENSION_NAME};
-  createInfo.enabledExtensionCount = extensions.size();
+  createInfo.enabledExtensionCount =
+      static_cast<unsigned int>(extensions.size());
   createInfo.ppEnabledExtensionNames = extensions.data();
   const std::vector<const char*> layers{"VK_LAYER_LUNARG_standard_validation"};
-  createInfo.enabledLayerCount = layers.size();
+  createInfo.enabledLayerCount = static_cast<unsigned int>(layers.size());
   createInfo.ppEnabledLayerNames = layers.data();
 #endif
   VkResult result = VK_ERROR_INITIALIZATION_FAILED;

@@ -95,6 +95,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,6 +122,8 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +150,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -174,6 +180,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -194,6 +202,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Game.cpp" />
+    <ClCompile Include="source\rendering\Camera.cpp" />
     <ClCompile Include="source\rendering\vulkan\Device.cpp" />
     <ClCompile Include="source\rendering\vulkan\Framebuffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\Instance.cpp" />
@@ -203,9 +212,11 @@
     <ClCompile Include="source\rendering\vulkan\Shader.cpp" />
     <ClCompile Include="source\rendering\vulkan\Surface.cpp" />
     <ClCompile Include="source\rendering\vulkan\Swapchain.cpp" />
+    <ClCompile Include="source\rendering\vulkan\Uniform.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\rendering\Camera.h" />
     <ClInclude Include="include\rendering\vulkan\Configuration.h" />
     <ClInclude Include="include\rendering\vulkan\Device.h" />
     <ClInclude Include="include\rendering\vulkan\Framebuffer.h" />
@@ -216,6 +227,7 @@
     <ClInclude Include="include\rendering\vulkan\Shader.h" />
     <ClInclude Include="include\rendering\vulkan\Surface.h" />
     <ClInclude Include="include\rendering\vulkan\Swapchain.h" />
+    <ClInclude Include="include\rendering\vulkan\Uniform.h" />
     <ClInclude Include="include\WindowManager.h" />
   </ItemGroup>
   <ItemGroup>

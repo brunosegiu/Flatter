@@ -4,8 +4,6 @@
 
 #include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/RenderPass.h"
-#include "rendering/vulkan/Surface.h"
-#include "rendering/vulkan/Swapchain.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -15,10 +13,10 @@ using RenderPassRef = std::shared_ptr<RenderPass>;
 
 class Framebuffer {
  public:
-  Framebuffer(const VkImage& swapchainImage,
-              const DeviceRef& device,
-              const SurfaceRef& surface,
-              const SwapchainRef& swapchain,
+  Framebuffer(const DeviceRef& device,
+              const VkImage& swapchainImage,
+              const VkFormat& format,
+              const VkExtent2D& extent,
               const RenderPassRef& renderPass);
   const VkFramebuffer& getHandle() const { return mFramebufferHandle; };
   virtual ~Framebuffer();

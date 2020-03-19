@@ -52,7 +52,7 @@ Swapchain::Swapchain(const DeviceRef& device, const SurfaceRef& surface)
   swapChainCreateInfo.imageFormat = surfaceFormat.format;
   swapChainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
   swapChainCreateInfo.imageExtent = mSwapchainExtent;
-  swapChainCreateInfo.imageArrayLayers = 1;  // 2 for stereo
+  swapChainCreateInfo.imageArrayLayers = 1;
   swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
   swapChainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
@@ -72,13 +72,13 @@ Swapchain::Swapchain(const DeviceRef& device, const SurfaceRef& surface)
 
 const unsigned int Swapchain::acquireNextImage(
     const VkFence& waitFor,
-    const VkSemaphore& signalSemaphore) const {
+    const VkSemaphore& signalTo) const {
   const VkDevice& deviceHandle = mDevice->getHandle();
   vkWaitForFences(deviceHandle, 1, &waitFor, VK_TRUE, UINT64_MAX);
   vkResetFences(deviceHandle, 1, &waitFor);
   unsigned int imageIndex = 0;
-  vkAcquireNextImageKHR(deviceHandle, mSwapchainHandle, UINT64_MAX,
-                        signalSemaphore, VK_NULL_HANDLE, &imageIndex);
+  vkAcquireNextImageKHR(deviceHandle, mSwapchainHandle, UINT64_MAX, signalTo,
+                        VK_NULL_HANDLE, &imageIndex);
   return imageIndex;
 }
 

@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include <glm/glm.hpp>
 #include <memory>
 #include <vector>
 
@@ -14,15 +15,24 @@ namespace Vulkan {
 
 class Pipeline {
  public:
-  Pipeline(const DeviceRef& device, const RenderPassRef& renderPass);
-  void bind(const VkCommandBuffer& command);
+  Pipeline(const DeviceRef& device,
+           const RenderPassRef& renderPass,
+           const VkDescriptorSetLayout& descriptorSetLayout);
+
+  const VkPipeline& getHandle() { return mPipelineHandle; };
+  const VkPipelineLayout& getPipelineLayoutHandle() const {
+    return mPipelineLayoutHandle;
+  };
+
   virtual ~Pipeline();
 
  private:
-  ShaderRef mVertexShader;
-  ShaderRef mFragmentShader;
   VkPipeline mPipelineHandle;
   VkPipelineLayout mPipelineLayoutHandle;
+
+  ShaderRef mVertexShader;
+  ShaderRef mFragmentShader;
+
   DeviceRef mDevice;
 };
 

@@ -2,7 +2,9 @@
 
 using namespace Rendering::Vulkan;
 
-Pipeline::Pipeline(const DeviceRef& device, const RenderPassRef& renderPass)
+Pipeline::Pipeline(const DeviceRef& device,
+                   const RenderPassRef& renderPass,
+                   const VkDescriptorSetLayout& descriptorSetLayout)
     : mDevice(device) {
   mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", device);
   mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", device);
@@ -41,7 +43,7 @@ Pipeline::Pipeline(const DeviceRef& device, const RenderPassRef& renderPass)
   rasterizationState.depthClampEnable = VK_FALSE;
   rasterizationState.rasterizerDiscardEnable = VK_FALSE;
   rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-  rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
+  rasterizationState.cullMode = VK_CULL_MODE_NONE;
   rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
   rasterizationState.depthBiasEnable = VK_FALSE;
   rasterizationState.depthBiasConstantFactor = 0.0f;
@@ -65,6 +67,7 @@ Pipeline::Pipeline(const DeviceRef& device, const RenderPassRef& renderPass)
   multisampleState.pSampleMask = 0;
   multisampleState.alphaToCoverageEnable = VK_FALSE;
   multisampleState.alphaToOneEnable = VK_FALSE;
+  const VkDevice& deviceHandle = device->getHandle();
 
   VkPipelineColorBlendStateCreateInfo colorBlendState{};
   colorBlendState.sType =
@@ -88,19 +91,22 @@ Pipeline::Pipeline(const DeviceRef& device, const RenderPassRef& renderPass)
   dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   const std::vector<VkDynamicState> dynamicStates{VK_DYNAMIC_STATE_VIEWPORT,
                                                   VK_DYNAMIC_STATE_SCISSOR};
-  dynamicState.dynamicStateCount = dynamicStates.size();
+  dynamicState.dynamicStateCount =
+      static_cast<unsigned int>(dynamicStates.size());
   dynamicState.pDynamicStates = dynamicStates.data();
 
   VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
   pipelineLayoutCreateInfo.sType =
       VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  const VkDevice& deviceHandle = device->getHandle();
+  pipelineLayoutCreateInfo.setLayoutCount = 1;
+  pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+
   vkCreatePipelineLayout(deviceHandle, &pipelineLayoutCreateInfo, 0,
                          &mPipelineLayoutHandle);
 
   VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
   pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  pipelineCreateInfo.stageCount = 2;
+  pipelineCreateInfo.stageCount = static_cast<unsigned int>(stages.size());
   pipelineCreateInfo.pStages = stages.data();
   pipelineCreateInfo.pVertexInputState = &vertexInputState;
   pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
@@ -110,14 +116,10 @@ Pipeline::Pipeline(const DeviceRef& device, const RenderPassRef& renderPass)
   pipelineCreateInfo.pColorBlendState = &colorBlendState;
   pipelineCreateInfo.pDynamicState = &dynamicState;
   pipelineCreateInfo.layout = mPipelineLayoutHandle;
-  pipelineCreateInfo.renderPass = renderPass->mRenderPassHandle;
+  pipelineCreateInfo.renderPass = renderPass->getHandle();
 
   vkCreateGraphicsPipelines(deviceHandle, VK_NULL_HANDLE, 1,
                             &pipelineCreateInfo, 0, &mPipelineHandle);
-}
-
-void Pipeline::bind(const VkCommandBuffer& command) {
-  vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineHandle);
 }
 
 Pipeline::~Pipeline() {

@@ -5,28 +5,21 @@
 #include <vector>
 
 #include "rendering/vulkan/Device.h"
-#include "rendering/vulkan/Framebuffer.h"
-#include "rendering/vulkan/Surface.h"
-#include "rendering/vulkan/Swapchain.h"
 
 namespace Rendering {
 namespace Vulkan {
 
-class Framebuffer;
-using FramebufferRef = std::shared_ptr<Framebuffer>;
-
 class RenderPass {
  public:
-  VkRenderPass mRenderPassHandle;
-  RenderPass(const DeviceRef& device, const SurfaceRef& surface);
+  RenderPass(const DeviceRef& device, const VkFormat& surfaceFormat);
 
-  void begin(const FramebufferRef& framebuffer,
-             const SwapchainRef& swapchain,
-             const VkCommandBuffer& command);
+  const VkRenderPass& getHandle() const { return mRenderPassHandle; };
 
   virtual ~RenderPass();
 
  private:
+  VkRenderPass mRenderPassHandle;
+
   DeviceRef mDevice;
 };
 
