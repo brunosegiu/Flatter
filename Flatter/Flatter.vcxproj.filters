@@ -48,9 +48,6 @@
     <ClCompile Include="source\rendering\vulkan\Surface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\Uniform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\rendering\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

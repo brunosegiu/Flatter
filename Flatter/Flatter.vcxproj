@@ -212,7 +212,6 @@
     <ClCompile Include="source\rendering\vulkan\Shader.cpp" />
     <ClCompile Include="source\rendering\vulkan\Surface.cpp" />
     <ClCompile Include="source\rendering\vulkan\Swapchain.cpp" />
-    <ClCompile Include="source\rendering\vulkan\Uniform.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
