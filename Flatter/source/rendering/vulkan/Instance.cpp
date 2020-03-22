@@ -1,5 +1,7 @@
 ﻿#include "rendering/vulkan/Instance.h"
 
+#include <vulkan/vulkan.h>
+
 #include <iostream>
 
 using namespace Rendering::Vulkan;
@@ -25,36 +27,34 @@ Instance::VulkanReportFunc(VkDebugReportFlagsEXT flags,
 #endif
 
 Instance::Instance() {
-  VkApplicationInfo appInfo{};
-  appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  appInfo.pApplicationName = "Vulkan SDL tutorial";
-  appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-  appInfo.pEngineName = "No Engine";
-  appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-  appInfo.apiVersion = VK_API_VERSION_1_0;
+  auto const appInfo = vk::ApplicationInfo()
+                           .setPApplicationName("Flatter")
+                           .setApplicationVersion(VK_MAKE_VERSION(0, 0, 1))
+                           .setPEngineName("Flatter Engine")
+                           .setEngineVersion(VK_MAKE_VERSION(0, 0, 1))
+                           .setApiVersion(VK_API_VERSION_1_0);
 
-  VkInstanceCreateInfo createInfo{};
-  createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  createInfo.pApplicationInfo = &appInfo;
+  auto imageViewCreateInfo =
+      vk::InstanceCreateInfo().setPApplicationInfo(&appInfo);
 #ifndef VULKAN_ENABLE_LUNARG_VALIDATION
   const std::vector<const char*> extensions{
       VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
-  createInfo.enabledExtensionCount = extensions.size();
-  createInfo.ppEnabledExtensionNames = extensions.data();
+  createInfo.setEnabledExtensionCount(extensions.size())
+      .setPpEnabledExtensionNames(extensions.data());
 #else
   const std::vector<const char*> extensions{VK_KHR_SURFACE_EXTENSION_NAME,
                                             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
                                             VK_EXT_DEBUG_REPORT_EXTENSION_NAME};
-  createInfo.enabledExtensionCount =
-      static_cast<unsigned int>(extensions.size());
-  createInfo.ppEnabledExtensionNames = extensions.data();
+  imageViewCreateInfo
+      .setEnabledExtensionCount(static_cast<unsigned int>(extensions.size()))
+      .setPpEnabledExtensionNames(extensions.data());
   const std::vector<const char*> layers{"VK_LAYER_LUNARG_standard_validation"};
-  createInfo.enabledLayerCount = static_cast<unsigned int>(layers.size());
-  createInfo.ppEnabledLayerNames = layers.data();
+  imageViewCreateInfo
+      .setEnabledLayerCount(static_cast<unsigned int>(layers.size()))
+      .setPpEnabledLayerNames(layers.data());
 #endif
-  VkResult result = VK_ERROR_INITIALIZATION_FAILED;
-  result = vkCreateInstance(&createInfo, 0, &mInstanceHandle);
-  assert(result == VK_SUCCESS);
+  assert(vk::createInstance(&imageViewCreateInfo, nullptr, this) ==
+         vk::Result::eSuccess);
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION
   VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo;
   debugCallbackCreateInfo.sType =
@@ -64,34 +64,33 @@ Instance::Instance() {
   debugCallbackCreateInfo.pfnCallback = VulkanReportFunc;
   vkpfn_CreateDebugReportCallbackEXT =
       (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(
-          mInstanceHandle, "vkCreateDebugReportCallbackEXT");
+          VkInstance(this), "vkCreateDebugReportCallbackEXT");
   vkpfn_DestroyDebugReportCallbackEXT =
       (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(
-          mInstanceHandle, "vkDestroyDebugReportCallbackEXT");
+          VkInstance(this), "vkDestroyDebugReportCallbackEXT");
   if (vkpfn_CreateDebugReportCallbackEXT &&
       vkpfn_DestroyDebugReportCallbackEXT) {
     vkpfn_CreateDebugReportCallbackEXT(
-        mInstanceHandle, &debugCallbackCreateInfo, 0, &debugCallback);
+        VkInstance(this), &debugCallbackCreateInfo, 0, &debugCallback);
   }
 #endif
 }
 
-const std::vector<VkPhysicalDevice> Instance::getAvailablePhisicalDevices()
+const std::vector<vk::PhysicalDevice> Instance::getAvailablePhysicalDevices()
     const {
   unsigned int physicalDeviceCount = 0;
-  vkEnumeratePhysicalDevices(mInstanceHandle, &physicalDeviceCount, 0);
-  std::vector<VkPhysicalDevice> physicalDeviceHandles(physicalDeviceCount,
-                                                      nullptr);
-  vkEnumeratePhysicalDevices(mInstanceHandle, &physicalDeviceCount,
-                             physicalDeviceHandles.data());
+  enumeratePhysicalDevices(&physicalDeviceCount,
+                           static_cast<vk::PhysicalDevice*>(nullptr));
+  std::vector<vk::PhysicalDevice> physicalDeviceHandles(physicalDeviceCount,
+                                                        vk::PhysicalDevice());
+  enumeratePhysicalDevices(&physicalDeviceCount, physicalDeviceHandles.data());
   return physicalDeviceHandles;
 }
 
 Instance::~Instance() {
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION
-  if (vkpfn_DestroyDebugReportCallbackEXT && debugCallback) {
-    vkpfn_DestroyDebugReportCallbackEXT(mInstanceHandle, debugCallback, 0);
+  if (debugCallback) {
+    // this->destroyDebugReportCallbackEXT(debugCallback, nullptr);
   }
 #endif
-  vkDestroyInstance(mInstanceHandle, nullptr);
 }

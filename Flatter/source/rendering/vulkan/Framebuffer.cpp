@@ -2,44 +2,42 @@
 
 using namespace Rendering::Vulkan;
 
-Framebuffer::Framebuffer(const DeviceRef& device,
-                         const VkImage& swapchainImage,
-                         const VkFormat& format,
-                         const VkExtent2D& extent,
+Framebuffer::Framebuffer(const SingleDeviceRef& device,
+                         const vk::Image& swapchainImage,
+                         const vk::Format& format,
+                         const vk::Extent2D& extent,
                          const RenderPassRef& renderPass)
     : mDevice(device) {
-  VkImageViewCreateInfo createInfo{};
-  createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  createInfo.image = swapchainImage;
-  createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  createInfo.format = format;
+  auto const subresourceRange =
+      vk::ImageSubresourceRange()
+          .setAspectMask(vk::ImageAspectFlagBits::eColor)
+          .setBaseMipLevel(0)
+          .setLevelCount(1)
+          .setBaseArrayLayer(0)
+          .setLayerCount(1);
+  auto const imageViewCreateInfo = vk::ImageViewCreateInfo()
+                                       .setImage(swapchainImage)
+                                       .setViewType(vk::ImageViewType::e2D)
+                                       .setFormat(format)
+                                       .setSubresourceRange(subresourceRange);
 
-  VkImageSubresourceRange subresourceRange{};
-  subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  subresourceRange.baseMipLevel = 0;
-  subresourceRange.levelCount = 1;
-  subresourceRange.baseArrayLayer = 0;
-  subresourceRange.layerCount = 1;
+  mDevice->createImageView(&imageViewCreateInfo, nullptr,
+                           &mSwapchainImageViewHandle);
 
-  createInfo.subresourceRange = subresourceRange;
-  const VkDevice& deviceHandle = device->getHandle();
-  vkCreateImageView(deviceHandle, &createInfo, 0, &mSwapchainImageViewHandle);
+  auto const framebufferCreateInfo =
+      vk::FramebufferCreateInfo()
+          .setRenderPass(renderPass->getHandle())
+          .setAttachmentCount(1)
+          .setPAttachments(&mSwapchainImageViewHandle)
+          .setWidth(extent.width)
+          .setHeight(extent.height)
+          .setLayers(1);
 
-  VkFramebufferCreateInfo framebufferCreateInfo{};
-  framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-  framebufferCreateInfo.renderPass = renderPass->getHandle();
-  framebufferCreateInfo.attachmentCount = 1;
-  framebufferCreateInfo.pAttachments = &mSwapchainImageViewHandle;
-  framebufferCreateInfo.width = extent.width;
-  framebufferCreateInfo.height = extent.height;
-  framebufferCreateInfo.layers = 1;
-
-  vkCreateFramebuffer(deviceHandle, &framebufferCreateInfo, 0,
-                      &mFramebufferHandle);
+  mDevice->createFramebuffer(&framebufferCreateInfo, nullptr,
+                             &mFramebufferHandle);
 }
 
 Framebuffer ::~Framebuffer() {
-  const VkDevice& deviceHandle = mDevice->getHandle();
-  vkDestroyFramebuffer(deviceHandle, mFramebufferHandle, nullptr);
-  vkDestroyImageView(deviceHandle, mSwapchainImageViewHandle, nullptr);
+  mDevice->destroyFramebuffer(mFramebufferHandle, nullptr);
+  mDevice->destroyImageView(mSwapchainImageViewHandle, nullptr);
 }

@@ -6,46 +6,41 @@ Surface::Surface(const SDL_SysWMinfo& info,
                  const InstanceRef& instance,
                  const unsigned int width,
                  const unsigned int height)
-    : mInstance(instance),
-      mWidth(width),
-      mHeight(height),
-      mSurfaceFormat(nullptr) {
-  VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {
-      VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
-  surfaceCreateInfo.hinstance = GetModuleHandle(0);
-  surfaceCreateInfo.hwnd = info.info.win.window;
+    : mInstance(instance), mWidth(width), mHeight(height), mSurfaceFormat() {
+  auto const surfaceCreateInfo = vk::Win32SurfaceCreateInfoKHR()
+                                     .setHinstance(GetModuleHandle(0))
+                                     .setHwnd(info.info.win.window);
 
-  VkResult result = vkCreateWin32SurfaceKHR(
-      instance->getHandle(), &surfaceCreateInfo, NULL, &mSurfaceHandle);
+  assert(instance->createWin32SurfaceKHR(&surfaceCreateInfo, nullptr,
+                                         &mSurfaceHandle) ==
+         vk::Result::eSuccess);
 }
 
-const VkSurfaceCapabilitiesKHR Surface::getCapabilities(
-    const DeviceRef& device) const {
-  VkSurfaceCapabilitiesKHR surfaceCapabilities;
-  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-      device->getPhysicalHandle(), mSurfaceHandle, &surfaceCapabilities);
+const vk::SurfaceCapabilitiesKHR Surface::getCapabilities(
+    const SingleDeviceRef& device) const {
+  vk::SurfaceCapabilitiesKHR surfaceCapabilities;
+  device->getPhysicalHandle().getSurfaceCapabilitiesKHR(mSurfaceHandle,
+                                                        &surfaceCapabilities);
   return surfaceCapabilities;
 }
 
-const VkSurfaceFormatKHR Surface::getSurfaceFormat(const DeviceRef& device) {
+const vk::SurfaceFormatKHR& Surface::getSurfaceFormat(
+    const SingleDeviceRef& device) const {
   uint32_t formatCount = 1;
-  if (mSurfaceFormat == nullptr) {
-    this->mSurfaceFormat = std::make_unique<VkSurfaceFormatKHR>();
-    const VkPhysicalDevice& deviceHandle = device->getPhysicalHandle();
-    vkGetPhysicalDeviceSurfaceFormatsKHR(deviceHandle, mSurfaceHandle,
-                                         &formatCount,
-                                         0);  // suppress validation layer
-    vkGetPhysicalDeviceSurfaceFormatsKHR(deviceHandle, mSurfaceHandle,
-                                         &formatCount, mSurfaceFormat.get());
-    mSurfaceFormat->format = mSurfaceFormat->format == VK_FORMAT_UNDEFINED
-                                 ? VK_FORMAT_B8G8R8A8_UNORM
+  if (!mSurfaceFormat.has_value()) {
+    this->mSurfaceFormat = vk::SurfaceFormatKHR();
+    const vk::PhysicalDevice& physicalDeviceHandle =
+        device->getPhysicalHandle();
+    physicalDeviceHandle.getSurfaceFormatsKHR(
+        mSurfaceHandle, &formatCount,
+        static_cast<vk::SurfaceFormatKHR*>(nullptr));
+    physicalDeviceHandle.getSurfaceFormatsKHR(mSurfaceHandle, &formatCount,
+                                              &mSurfaceFormat.value());
+    mSurfaceFormat->format = mSurfaceFormat->format == vk::Format::eUndefined
+                                 ? vk::Format::eB8G8R8A8Unorm
                                  : mSurfaceFormat->format;
   }
-  return *mSurfaceFormat;
+  return mSurfaceFormat.value();
 }
 
-Surface::~Surface() {
-  auto s = mSurfaceFormat.get();
-  mSurfaceFormat.release();
-  vkDestroySurfaceKHR(mInstance->getHandle(), mSurfaceHandle, nullptr);
-}
+Surface::~Surface() {}

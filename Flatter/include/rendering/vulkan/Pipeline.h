@@ -1,10 +1,9 @@
 ﻿#pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/RenderPass.h"
@@ -15,25 +14,25 @@ namespace Vulkan {
 
 class Pipeline {
  public:
-  Pipeline(const DeviceRef& device,
+  Pipeline(const SingleDeviceRef& device,
            const RenderPassRef& renderPass,
-           const VkDescriptorSetLayout& descriptorSetLayout);
+           const vk::DescriptorSetLayout& descriptorSetLayout);
 
-  const VkPipeline& getHandle() { return mPipelineHandle; };
-  const VkPipelineLayout& getPipelineLayoutHandle() const {
+  const vk::Pipeline& getHandle() { return mPipelineHandle; };
+  const vk::PipelineLayout& getPipelineLayoutHandle() const {
     return mPipelineLayoutHandle;
   };
 
   virtual ~Pipeline();
 
  private:
-  VkPipeline mPipelineHandle;
-  VkPipelineLayout mPipelineLayoutHandle;
+  vk::Pipeline mPipelineHandle;
+  vk::PipelineLayout mPipelineLayoutHandle;
 
   ShaderRef mVertexShader;
   ShaderRef mFragmentShader;
 
-  DeviceRef mDevice;
+  SingleDeviceRef mDevice;
 };
 
 using PipelineRef = std::shared_ptr<Pipeline>;

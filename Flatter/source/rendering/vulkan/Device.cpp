@@ -6,112 +6,106 @@
 
 using namespace Rendering::Vulkan;
 
-Device::Device(const InstanceRef& instance, const SurfaceRef& surface) {
-  VkDeviceCreateInfo deviceCreateInfo{};
-  deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+SingleDevice::SingleDevice(const InstanceRef& instance,
+                           const SurfaceRef& surface) {
   const std::vector<const char*> extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-  deviceCreateInfo.enabledExtensionCount =
-      static_cast<unsigned int>(extensions.size());
-  deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
+  auto deviceCreateInfo = vk::DeviceCreateInfo()
+                              .setEnabledExtensionCount(
+                                  static_cast<unsigned int>(extensions.size()))
+                              .setPpEnabledExtensionNames(extensions.data());
 
-  const std::vector<VkPhysicalDevice> physicalDeviceHandles =
-      instance->getAvailablePhisicalDevices();
+  const std::vector<vk::PhysicalDevice> physicalDeviceHandles =
+      instance->getAvailablePhysicalDevices();
 
-  Device::PhysicalDeviceInfo deviceInfo =
+  SingleDevice::PhysicalDeviceInfo deviceInfo =
       this->findPhysicalDevice(physicalDeviceHandles, surface->mSurfaceHandle);
-  assert(deviceInfo.first != nullptr);
-  mPhysicalDeviceHandle = deviceInfo.first;
+  assert(deviceInfo.first.has_value());
+  mPhysicalDeviceHandle = deviceInfo.first.value();
   mQueueFamilyIndex = deviceInfo.second;
 
-  VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
-  deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  deviceQueueCreateInfo.queueFamilyIndex = this->mQueueFamilyIndex;
-  deviceQueueCreateInfo.queueCount = 1;
   const std::vector<float> priorities{1.0f};
-  deviceQueueCreateInfo.pQueuePriorities = priorities.data();
-  deviceCreateInfo.queueCreateInfoCount = 1;
-  deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
-  VkResult result = vkCreateDevice(mPhysicalDeviceHandle, &deviceCreateInfo,
-                                   nullptr, &mDeviceHandle);
-  vkGetDeviceQueue(mDeviceHandle, mQueueFamilyIndex, 0, &mQueueHandle);
-  assert(result == VK_SUCCESS);
+  auto const deviceQueueCreateInfo =
+      vk::DeviceQueueCreateInfo()
+          .setQueueFamilyIndex(this->mQueueFamilyIndex)
+          .setQueueCount(1)
+          .setPQueuePriorities(priorities.data());
+  deviceCreateInfo.setQueueCreateInfoCount(1).setPQueueCreateInfos(
+      &deviceQueueCreateInfo);
+  assert(mPhysicalDeviceHandle.createDevice(&deviceCreateInfo, nullptr, this) ==
+         vk::Result::eSuccess);
+  this->getQueue(mQueueFamilyIndex, 0, &mQueueHandle);
 
   // Uniform descriptor pool
-  VkDescriptorPoolSize poolSize{};
-  poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  poolSize.descriptorCount = MAX_DESC_SETS;
+  vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer,
+                                  MAX_DESC_SETS);
+  auto const poolCreateInfo = vk::DescriptorPoolCreateInfo()
+                                  .setPoolSizeCount(1)
+                                  .setPPoolSizes(&poolSize)
+                                  .setMaxSets(MAX_DESC_SETS);
 
-  VkDescriptorPoolCreateInfo poolCreateInfo{};
-  poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  poolCreateInfo.poolSizeCount = 1;
-  poolCreateInfo.pPoolSizes = &poolSize;
-  poolCreateInfo.maxSets = MAX_DESC_SETS;
-
-  vkCreateDescriptorPool(mDeviceHandle, &poolCreateInfo, nullptr,
-                         &mDescriptorPoolHandle);
+  this->createDescriptorPool(&poolCreateInfo, nullptr, &mDescriptorPoolHandle);
 
   // Command pool
-  VkCommandPoolCreateInfo commandPoolCreateInfo{};
-  commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  commandPoolCreateInfo.queueFamilyIndex = getQueueFamilyIndex();
+  auto const commandPoolCreateInfo =
+      vk::CommandPoolCreateInfo()
+          .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
+          .setQueueFamilyIndex(getQueueFamilyIndex());
 
-  vkCreateCommandPool(mDeviceHandle, &commandPoolCreateInfo, 0,
-                      &mCommandPoolHandle);
+  this->createCommandPool(&commandPoolCreateInfo, nullptr, &mCommandPoolHandle);
 }
 
-Device::PhysicalDeviceInfo Device::findPhysicalDevice(
-    const std::vector<VkPhysicalDevice>& devices,
-    const VkSurfaceKHR& surfaceHandle) {
-  for (const VkPhysicalDevice& physicalDeviceHandle : devices) {
+SingleDevice::PhysicalDeviceInfo SingleDevice::findPhysicalDevice(
+    const std::vector<vk::PhysicalDevice>& devices,
+    const vk::SurfaceKHR& surfaceHandle) {
+  for (const vk::PhysicalDevice& physicalDeviceHandle : devices) {
     unsigned int queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
-                                             &queueFamilyCount, nullptr);
-    std::vector<VkQueueFamilyProperties> deviceQueueFamilyProperties(
-        queueFamilyCount, VkQueueFamilyProperties{});
-    vkGetPhysicalDeviceQueueFamilyProperties(
-        physicalDeviceHandle, &queueFamilyCount,
-        deviceQueueFamilyProperties.data());
+    physicalDeviceHandle.getQueueFamilyProperties(
+        &queueFamilyCount, static_cast<vk::QueueFamilyProperties*>(nullptr));
+    std::vector<vk::QueueFamilyProperties> deviceQueueFamilyProperties{
+        queueFamilyCount, vk::QueueFamilyProperties{}};
+    physicalDeviceHandle.getQueueFamilyProperties(
+        &queueFamilyCount, deviceQueueFamilyProperties.data());
     const int queueIndex = findQueueFamily(deviceQueueFamilyProperties,
                                            physicalDeviceHandle, surfaceHandle);
     if (queueIndex >= 0) {
-      return Device::PhysicalDeviceInfo(physicalDeviceHandle,
-                                        static_cast<unsigned int>(queueIndex));
+      return SingleDevice::PhysicalDeviceInfo(
+          physicalDeviceHandle, static_cast<unsigned int>(queueIndex));
     }
   }
-  return Device::PhysicalDeviceInfo(nullptr, -1);
+  return SingleDevice::PhysicalDeviceInfo(nullptr, -1);
 }
 
-int Device::findQueueFamily(
-    const std::vector<VkQueueFamilyProperties>& queueFamilyProperties,
-    const VkPhysicalDevice& physicalDeviceHandle,
-    const VkSurfaceKHR& surfaceHandle) {
+int SingleDevice::findQueueFamily(
+    const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties,
+    const vk::PhysicalDevice& physicalDeviceHandle,
+    const vk::SurfaceKHR& surfaceHandle) {
   const unsigned int queueFamilyPropertiesSize =
       static_cast<unsigned int>(queueFamilyProperties.size());
   for (unsigned int queueIndex = 0; queueIndex < queueFamilyPropertiesSize;
        ++queueIndex) {
-    const VkQueueFamilyProperties& properties =
+    const vk::QueueFamilyProperties& properties =
         queueFamilyProperties[queueIndex];
-    VkBool32 supportsPresent = VK_FALSE;
-    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDeviceHandle, queueIndex,
-                                         surfaceHandle, &supportsPresent);
-    if (supportsPresent && (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+    vk::Bool32 supportsPresent = VK_FALSE;
+    physicalDeviceHandle.getSurfaceSupportKHR(queueIndex, surfaceHandle,
+                                              &supportsPresent);
+    if (supportsPresent &&
+        (properties.queueFlags & vk::QueueFlagBits::eGraphics)) {
       return queueIndex;
     }
   }
   return -1;
 }
 
-unsigned int Device::findBufferMemoryType(
+unsigned int SingleDevice::findBufferMemoryType(
     unsigned int memoryTypeMask,
-    VkMemoryPropertyFlags requiredPropertyFlags) const {
-  VkPhysicalDeviceMemoryProperties properties{};
-  vkGetPhysicalDeviceMemoryProperties(mPhysicalDeviceHandle, &properties);
+    vk::MemoryPropertyFlags requiredPropertyFlags) const {
+  vk::PhysicalDeviceMemoryProperties properties{};
+  mPhysicalDeviceHandle.getMemoryProperties(&properties);
 
   for (unsigned int memTypeIndex = 0; memTypeIndex < properties.memoryTypeCount;
        memTypeIndex++) {
     const bool filtered = (memoryTypeMask & (1 << memTypeIndex));
-    const VkMemoryPropertyFlags memoryFlags =
+    const vk::MemoryPropertyFlags memoryFlags =
         properties.memoryTypes[memTypeIndex].propertyFlags;
     if (filtered &&
         (memoryFlags & requiredPropertyFlags) == requiredPropertyFlags) {
@@ -121,38 +115,31 @@ unsigned int Device::findBufferMemoryType(
   return -1;
 }
 
-void Device::allocBuffer(VkDeviceSize size,
-                         VkBufferUsageFlags usage,
-                         VkMemoryPropertyFlags properties,
-                         VkBuffer& buffer,
-                         VkDeviceMemory& bufferMemory) const {
-  VkBufferCreateInfo bufferCreateInfo{};
-  bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  bufferCreateInfo.size = size;
-  bufferCreateInfo.usage = usage;
-  bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  vkCreateBuffer(mDeviceHandle, &bufferCreateInfo, nullptr, &buffer);
+void SingleDevice::allocBuffer(vk::DeviceSize size,
+                               vk::BufferUsageFlags usage,
+                               vk::MemoryPropertyFlags properties,
+                               vk::Buffer& buffer,
+                               vk::DeviceMemory& bufferMemory) const {
+  auto const bufferCreateInfo =
+      vk::BufferCreateInfo().setSize(size).setUsage(usage).setSharingMode(
+          vk::SharingMode::eExclusive);
+  this->createBuffer(&bufferCreateInfo, nullptr, &buffer);
 
-  VkMemoryRequirements memRequirements{};
-  vkGetBufferMemoryRequirements(mDeviceHandle, buffer, &memRequirements);
+  vk::MemoryRequirements memRequirements{};
+  this->getBufferMemoryRequirements(buffer, &memRequirements);
 
-  VkMemoryAllocateInfo allocCreateInfo = {};
-  allocCreateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  allocCreateInfo.allocationSize = memRequirements.size;
-  allocCreateInfo.memoryTypeIndex =
-      findBufferMemoryType(memRequirements.memoryTypeBits, properties);
+  auto const allocCreateInfo =
+      vk::MemoryAllocateInfo()
+          .setAllocationSize(memRequirements.size)
+          .setMemoryTypeIndex(
+              findBufferMemoryType(memRequirements.memoryTypeBits, properties));
 
-  vkAllocateMemory(mDeviceHandle, &allocCreateInfo, nullptr, &bufferMemory);
+  this->allocateMemory(&allocCreateInfo, nullptr, &bufferMemory);
 
-  vkBindBufferMemory(mDeviceHandle, buffer, bufferMemory, 0);
+  this->bindBufferMemory(buffer, bufferMemory, 0);
 }
 
-void Device::waitIdle() {
-  vkDeviceWaitIdle(mDeviceHandle);
-}
-
-Device::~Device() {
-  vkDestroyDescriptorPool(mDeviceHandle, mDescriptorPoolHandle, nullptr);
-  vkDestroyCommandPool(mDeviceHandle, mCommandPoolHandle, 0);
-  vkDestroyDevice(mDeviceHandle, 0);
+SingleDevice::~SingleDevice() {
+  this->destroyDescriptorPool(mDescriptorPoolHandle, nullptr);
+  this->destroyCommandPool(mCommandPoolHandle, nullptr);
 }

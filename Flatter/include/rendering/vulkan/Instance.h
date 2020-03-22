@@ -1,25 +1,20 @@
 ﻿#pragma once
 
-#include "rendering/vulkan/Configuration.h"
-// Configuration must be included first
-#include <assert.h>
-#include <vulkan/vulkan.h>
-
+#include <cassert>
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 namespace Rendering {
 namespace Vulkan {
 
-class Instance {
+class Instance : public vk::Instance {
  public:
   Instance();
-  const std::vector<VkPhysicalDevice> getAvailablePhisicalDevices() const;
-  const VkInstance& getHandle() const { return mInstanceHandle; };
+  const std::vector<vk::PhysicalDevice> getAvailablePhysicalDevices() const;
   virtual ~Instance();
 
  private:
-  VkInstance mInstanceHandle;
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION
 
   static VKAPI_ATTR VkBool32 VKAPI_CALL

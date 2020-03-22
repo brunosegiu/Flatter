@@ -2,52 +2,54 @@
 
 using namespace Rendering::Vulkan;
 
-RenderPass::RenderPass(const DeviceRef& device, const VkFormat& surfaceFormat)
+RenderPass::RenderPass(const SingleDeviceRef& device,
+                       const vk::Format& surfaceFormat)
     : mDevice(device) {
-  VkRenderPassCreateInfo renderPassCreateInfo{};
-  renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  renderPassCreateInfo.attachmentCount = 1;
-  VkAttachmentDescription attachmentDescription{};
-  attachmentDescription.format = surfaceFormat;
-  attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-  attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-  renderPassCreateInfo.pAttachments = &attachmentDescription;
-  renderPassCreateInfo.subpassCount = 1;
+  auto const colorAttachmentDescription =
+      vk::AttachmentDescription()
+          .setFormat(surfaceFormat)
+          .setSamples(vk::SampleCountFlagBits::e1)
+          .setLoadOp(vk::AttachmentLoadOp::eClear)
+          .setStoreOp(vk::AttachmentStoreOp::eStore)
+          .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+          .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+          .setInitialLayout(vk::ImageLayout::eUndefined)
+          .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
-  VkSubpassDescription subpassDescription{};
-  subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  VkAttachmentReference attachment{};
-  attachment.attachment = 0;
-  attachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  subpassDescription.colorAttachmentCount = 1;
-  subpassDescription.pColorAttachments = &attachment;
+  auto const colorReference =
+      vk::AttachmentReference()
+          .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+          .setAttachment(0);
 
-  renderPassCreateInfo.pSubpasses = &subpassDescription;
-  renderPassCreateInfo.dependencyCount = 1;
+  auto const subpassDescription =
+      vk::SubpassDescription()
+          .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+          .setColorAttachmentCount(1)
+          .setPColorAttachments(&colorReference);
 
-  VkSubpassDependency subpassDependency{};
-  subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-  subpassDependency.dstSubpass = 0;
-  subpassDependency.srcStageMask =
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  subpassDependency.dstStageMask =
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  subpassDependency.srcAccessMask = 0;
-  subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-  subpassDependency.dependencyFlags = 0;
-  renderPassCreateInfo.pDependencies = &subpassDependency;
-  const VkDevice& deviceHandle = device->getHandle();
+  auto const subpassDependency =
+      vk::SubpassDependency()
+          .setSrcSubpass(VK_SUBPASS_EXTERNAL)
+          .setDstSubpass(0)
+          .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+          .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+          .setSrcAccessMask(vk::AccessFlagBits())
+          .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite |
+                            vk::AccessFlagBits::eColorAttachmentRead)
+          .setDependencyFlags(vk::DependencyFlags());
 
-  vkCreateRenderPass(deviceHandle, &renderPassCreateInfo, 0,
-                     &mRenderPassHandle);
+  auto const renderPassCreateInfo =
+      vk::RenderPassCreateInfo()
+          .setAttachmentCount(1)
+          .setPAttachments(&colorAttachmentDescription)
+          .setSubpassCount(1)
+          .setPSubpasses(&subpassDescription)
+          .setDependencyCount(1)
+          .setPDependencies(&subpassDependency);
+
+  mDevice->createRenderPass(&renderPassCreateInfo, nullptr, &mRenderPassHandle);
 }
 
 RenderPass::~RenderPass() {
-  vkDestroyRenderPass(mDevice->getHandle(), mRenderPassHandle, NULL);
+  mDevice->destroyRenderPass(mRenderPassHandle, NULL);
 }

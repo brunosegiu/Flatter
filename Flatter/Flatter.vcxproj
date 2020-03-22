@@ -72,20 +72,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <PreBuildEventUseInBuild />
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <PreBuildEventUseInBuild />
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\VulkanSDK\1.1.121.2\Include;D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\Flatter\vcpkg\packages\sdl2_x64-windows\lib\manual-link;C:\VulkanSDK\1.1.121.2\Bin;C:\VulkanSDK\1.1.121.2\Lib;$(LibraryPath)</LibraryPath>
     <PreBuildEventUseInBuild />
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\VulkanSDK\1.1.121.2\Include;D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\Flatter\vcpkg\packages\sdl2_x64-windows\lib\manual-link;C:\VulkanSDK\1.1.121.2\Bin;C:\VulkanSDK\1.1.121.2\Lib;$(LibraryPath)</LibraryPath>
     <PreBuildEventUseInBuild />
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -95,8 +99,10 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableModules>false</EnableModules>
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_USE_LUNARG_VALIDATION;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,8 +128,9 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_USE_LUNARG_VALIDATION;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,8 +157,10 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableModules>false</EnableModules>
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_USE_LUNARG_VALIDATION;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -180,8 +189,10 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableModules>false</EnableModules>
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_USE_LUNARG_VALIDATION;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -216,7 +227,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\rendering\Camera.h" />
-    <ClInclude Include="include\rendering\vulkan\Configuration.h" />
     <ClInclude Include="include\rendering\vulkan\Device.h" />
     <ClInclude Include="include\rendering\vulkan\Framebuffer.h" />
     <ClInclude Include="include\rendering\vulkan\Instance.h" />

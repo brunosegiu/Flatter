@@ -27,7 +27,7 @@ class WindowManager {
   SDL_Window* mWindow;
   InstanceRef mInstance;
   SurfaceRef mSurface;
-  DeviceRef mDevice;
+  SingleDeviceRef mDevice;
   SwapchainRef mSwapchain;
   RendererRef mRenderer;
 };

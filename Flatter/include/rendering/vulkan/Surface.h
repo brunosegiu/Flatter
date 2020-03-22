@@ -1,10 +1,9 @@
 ﻿#pragma once
 
-#include "rendering/vulkan/Configuration.h"
-// Defines macros so that platform = Win
-
 #include <SDL2/SDL_syswm.h>
-#include <vulkan/vulkan.h>
+
+#include <utility>
+#include <vulkan/vulkan.hpp>
 
 #include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/Instance.h"
@@ -12,12 +11,12 @@
 namespace Rendering {
 namespace Vulkan {
 
-class Device;
-using DeviceRef = std::shared_ptr<Device>;
+class SingleDevice;
+using SingleDeviceRef = std::shared_ptr<SingleDevice>;
 
 class Surface {
  public:
-  VkSurfaceKHR mSurfaceHandle;
+  vk::SurfaceKHR mSurfaceHandle;
 
   unsigned int mWidth, mHeight;
 
@@ -25,14 +24,16 @@ class Surface {
           const InstanceRef& instance,
           const unsigned int width,
           const unsigned int height);
-  const VkSurfaceCapabilitiesKHR getCapabilities(const DeviceRef& device) const;
-  const VkSurfaceFormatKHR getSurfaceFormat(const DeviceRef& device);
+  const vk::SurfaceCapabilitiesKHR getCapabilities(
+      const SingleDeviceRef& device) const;
+  const vk::SurfaceFormatKHR& getSurfaceFormat(
+      const SingleDeviceRef& device) const;
 
   virtual ~Surface();
 
  private:
   InstanceRef mInstance;
-  std::unique_ptr<VkSurfaceFormatKHR> mSurfaceFormat;
+  mutable std::optional<vk::SurfaceFormatKHR> mSurfaceFormat;
 };
 
 using SurfaceRef = std::shared_ptr<Surface>;

@@ -1,10 +1,9 @@
 ﻿#pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <memory>
+#include <optional>
 #include <utility>
-#include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "rendering/vulkan/Instance.h"
 #include "rendering/vulkan/Surface.h"
@@ -16,57 +15,54 @@ const int MAX_DESC_SETS = 256;
 class Surface;
 using SurfaceRef = std::shared_ptr<Surface>;
 
-class Device {
+class SingleDevice : public vk::Device {
  public:
-  Device(const InstanceRef& instance, const SurfaceRef& surface);
+  SingleDevice(const InstanceRef& instance, const SurfaceRef& surface);
 
-  void waitIdle();
+  void allocBuffer(vk::DeviceSize size,
+                   vk::BufferUsageFlags usage,
+                   vk::MemoryPropertyFlags properties,
+                   vk::Buffer& buffer,
+                   vk::DeviceMemory& bufferMemory) const;
 
-  void allocBuffer(VkDeviceSize size,
-                   VkBufferUsageFlags usage,
-                   VkMemoryPropertyFlags properties,
-                   VkBuffer& buffer,
-                   VkDeviceMemory& bufferMemory) const;
-
-  const VkDevice& getHandle() const { return mDeviceHandle; };
-  const VkPhysicalDevice& getPhysicalHandle() const {
+  const vk::PhysicalDevice& getPhysicalHandle() const {
     return mPhysicalDeviceHandle;
   };
   const unsigned int getQueueFamilyIndex() const { return mQueueFamilyIndex; };
-  const VkQueue& getQueueHandle() const { return mQueueHandle; };
+  const vk::Queue& getQueueHandle() const { return mQueueHandle; };
 
-  const VkDescriptorPool& getDescriptorPool() const {
+  const vk::DescriptorPool& getDescriptorPool() const {
     return mDescriptorPoolHandle;
   };
-  const VkCommandPool& getCommandPool() const { return mCommandPoolHandle; };
+  const vk::CommandPool& getCommandPool() const { return mCommandPoolHandle; };
 
-  virtual ~Device();
+  virtual ~SingleDevice();
 
  private:
-  VkPhysicalDevice mPhysicalDeviceHandle;
-  VkDevice mDeviceHandle;
+  vk::PhysicalDevice mPhysicalDeviceHandle;
 
   unsigned int mQueueFamilyIndex;
-  VkQueue mQueueHandle;
+  vk::Queue mQueueHandle;
 
-  VkDescriptorPool mDescriptorPoolHandle;
-  VkCommandPool mCommandPoolHandle;
+  vk::DescriptorPool mDescriptorPoolHandle;
+  vk::CommandPool mCommandPoolHandle;
 
   using PhysicalDeviceInfo =
-      const std::pair<const VkPhysicalDevice, const unsigned int>;
+      const std::pair<std::optional<vk::PhysicalDevice>, const unsigned int>;
+
   int findQueueFamily(
-      const std::vector<VkQueueFamilyProperties>& queueFamilyProperties,
-      const VkPhysicalDevice& physicalDeviceHandle,
-      const VkSurfaceKHR& surfaceHandle);
+      const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties,
+      const vk::PhysicalDevice& physicalDeviceHandle,
+      const vk::SurfaceKHR& surfaceHandle);
   PhysicalDeviceInfo findPhysicalDevice(
-      const std::vector<VkPhysicalDevice>& devices,
-      const VkSurfaceKHR& surfaceHandle);
+      const std::vector<vk::PhysicalDevice>& devices,
+      const vk::SurfaceKHR& surfaceHandle);
   unsigned int findBufferMemoryType(
       unsigned int memoryTypeMask,
-      VkMemoryPropertyFlags requiredPropertyFlags) const;
+      vk::MemoryPropertyFlags requiredPropertyFlags) const;
 };
 
-using DeviceRef = std::shared_ptr<Device>;
+using SingleDeviceRef = std::shared_ptr<SingleDevice>;
 
 }  // namespace Vulkan
 }  // namespace Rendering

@@ -1,8 +1,7 @@
 ﻿#pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "rendering/vulkan/Device.h"
 
@@ -11,16 +10,16 @@ namespace Vulkan {
 
 class RenderPass {
  public:
-  RenderPass(const DeviceRef& device, const VkFormat& surfaceFormat);
+  RenderPass(const SingleDeviceRef& device, const vk::Format& surfaceFormat);
 
-  const VkRenderPass& getHandle() const { return mRenderPassHandle; };
+  const vk::RenderPass& getHandle() const { return mRenderPassHandle; };
 
   virtual ~RenderPass();
 
  private:
-  VkRenderPass mRenderPassHandle;
+  vk::RenderPass mRenderPassHandle;
 
-  DeviceRef mDevice;
+  SingleDeviceRef mDevice;
 };
 
 using RenderPassRef = std::shared_ptr<RenderPass>;

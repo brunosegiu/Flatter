@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 #include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/RenderPass.h"
@@ -13,19 +13,19 @@ using RenderPassRef = std::shared_ptr<RenderPass>;
 
 class Framebuffer {
  public:
-  Framebuffer(const DeviceRef& device,
-              const VkImage& swapchainImage,
-              const VkFormat& format,
-              const VkExtent2D& extent,
+  Framebuffer(const SingleDeviceRef& device,
+              const vk::Image& swapchainImage,
+              const vk::Format& format,
+              const vk::Extent2D& extent,
               const RenderPassRef& renderPass);
-  const VkFramebuffer& getHandle() const { return mFramebufferHandle; };
+  const vk::Framebuffer& getHandle() const { return mFramebufferHandle; };
   virtual ~Framebuffer();
 
  private:
-  VkImageView mSwapchainImageViewHandle;
-  VkFramebuffer mFramebufferHandle;
+  vk::ImageView mSwapchainImageViewHandle;
+  vk::Framebuffer mFramebufferHandle;
 
-  DeviceRef mDevice;
+  SingleDeviceRef mDevice;
 };
 
 using FramebufferRef = std::shared_ptr<Framebuffer>;

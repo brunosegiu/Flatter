@@ -4,7 +4,8 @@
 
 using namespace Rendering::Vulkan;
 
-ShaderRef Shader::fromFile(const std::string& path, const DeviceRef& device) {
+ShaderRef Shader::fromFile(const std::string& path,
+                           const SingleDeviceRef& device) {
   std::ifstream file(path, std::ios::binary | std::ios::ate);
   std::streamsize fileSize = file.tellg();
   file.seekg(0, std::ios::beg);
@@ -16,17 +17,15 @@ ShaderRef Shader::fromFile(const std::string& path, const DeviceRef& device) {
   return nullptr;
 }
 
-Shader::Shader(const DeviceRef& device, const std::vector<char>& code)
+Shader::Shader(const SingleDeviceRef& device, const std::vector<char>& code)
     : mDevice(device) {
-  VkShaderModuleCreateInfo shaderCreateInfo{};
-  shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  shaderCreateInfo.codeSize = code.size() * sizeof(char);
-  shaderCreateInfo.pCode = reinterpret_cast<const unsigned int*>(code.data());
-  const VkDevice& deviceHandle = device->getHandle();
-  vkCreateShaderModule(deviceHandle, &shaderCreateInfo, 0, &mShaderHandle);
+  auto const shaderCreateInfo =
+      vk::ShaderModuleCreateInfo()
+          .setCodeSize(code.size() * sizeof(char))
+          .setPCode(reinterpret_cast<const unsigned int*>(code.data()));
+  mDevice->createShaderModule(&shaderCreateInfo, nullptr, &mShaderHandle);
 }
 
 Shader::~Shader() {
-  const VkDevice& deviceHandle = mDevice->getHandle();
-  vkDestroyShaderModule(deviceHandle, mShaderHandle, 0);
+  mDevice->destroyShaderModule(mShaderHandle, nullptr);
 }

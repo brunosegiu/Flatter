@@ -1,9 +1,8 @@
 ﻿#pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "rendering/Camera.h"
 #include "rendering/vulkan/Device.h"
@@ -18,23 +17,23 @@ namespace Rendering {
 namespace Vulkan {
 
 using InFlightFrameResource = struct {
-  VkFence frameFenceHandle = VK_NULL_HANDLE;
-  VkSemaphore availableImageSemaphore = VK_NULL_HANDLE;
-  VkSemaphore finishedRenderSemaphore = VK_NULL_HANDLE;
+  vk::Fence frameFenceHandle;
+  vk::Semaphore availableImageSemaphore;
+  vk::Semaphore finishedRenderSemaphore;
 
-  UniformMatrixRef matrixUniform = nullptr;
+  UniformMatrixRef matrixUniform;
 };
 
 using CommandBufferResources = struct {
-  VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-  FramebufferRef framebuffer = VK_NULL_HANDLE;
+  vk::CommandBuffer commandBuffer;
+  FramebufferRef framebuffer;
 };
 
 const unsigned int FRAMES_IN_FLIGHT_COUNT = 2;
 
 class Renderer {
  public:
-  Renderer(const DeviceRef& device,
+  Renderer(const SingleDeviceRef& device,
            const SurfaceRef& surface,
            const SwapchainRef& swapchain);
 
@@ -47,15 +46,15 @@ class Renderer {
   unsigned int mCurrentImageIndex;
   unsigned int mSwapchainImageCount;
 
-  VkDescriptorSetLayout mDescriptorSetLayout;
+  vk::DescriptorSetLayout mDescriptorSetLayout;
   RenderPassRef mRenderPass;
   PipelineRef mPipeline;
-  std::vector<std::unique_ptr<InFlightFrameResource>> mInFlightFrameResources;
-  std::vector<std::unique_ptr<CommandBufferResources>> mCommandBufferResources;
-  VkFormat mSurfaceFormat;
+  std::vector<std::shared_ptr<InFlightFrameResource>> mInFlightFrameResources;
+  std::vector<std::shared_ptr<CommandBufferResources>> mCommandBufferResources;
+  vk::Format mSurfaceFormat;
 
   SwapchainRef mSwapchain;
-  const DeviceRef mDevice;
+  const SingleDeviceRef mDevice;
 
   // Initializers
   void initInFlightFrameResources();
@@ -64,23 +63,24 @@ class Renderer {
 
   // Helpers
 
-  void beginCommand(const VkCommandBuffer& commandBuffer);
-  void setViewportConstrains(const VkCommandBuffer& commandBuffer,
-                             const VkExtent2D extent);
-  void beginRenderPass(const VkCommandBuffer& commandBuffer,
+  void beginCommand(const vk::CommandBuffer& commandBuffer);
+  void setViewportConstrains(const vk::CommandBuffer& commandBuffer,
+                             const vk::Extent2D extent);
+  void beginRenderPass(const vk::CommandBuffer& commandBuffer,
                        const FramebufferRef& framebuffer,
                        const RenderPassRef& renderPass,
-                       const VkExtent2D extent,
-                       const VkOffset2D offset = {0, 0},
-                       const VkClearValue clearValue = {0, 0, 0, 0});
-  void bindPipeline(const VkCommandBuffer& commandBuffer,
+                       const vk::Extent2D extent,
+                       const vk::Offset2D offset = vk::Offset2D(0, 0),
+                       const vk::ClearValue clearValue = vk::ClearColorValue(
+                           std::array<float, 4>({{0, 0, 0, 0}})));
+  void bindPipeline(const vk::CommandBuffer& commandBuffer,
                     const PipelineRef& pipeline);
-  void bindUniforms(const VkCommandBuffer& commandBuffer,
+  void bindUniforms(const vk::CommandBuffer& commandBuffer,
                     const UniformMatrixRef& uniformMatrix,
                     const PipelineRef& pipeline);
-  void drawCommand(const VkCommandBuffer& commandBuffer);
-  void endCommand(const VkCommandBuffer& commandBuffer);
-  void present(const VkCommandBuffer& commandBuffer,
+  void draw(const vk::CommandBuffer& commandBuffer);
+  void endCommand(const vk::CommandBuffer& commandBuffer);
+  void present(const vk::CommandBuffer& commandBuffer,
                const InFlightFrameResource& frameResources);
 };
 

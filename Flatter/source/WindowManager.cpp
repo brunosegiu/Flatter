@@ -17,7 +17,7 @@ WindowManager::WindowManager(const unsigned int width,
   SDL_VERSION(&info.version);
   SDL_GetWindowWMInfo(mWindow, &info);
   mSurface = std::make_shared<Surface>(info, mInstance, width, height);
-  mDevice = std::make_shared<Device>(mInstance, mSurface);
+  mDevice = std::make_shared<SingleDevice>(mInstance, mSurface);
   mSwapchain = std::make_shared<Swapchain>(mDevice, mSurface);
   mRenderer = std::make_shared<Renderer>(mDevice, mSurface, mSwapchain);
 }

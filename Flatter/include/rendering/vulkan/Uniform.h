@@ -1,10 +1,9 @@
 ﻿#pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "rendering/vulkan/Device.h"
 
@@ -14,23 +13,25 @@ namespace Vulkan {
 template <typename ValueType>
 class Uniform {
  public:
-  Uniform(const DeviceRef& device,
-          const VkDescriptorSetLayout& descriptorSetLayout,
+  Uniform(const SingleDeviceRef& device,
+          const vk::DescriptorSetLayout& descriptorSetLayout,
           ValueType value);
 
-  const VkDescriptorSet& getDescriptorHandle() const { return mDescriptorSet; };
+  const vk::DescriptorSet& getDescriptorHandle() const {
+    return mDescriptorSet;
+  };
   void update(const ValueType& newValue);
 
   virtual ~Uniform(){};
 
  private:
-  VkDescriptorSet mDescriptorSet;
+  vk::DescriptorSet mDescriptorSet;
   ValueType mValue;
 
-  VkBuffer mUniformBuffer;
-  VkDeviceMemory mUniformBufferMemory;
+  vk::Buffer mUniformBuffer;
+  vk::DeviceMemory mUniformBufferMemory;
 
-  DeviceRef mDevice;
+  SingleDeviceRef mDevice;
 };
 
 using UniformMatrixRef = std::shared_ptr<Uniform<glm::mat4>>;
@@ -41,51 +42,48 @@ using UniformMatrixRef = std::shared_ptr<Uniform<glm::mat4>>;
 using namespace Rendering::Vulkan;
 
 template <typename ValueType>
-Uniform<ValueType>::Uniform(const DeviceRef& device,
-                            const VkDescriptorSetLayout& descriptorSetLayout,
+Uniform<ValueType>::Uniform(const SingleDeviceRef& device,
+                            const vk::DescriptorSetLayout& descriptorSetLayout,
                             ValueType value)
     : mValue(value), mDevice(device) {
-  VkDeviceSize bufferSize = sizeof(ValueType);
+  vk::DeviceSize bufferSize = sizeof(ValueType);
 
-  mDevice->allocBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                           VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+  mDevice->allocBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
+                       vk::MemoryPropertyFlagBits::eHostVisible |
+                           vk::MemoryPropertyFlagBits::eHostCoherent,
                        mUniformBuffer, mUniformBufferMemory);
 
-  const VkDescriptorPool& descriptorPool = mDevice->getDescriptorPool();
-  VkDescriptorSetAllocateInfo allocInfo{};
-  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  allocInfo.descriptorPool = descriptorPool;
-  allocInfo.descriptorSetCount = 1;
-  allocInfo.pSetLayouts = &descriptorSetLayout;
+  const vk::DescriptorPool& descriptorPool = mDevice->getDescriptorPool();
+  auto const allocInfo = vk::DescriptorSetAllocateInfo()
+                             .setDescriptorPool(descriptorPool)
+                             .setDescriptorSetCount(1)
+                             .setPSetLayouts(&descriptorSetLayout);
+  mDevice->allocateDescriptorSets(&allocInfo, &mDescriptorSet);
 
-  vkAllocateDescriptorSets(device->getHandle(), &allocInfo, &mDescriptorSet);
+  auto const bufferInfo = vk::DescriptorBufferInfo()
+                              .setBuffer(mUniformBuffer)
+                              .setOffset(0)
+                              .setRange(sizeof(ValueType));
 
-  VkDescriptorBufferInfo bufferInfo{};
-  bufferInfo.buffer = mUniformBuffer;
-  bufferInfo.offset = 0;
-  bufferInfo.range = sizeof(ValueType);
+  auto const descriptorWrite =
+      vk::WriteDescriptorSet()
+          .setDstSet(mDescriptorSet)
+          .setDstBinding(0)
+          .setDstArrayElement(0)
+          .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+          .setDescriptorCount(1)
+          .setPBufferInfo(&bufferInfo);
 
-  VkWriteDescriptorSet descriptorWrite{};
-  descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  descriptorWrite.dstSet = mDescriptorSet;
-  descriptorWrite.dstBinding = 0;
-  descriptorWrite.dstArrayElement = 0;
-  descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  descriptorWrite.descriptorCount = 1;
-  descriptorWrite.pBufferInfo = &bufferInfo;
-
-  vkUpdateDescriptorSets(device->getHandle(), 1, &descriptorWrite, 0, nullptr);
+  mDevice->updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
 }
 
 template <typename ValueType>
 void Uniform<ValueType>::update(const ValueType& newValue) {
   if (newValue != mValue) {
     mValue = newValue;
-    void* data = nullptr;
-    vkMapMemory(mDevice->getHandle(), mUniformBufferMemory, 0,
-                sizeof(ValueType), 0, &data);
-    memcpy(data, &mValue, sizeof(ValueType));
-    vkUnmapMemory(mDevice->getHandle(), mUniformBufferMemory);
+    auto data = mDevice->mapMemory(mUniformBufferMemory, 0, sizeof(ValueType),
+                                   vk::MemoryMapFlags());
+    memcpy(data.value, &mValue, sizeof(ValueType));
+    mDevice->unmapMemory(mUniformBufferMemory);
   }
 }
