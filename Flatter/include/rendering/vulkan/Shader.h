@@ -8,7 +8,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/Context.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -19,16 +19,16 @@ using ShaderRef = std::shared_ptr<Shader>;
 class Shader {
  public:
   static Rendering::Vulkan::ShaderRef fromFile(const std::string& path,
-                                               const SingleDeviceRef& device);
+                                               const ContextRef& context);
 
-  Shader(const SingleDeviceRef& device, const std::vector<char>& code);
+  Shader(const ContextRef& context, const std::vector<char>& code);
 
   const vk::ShaderModule& getHandle() const { return mShaderHandle; };
 
   virtual ~Shader();
 
  private:
-  const SingleDeviceRef mDevice;
+  const ContextRef mContext;
   vk::ShaderModule mShaderHandle;
 };
 

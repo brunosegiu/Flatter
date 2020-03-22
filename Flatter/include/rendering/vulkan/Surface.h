@@ -2,17 +2,13 @@
 
 #include <SDL2/SDL_syswm.h>
 
-#include <utility>
+#include <optional>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/Instance.h"
 
 namespace Rendering {
 namespace Vulkan {
-
-class SingleDevice;
-using SingleDeviceRef = std::shared_ptr<SingleDevice>;
 
 class Surface {
  public:
@@ -25,9 +21,9 @@ class Surface {
           const unsigned int width,
           const unsigned int height);
   const vk::SurfaceCapabilitiesKHR getCapabilities(
-      const SingleDeviceRef& device) const;
+      const vk::PhysicalDevice& physicalDevice) const;
   const vk::SurfaceFormatKHR& getSurfaceFormat(
-      const SingleDeviceRef& device) const;
+      const vk::PhysicalDevice& physicalDevice) const;
 
   virtual ~Surface();
 

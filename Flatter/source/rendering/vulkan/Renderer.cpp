@@ -2,16 +2,15 @@
 
 using namespace Rendering::Vulkan;
 
-Renderer::Renderer(const SingleDeviceRef& device,
-                   const SurfaceRef& surface,
-                   const SwapchainRef& swapchain)
-    : mDevice(device),
-      mSwapchain(swapchain),
+Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
+    : mContext(context),
       mCurrentFrameIndex(0),
       mCurrentImageIndex(0),
-      mSwapchainImageCount(swapchain->getImageCount()),
-      mSurfaceFormat(surface->getSurfaceFormat(device).format) {
-  mRenderPass = std::make_shared<RenderPass>(device, mSurfaceFormat);
+      mSwapchainImageCount(context->getSwapchain()->getImageCount()),
+      mSurfaceFormat(
+          surface->getSurfaceFormat(context->getPhysicalDevice()).format) {
+  mRenderPass = std::make_shared<RenderPass>(context, mSurfaceFormat);
+  const vk::Device& device = mContext->getDevice();
 
   // UNIFORM
   auto const uboLayoutBinding =
@@ -25,13 +24,12 @@ Renderer::Renderer(const SingleDeviceRef& device,
       vk::DescriptorSetLayoutCreateInfo().setBindingCount(1).setPBindings(
           &uboLayoutBinding);
 
-  mDevice->createDescriptorSetLayout(&layoutInfo, nullptr,
-                                     &mDescriptorSetLayout);
+  device.createDescriptorSetLayout(&layoutInfo, nullptr, &mDescriptorSetLayout);
 
   // UNIFORM
 
   mPipeline =
-      std::make_shared<Pipeline>(mDevice, mRenderPass, mDescriptorSetLayout);
+      std::make_shared<Pipeline>(mContext, mRenderPass, mDescriptorSetLayout);
 
   initCommandResources();
   initInFlightFrameResources();
@@ -39,6 +37,7 @@ Renderer::Renderer(const SingleDeviceRef& device,
 
 void Renderer::initInFlightFrameResources() {
   mInFlightFrameResources.reserve(FRAMES_IN_FLIGHT_COUNT);
+  const vk::Device& device = mContext->getDevice();
   for (unsigned int frameIndex = 0; frameIndex < FRAMES_IN_FLIGHT_COUNT;
        ++frameIndex) {
     std::shared_ptr<InFlightFrameResource> frameResources =
@@ -48,15 +47,12 @@ void Renderer::initInFlightFrameResources() {
     auto const fenceCreateInfo =
         vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
 
-    mDevice->createSemaphore(&semaphoreCreateInfo, nullptr,
-                             &frameResources->availableImageSemaphore);
-    mDevice->createSemaphore(&semaphoreCreateInfo, nullptr,
-                             &frameResources->finishedRenderSemaphore);
-    mDevice->createFence(&fenceCreateInfo, nullptr,
-                         &frameResources->frameFenceHandle);
-
-    frameResources->matrixUniform = std::make_shared<Uniform<glm::mat4>>(
-        mDevice, mDescriptorSetLayout, glm::mat4(1.0f));
+    device.createSemaphore(&semaphoreCreateInfo, nullptr,
+                           &frameResources->availableImageSemaphore);
+    device.createSemaphore(&semaphoreCreateInfo, nullptr,
+                           &frameResources->finishedRenderSemaphore);
+    device.createFence(&fenceCreateInfo, nullptr,
+                       &frameResources->frameFenceHandle);
 
     mInFlightFrameResources.push_back(std::move(frameResources));
   }
@@ -64,6 +60,8 @@ void Renderer::initInFlightFrameResources() {
 
 void Renderer::initCommandResources() {
   mCommandBufferResources.reserve(mSwapchainImageCount);
+  const vk::Device& device = mContext->getDevice();
+  const SwapchainRef& swapchain = mContext->getSwapchain();
   for (unsigned int imageIndex = 0; imageIndex < mSwapchainImageCount;
        ++imageIndex) {
     std::shared_ptr<CommandBufferResources> commandResources =
@@ -71,14 +69,16 @@ void Renderer::initCommandResources() {
 
     auto const commandBufferAllocInfo =
         vk::CommandBufferAllocateInfo()
-            .setCommandPool(mDevice->getCommandPool())
+            .setCommandPool(mContext->getCommandPool())
             .setLevel(vk::CommandBufferLevel::ePrimary)
             .setCommandBufferCount(1);
-    mDevice->allocateCommandBuffers(&commandBufferAllocInfo,
-                                    &commandResources->commandBuffer);
+    device.allocateCommandBuffers(&commandBufferAllocInfo,
+                                  &commandResources->commandBuffer);
     commandResources->framebuffer = std::make_shared<Framebuffer>(
-        mDevice, mSwapchain->getImage(imageIndex), mSurfaceFormat,
-        mSwapchain->getExtent(), mRenderPass);
+        mContext, swapchain->getImage(imageIndex), mSurfaceFormat,
+        swapchain->getExtent(), mRenderPass);
+    commandResources->matrixUniform = std::make_shared<Uniform<glm::mat4>>(
+        mContext, mDescriptorSetLayout, glm::mat4(1.0f));
     mCommandBufferResources.push_back(std::move(commandResources));
   }
 }
@@ -88,24 +88,26 @@ void Renderer::draw(const Camera& camera) {
 
   const InFlightFrameResource& frameResources =
       *mInFlightFrameResources[mCurrentFrameIndex];
+  const SwapchainRef& swapchain = mContext->getSwapchain();
 
-  const glm::mat4& mvp = camera.getViewProjection();
-  frameResources.matrixUniform->update(mvp);
-  mCurrentImageIndex = mSwapchain->acquireNextImage(
+  mCurrentImageIndex = swapchain->acquireNextImage(
       frameResources.frameFenceHandle, frameResources.availableImageSemaphore);
   assert(mCurrentImageIndex < mSwapchainImageCount);
   const CommandBufferResources& commandResources =
       *mCommandBufferResources[mCurrentImageIndex];
+
+  const glm::mat4& mvp = camera.getViewProjection();
+  commandResources.matrixUniform->update(mvp);
   const vk::CommandBuffer& currentCommandBuffer =
       commandResources.commandBuffer;
-  const vk::Extent2D& imageExtent = mSwapchain->getExtent();
+  const vk::Extent2D& imageExtent = swapchain->getExtent();
 
   beginCommand(currentCommandBuffer);
   bindPipeline(currentCommandBuffer, mPipeline);
   setViewportConstrains(currentCommandBuffer, imageExtent);
   beginRenderPass(currentCommandBuffer, commandResources.framebuffer,
                   mRenderPass, imageExtent);
-  bindUniforms(currentCommandBuffer, frameResources.matrixUniform, mPipeline);
+  bindUniforms(currentCommandBuffer, commandResources.matrixUniform, mPipeline);
   draw(currentCommandBuffer);
   endCommand(currentCommandBuffer);
   present(currentCommandBuffer, frameResources);
@@ -173,6 +175,8 @@ void Renderer::endCommand(const vk::CommandBuffer& commandBuffer) {
 
 void Renderer::present(const vk::CommandBuffer& commandBuffer,
                        const InFlightFrameResource& frameResources) {
+  const SwapchainRef& swapchain = mContext->getSwapchain();
+
   const vk::PipelineStageFlags pipelineStageFlags{
       vk::PipelineStageFlagBits::eColorAttachmentOutput};
   auto const submitInfo =
@@ -184,16 +188,16 @@ void Renderer::present(const vk::CommandBuffer& commandBuffer,
           .setPCommandBuffers(&commandBuffer)
           .setSignalSemaphoreCount(1)
           .setPSignalSemaphores(&frameResources.finishedRenderSemaphore);
-  const vk::Queue& queueHandle = mDevice->getQueueHandle();
-  queueHandle.submit(1, &submitInfo, frameResources.frameFenceHandle);
+  const vk::Queue& queue = mContext->getQueue();
+  queue.submit(1, &submitInfo, frameResources.frameFenceHandle);
   auto const presentInfo =
       vk::PresentInfoKHR()
           .setWaitSemaphoreCount(1)
           .setPWaitSemaphores(&frameResources.finishedRenderSemaphore)
           .setSwapchainCount(1)
-          .setPSwapchains(&mSwapchain->getHandle())
+          .setPSwapchains(&swapchain->getHandle())
           .setPImageIndices(&mCurrentImageIndex);
-  queueHandle.presentKHR(&presentInfo);
+  queue.presentKHR(&presentInfo);
 }
 
 Renderer::~Renderer() {}

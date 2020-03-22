@@ -2,12 +2,12 @@
 
 using namespace Rendering::Vulkan;
 
-Framebuffer::Framebuffer(const SingleDeviceRef& device,
+Framebuffer::Framebuffer(const ContextRef& context,
                          const vk::Image& swapchainImage,
                          const vk::Format& format,
                          const vk::Extent2D& extent,
                          const RenderPassRef& renderPass)
-    : mDevice(device) {
+    : mContext(context) {
   auto const subresourceRange =
       vk::ImageSubresourceRange()
           .setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -21,8 +21,9 @@ Framebuffer::Framebuffer(const SingleDeviceRef& device,
                                        .setFormat(format)
                                        .setSubresourceRange(subresourceRange);
 
-  mDevice->createImageView(&imageViewCreateInfo, nullptr,
-                           &mSwapchainImageViewHandle);
+  const vk::Device& device = mContext->getDevice();
+  device.createImageView(&imageViewCreateInfo, nullptr,
+                         &mSwapchainImageViewHandle);
 
   auto const framebufferCreateInfo =
       vk::FramebufferCreateInfo()
@@ -33,11 +34,12 @@ Framebuffer::Framebuffer(const SingleDeviceRef& device,
           .setHeight(extent.height)
           .setLayers(1);
 
-  mDevice->createFramebuffer(&framebufferCreateInfo, nullptr,
-                             &mFramebufferHandle);
+  device.createFramebuffer(&framebufferCreateInfo, nullptr,
+                           &mFramebufferHandle);
 }
 
 Framebuffer ::~Framebuffer() {
-  mDevice->destroyFramebuffer(mFramebufferHandle, nullptr);
-  mDevice->destroyImageView(mSwapchainImageViewHandle, nullptr);
+  const vk::Device& device = mContext->getDevice();
+  device.destroyFramebuffer(mFramebufferHandle, nullptr);
+  device.destroyImageView(mSwapchainImageViewHandle, nullptr);
 }

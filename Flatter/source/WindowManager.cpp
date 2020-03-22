@@ -17,9 +17,8 @@ WindowManager::WindowManager(const unsigned int width,
   SDL_VERSION(&info.version);
   SDL_GetWindowWMInfo(mWindow, &info);
   mSurface = std::make_shared<Surface>(info, mInstance, width, height);
-  mDevice = std::make_shared<SingleDevice>(mInstance, mSurface);
-  mSwapchain = std::make_shared<Swapchain>(mDevice, mSurface);
-  mRenderer = std::make_shared<Renderer>(mDevice, mSurface, mSwapchain);
+  mContext = std::make_shared<Context>(mInstance, mSurface);
+  mRenderer = std::make_shared<Renderer>(mContext, mSurface);
 }
 
 void WindowManager::loop() {
@@ -35,7 +34,8 @@ void WindowManager::loop() {
 }
 
 WindowManager ::~WindowManager() {
-  mDevice->waitIdle();
+  const vk::Device& device = mContext->getDevice();
+  device.waitIdle();
   SDL_DestroyWindow(mWindow);
   SDL_Quit();
 }

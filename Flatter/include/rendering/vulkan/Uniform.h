@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/Context.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -13,7 +13,7 @@ namespace Vulkan {
 template <typename ValueType>
 class Uniform {
  public:
-  Uniform(const SingleDeviceRef& device,
+  Uniform(const ContextRef& context,
           const vk::DescriptorSetLayout& descriptorSetLayout,
           ValueType value);
 
@@ -31,7 +31,7 @@ class Uniform {
   vk::Buffer mUniformBuffer;
   vk::DeviceMemory mUniformBufferMemory;
 
-  SingleDeviceRef mDevice;
+  ContextRef mContext;
 };
 
 using UniformMatrixRef = std::shared_ptr<Uniform<glm::mat4>>;
@@ -42,23 +42,25 @@ using UniformMatrixRef = std::shared_ptr<Uniform<glm::mat4>>;
 using namespace Rendering::Vulkan;
 
 template <typename ValueType>
-Uniform<ValueType>::Uniform(const SingleDeviceRef& device,
+Uniform<ValueType>::Uniform(const ContextRef& context,
                             const vk::DescriptorSetLayout& descriptorSetLayout,
                             ValueType value)
-    : mValue(value), mDevice(device) {
+    : mValue(value), mContext(context) {
+  const vk::Device& device = mContext->getDevice();
+
   vk::DeviceSize bufferSize = sizeof(ValueType);
 
-  mDevice->allocBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
-                       vk::MemoryPropertyFlagBits::eHostVisible |
-                           vk::MemoryPropertyFlagBits::eHostCoherent,
-                       mUniformBuffer, mUniformBufferMemory);
+  mContext->allocBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
+                        vk::MemoryPropertyFlagBits::eHostVisible |
+                            vk::MemoryPropertyFlagBits::eHostCoherent,
+                        mUniformBuffer, mUniformBufferMemory);
 
-  const vk::DescriptorPool& descriptorPool = mDevice->getDescriptorPool();
+  const vk::DescriptorPool& descriptorPool = mContext->getDescriptorPool();
   auto const allocInfo = vk::DescriptorSetAllocateInfo()
                              .setDescriptorPool(descriptorPool)
                              .setDescriptorSetCount(1)
                              .setPSetLayouts(&descriptorSetLayout);
-  mDevice->allocateDescriptorSets(&allocInfo, &mDescriptorSet);
+  device.allocateDescriptorSets(&allocInfo, &mDescriptorSet);
 
   auto const bufferInfo = vk::DescriptorBufferInfo()
                               .setBuffer(mUniformBuffer)
@@ -74,16 +76,17 @@ Uniform<ValueType>::Uniform(const SingleDeviceRef& device,
           .setDescriptorCount(1)
           .setPBufferInfo(&bufferInfo);
 
-  mDevice->updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
+  device.updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
 }
 
 template <typename ValueType>
 void Uniform<ValueType>::update(const ValueType& newValue) {
   if (newValue != mValue) {
+    const vk::Device& device = mContext->getDevice();
     mValue = newValue;
-    auto data = mDevice->mapMemory(mUniformBufferMemory, 0, sizeof(ValueType),
-                                   vk::MemoryMapFlags());
+    auto data = device.mapMemory(mUniformBufferMemory, 0, sizeof(ValueType),
+                                 vk::MemoryMapFlags());
     memcpy(data.value, &mValue, sizeof(ValueType));
-    mDevice->unmapMemory(mUniformBufferMemory);
+    device.unmapMemory(mUniformBufferMemory);
   }
 }

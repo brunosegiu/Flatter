@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/Context.h"
 #include "rendering/vulkan/RenderPass.h"
 #include "rendering/vulkan/Shader.h"
 
@@ -14,7 +14,7 @@ namespace Vulkan {
 
 class Pipeline {
  public:
-  Pipeline(const SingleDeviceRef& device,
+  Pipeline(const ContextRef& context,
            const RenderPassRef& renderPass,
            const vk::DescriptorSetLayout& descriptorSetLayout);
 
@@ -32,7 +32,7 @@ class Pipeline {
   ShaderRef mVertexShader;
   ShaderRef mFragmentShader;
 
-  SingleDeviceRef mDevice;
+  ContextRef mContext;
 };
 
 using PipelineRef = std::shared_ptr<Pipeline>;

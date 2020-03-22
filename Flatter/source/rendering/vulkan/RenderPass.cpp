@@ -2,9 +2,9 @@
 
 using namespace Rendering::Vulkan;
 
-RenderPass::RenderPass(const SingleDeviceRef& device,
+RenderPass::RenderPass(const ContextRef& context,
                        const vk::Format& surfaceFormat)
-    : mDevice(device) {
+    : mContext(context) {
   auto const colorAttachmentDescription =
       vk::AttachmentDescription()
           .setFormat(surfaceFormat)
@@ -46,10 +46,11 @@ RenderPass::RenderPass(const SingleDeviceRef& device,
           .setPSubpasses(&subpassDescription)
           .setDependencyCount(1)
           .setPDependencies(&subpassDependency);
-
-  mDevice->createRenderPass(&renderPassCreateInfo, nullptr, &mRenderPassHandle);
+  const vk::Device& device = mContext->getDevice();
+  device.createRenderPass(&renderPassCreateInfo, nullptr, &mRenderPassHandle);
 }
 
 RenderPass::~RenderPass() {
-  mDevice->destroyRenderPass(mRenderPassHandle, NULL);
+  const vk::Device& device = mContext->getDevice();
+  device.destroyRenderPass(mRenderPassHandle, NULL);
 }

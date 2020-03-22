@@ -1,4 +1,4 @@
-﻿#include "rendering/vulkan/Device.h"
+﻿#include "rendering/vulkan/Context.h"
 
 #include <assert.h>
 
@@ -6,8 +6,8 @@
 
 using namespace Rendering::Vulkan;
 
-SingleDevice::SingleDevice(const InstanceRef& instance,
-                           const SurfaceRef& surface) {
+Context::Context(const InstanceRef& instance, const SurfaceRef& surface)
+    : mSurface(surface) {
   const std::vector<const char*> extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   auto deviceCreateInfo = vk::DeviceCreateInfo()
                               .setEnabledExtensionCount(
@@ -17,10 +17,10 @@ SingleDevice::SingleDevice(const InstanceRef& instance,
   const std::vector<vk::PhysicalDevice> physicalDeviceHandles =
       instance->getAvailablePhysicalDevices();
 
-  SingleDevice::PhysicalDeviceInfo deviceInfo =
+  Context::PhysicalDeviceInfo deviceInfo =
       this->findPhysicalDevice(physicalDeviceHandles, surface->mSurfaceHandle);
   assert(deviceInfo.first.has_value());
-  mPhysicalDeviceHandle = deviceInfo.first.value();
+  mPhysicalDevice = deviceInfo.first.value();
   mQueueFamilyIndex = deviceInfo.second;
 
   const std::vector<float> priorities{1.0f};
@@ -31,9 +31,9 @@ SingleDevice::SingleDevice(const InstanceRef& instance,
           .setPQueuePriorities(priorities.data());
   deviceCreateInfo.setQueueCreateInfoCount(1).setPQueueCreateInfos(
       &deviceQueueCreateInfo);
-  assert(mPhysicalDeviceHandle.createDevice(&deviceCreateInfo, nullptr, this) ==
+  assert(mPhysicalDevice.createDevice(&deviceCreateInfo, nullptr, &mDevice) ==
          vk::Result::eSuccess);
-  this->getQueue(mQueueFamilyIndex, 0, &mQueueHandle);
+  mDevice.getQueue(mQueueFamilyIndex, 0, &mQueue);
 
   // Uniform descriptor pool
   vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer,
@@ -43,7 +43,8 @@ SingleDevice::SingleDevice(const InstanceRef& instance,
                                   .setPPoolSizes(&poolSize)
                                   .setMaxSets(MAX_DESC_SETS);
 
-  this->createDescriptorPool(&poolCreateInfo, nullptr, &mDescriptorPoolHandle);
+  mDevice.createDescriptorPool(&poolCreateInfo, nullptr,
+                               &mDescriptorPoolHandle);
 
   // Command pool
   auto const commandPoolCreateInfo =
@@ -51,10 +52,14 @@ SingleDevice::SingleDevice(const InstanceRef& instance,
           .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
           .setQueueFamilyIndex(getQueueFamilyIndex());
 
-  this->createCommandPool(&commandPoolCreateInfo, nullptr, &mCommandPoolHandle);
+  mDevice.createCommandPool(&commandPoolCreateInfo, nullptr,
+                            &mCommandPoolHandle);
+
+  // Swapchain
+  mSwapchain = std::make_shared<Swapchain>(mDevice, mPhysicalDevice, mSurface);
 }
 
-SingleDevice::PhysicalDeviceInfo SingleDevice::findPhysicalDevice(
+Context::PhysicalDeviceInfo Context::findPhysicalDevice(
     const std::vector<vk::PhysicalDevice>& devices,
     const vk::SurfaceKHR& surfaceHandle) {
   for (const vk::PhysicalDevice& physicalDeviceHandle : devices) {
@@ -68,14 +73,14 @@ SingleDevice::PhysicalDeviceInfo SingleDevice::findPhysicalDevice(
     const int queueIndex = findQueueFamily(deviceQueueFamilyProperties,
                                            physicalDeviceHandle, surfaceHandle);
     if (queueIndex >= 0) {
-      return SingleDevice::PhysicalDeviceInfo(
-          physicalDeviceHandle, static_cast<unsigned int>(queueIndex));
+      return Context::PhysicalDeviceInfo(physicalDeviceHandle,
+                                         static_cast<unsigned int>(queueIndex));
     }
   }
-  return SingleDevice::PhysicalDeviceInfo(nullptr, -1);
+  return Context::PhysicalDeviceInfo(nullptr, -1);
 }
 
-int SingleDevice::findQueueFamily(
+int Context::findQueueFamily(
     const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties,
     const vk::PhysicalDevice& physicalDeviceHandle,
     const vk::SurfaceKHR& surfaceHandle) {
@@ -96,11 +101,11 @@ int SingleDevice::findQueueFamily(
   return -1;
 }
 
-unsigned int SingleDevice::findBufferMemoryType(
+unsigned int Context::findBufferMemoryType(
     unsigned int memoryTypeMask,
     vk::MemoryPropertyFlags requiredPropertyFlags) const {
   vk::PhysicalDeviceMemoryProperties properties{};
-  mPhysicalDeviceHandle.getMemoryProperties(&properties);
+  mPhysicalDevice.getMemoryProperties(&properties);
 
   for (unsigned int memTypeIndex = 0; memTypeIndex < properties.memoryTypeCount;
        memTypeIndex++) {
@@ -115,18 +120,18 @@ unsigned int SingleDevice::findBufferMemoryType(
   return -1;
 }
 
-void SingleDevice::allocBuffer(vk::DeviceSize size,
-                               vk::BufferUsageFlags usage,
-                               vk::MemoryPropertyFlags properties,
-                               vk::Buffer& buffer,
-                               vk::DeviceMemory& bufferMemory) const {
+void Context::allocBuffer(vk::DeviceSize size,
+                          vk::BufferUsageFlags usage,
+                          vk::MemoryPropertyFlags properties,
+                          vk::Buffer& buffer,
+                          vk::DeviceMemory& bufferMemory) const {
   auto const bufferCreateInfo =
       vk::BufferCreateInfo().setSize(size).setUsage(usage).setSharingMode(
           vk::SharingMode::eExclusive);
-  this->createBuffer(&bufferCreateInfo, nullptr, &buffer);
+  mDevice.createBuffer(&bufferCreateInfo, nullptr, &buffer);
 
   vk::MemoryRequirements memRequirements{};
-  this->getBufferMemoryRequirements(buffer, &memRequirements);
+  mDevice.getBufferMemoryRequirements(buffer, &memRequirements);
 
   auto const allocCreateInfo =
       vk::MemoryAllocateInfo()
@@ -134,12 +139,12 @@ void SingleDevice::allocBuffer(vk::DeviceSize size,
           .setMemoryTypeIndex(
               findBufferMemoryType(memRequirements.memoryTypeBits, properties));
 
-  this->allocateMemory(&allocCreateInfo, nullptr, &bufferMemory);
+  mDevice.allocateMemory(&allocCreateInfo, nullptr, &bufferMemory);
 
-  this->bindBufferMemory(buffer, bufferMemory, 0);
+  mDevice.bindBufferMemory(buffer, bufferMemory, 0);
 }
 
-SingleDevice::~SingleDevice() {
-  this->destroyDescriptorPool(mDescriptorPoolHandle, nullptr);
-  this->destroyCommandPool(mCommandPoolHandle, nullptr);
+Context::~Context() {
+  mDevice.destroyDescriptorPool(mDescriptorPoolHandle, nullptr);
+  mDevice.destroyCommandPool(mCommandPoolHandle, nullptr);
 }

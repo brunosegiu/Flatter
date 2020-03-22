@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "rendering/Camera.h"
-#include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/Context.h"
 #include "rendering/vulkan/Framebuffer.h"
 #include "rendering/vulkan/Pipeline.h"
 #include "rendering/vulkan/RenderPass.h"
@@ -20,22 +20,20 @@ using InFlightFrameResource = struct {
   vk::Fence frameFenceHandle;
   vk::Semaphore availableImageSemaphore;
   vk::Semaphore finishedRenderSemaphore;
-
-  UniformMatrixRef matrixUniform;
 };
 
 using CommandBufferResources = struct {
   vk::CommandBuffer commandBuffer;
   FramebufferRef framebuffer;
+
+  UniformMatrixRef matrixUniform;
 };
 
 const unsigned int FRAMES_IN_FLIGHT_COUNT = 2;
 
 class Renderer {
  public:
-  Renderer(const SingleDeviceRef& device,
-           const SurfaceRef& surface,
-           const SwapchainRef& swapchain);
+  Renderer(const ContextRef& context, const SurfaceRef& surface);
 
   void draw(const Rendering::Camera& camera);
 
@@ -54,7 +52,7 @@ class Renderer {
   vk::Format mSurfaceFormat;
 
   SwapchainRef mSwapchain;
-  const SingleDeviceRef mDevice;
+  const ContextRef mContext;
 
   // Initializers
   void initInFlightFrameResources();

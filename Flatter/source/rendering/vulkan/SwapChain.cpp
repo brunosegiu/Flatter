@@ -6,16 +6,18 @@
 
 using namespace Rendering::Vulkan;
 
-Swapchain::Swapchain(const SingleDeviceRef& device, const SurfaceRef& surface)
+Swapchain::Swapchain(const vk::Device& device,
+                     const vk::PhysicalDevice& physicalDevice,
+                     const SurfaceRef& surface)
     : mDevice(device) {
   unsigned int presentModeCount = 0;
-  const vk::PhysicalDevice& physicalDeviceHandle = device->getPhysicalHandle();
-  physicalDeviceHandle.getSurfacePresentModesKHR(
+
+  physicalDevice.getSurfacePresentModesKHR(
       surface->mSurfaceHandle, &presentModeCount,
       static_cast<vk::PresentModeKHR*>(nullptr));
   std::vector<vk::PresentModeKHR> presentModes(presentModeCount,
                                                vk::PresentModeKHR::eFifo);
-  physicalDeviceHandle.getSurfacePresentModesKHR(
+  physicalDevice.getSurfacePresentModesKHR(
       surface->mSurfaceHandle, &presentModeCount, presentModes.data());
 
   vk::PresentModeKHR presentMode =
@@ -29,7 +31,7 @@ Swapchain::Swapchain(const SingleDeviceRef& device, const SurfaceRef& surface)
                              : PRESENT_MODE_DEFAULT_IMAGE_COUNT;
 
   const vk::SurfaceCapabilitiesKHR surfaceCapabilities =
-      surface->getCapabilities(device);
+      surface->getCapabilities(physicalDevice);
 
   mSwapchainExtent = surfaceCapabilities.currentExtent;
   if (mSwapchainExtent.width == UINT32_MAX) {
@@ -41,7 +43,8 @@ Swapchain::Swapchain(const SingleDeviceRef& device, const SurfaceRef& surface)
         surfaceCapabilities.maxImageExtent.height);
   }
 
-  const vk::SurfaceFormatKHR& surfaceFormat = surface->getSurfaceFormat(device);
+  const vk::SurfaceFormatKHR& surfaceFormat =
+      surface->getSurfaceFormat(physicalDevice);
   const auto swapChainCreateInfo =
       vk::SwapchainCreateInfoKHR()
           .setSurface(surface->mSurfaceHandle)
@@ -57,27 +60,26 @@ Swapchain::Swapchain(const SingleDeviceRef& device, const SurfaceRef& surface)
           .setPresentMode(presentMode)
           .setClipped(VK_TRUE);
 
-  assert(mDevice->createSwapchainKHR(&swapChainCreateInfo, nullptr,
-                                     &mSwapchainHandle) ==
-         vk::Result::eSuccess);
-  mDevice->getSwapchainImagesKHR(mSwapchainHandle, &mSwapchainImageCount,
-                                 static_cast<vk::Image*>(nullptr));
+  assert(mDevice.createSwapchainKHR(&swapChainCreateInfo, nullptr,
+                                    &mSwapchainHandle) == vk::Result::eSuccess);
+  mDevice.getSwapchainImagesKHR(mSwapchainHandle, &mSwapchainImageCount,
+                                static_cast<vk::Image*>(nullptr));
   mSwapchainImages = std::vector<vk::Image>(mSwapchainImageCount, vk::Image{});
-  mDevice->getSwapchainImagesKHR(mSwapchainHandle, &mSwapchainImageCount,
-                                 mSwapchainImages.data());
+  mDevice.getSwapchainImagesKHR(mSwapchainHandle, &mSwapchainImageCount,
+                                mSwapchainImages.data());
 }
 
 const unsigned int Swapchain::acquireNextImage(
     const vk::Fence& waitFor,
     const vk::Semaphore& signalTo) const {
-  mDevice->waitForFences(1, &waitFor, VK_TRUE, UINT64_MAX);
-  mDevice->resetFences(1, &waitFor);
+  mDevice.waitForFences(1, &waitFor, VK_TRUE, UINT64_MAX);
+  mDevice.resetFences(1, &waitFor);
   unsigned int imageIndex = 0;
-  mDevice->acquireNextImageKHR(mSwapchainHandle, UINT64_MAX, signalTo,
-                               vk::Fence(), &imageIndex);
+  mDevice.acquireNextImageKHR(mSwapchainHandle, UINT64_MAX, signalTo,
+                              vk::Fence(), &imageIndex);
   return imageIndex;
 }
 
-Swapchain ::~Swapchain() {
-  mDevice->destroySwapchainKHR(mSwapchainHandle, nullptr);
+Swapchain::~Swapchain() {
+  mDevice.destroySwapchainKHR(mSwapchainHandle, nullptr);
 }

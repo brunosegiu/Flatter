@@ -3,14 +3,14 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/Context.h"
 
 namespace Rendering {
 namespace Vulkan {
 
 class RenderPass {
  public:
-  RenderPass(const SingleDeviceRef& device, const vk::Format& surfaceFormat);
+  RenderPass(const ContextRef& context, const vk::Format& surfaceFormat);
 
   const vk::RenderPass& getHandle() const { return mRenderPassHandle; };
 
@@ -19,7 +19,7 @@ class RenderPass {
  private:
   vk::RenderPass mRenderPassHandle;
 
-  SingleDeviceRef mDevice;
+  ContextRef mContext;
 };
 
 using RenderPassRef = std::shared_ptr<RenderPass>;

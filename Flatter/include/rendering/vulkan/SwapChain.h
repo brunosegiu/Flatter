@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Device.h"
 #include "rendering/vulkan/Surface.h"
 
 namespace Rendering {
@@ -16,7 +15,9 @@ const unsigned int PRESENT_MODE_DEFAULT_IMAGE_COUNT = 2;
 
 class Swapchain {
  public:
-  Swapchain(const SingleDeviceRef& device, const SurfaceRef& surface);
+  Swapchain(const vk::Device& device,
+            const vk::PhysicalDevice& physicalDevice,
+            const SurfaceRef& surface);
   const unsigned int acquireNextImage(const vk::Fence& waitFor,
                                       const vk::Semaphore& signalTo) const;
   const vk::SwapchainKHR& getHandle() const { return mSwapchainHandle; };
@@ -32,7 +33,8 @@ class Swapchain {
   unsigned int mSwapchainImageCount;
   std::vector<vk::Image> mSwapchainImages;
   vk::Extent2D mSwapchainExtent;
-  const SingleDeviceRef mDevice;
+
+  const vk::Device mDevice;
 };
 
 using SwapchainRef = std::shared_ptr<Swapchain>;

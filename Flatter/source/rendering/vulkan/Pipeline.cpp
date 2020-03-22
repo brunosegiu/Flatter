@@ -2,12 +2,12 @@
 
 using namespace Rendering::Vulkan;
 
-Pipeline::Pipeline(const SingleDeviceRef& device,
+Pipeline::Pipeline(const ContextRef& context,
                    const RenderPassRef& renderPass,
                    const vk::DescriptorSetLayout& descriptorSetLayout)
-    : mDevice(device) {
-  mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", device);
-  mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", device);
+    : mContext(context) {
+  mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", context);
+  mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", context);
 
   auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo()
                                      .setStage(vk::ShaderStageFlagBits::eVertex)
@@ -82,9 +82,9 @@ Pipeline::Pipeline(const SingleDeviceRef& device,
   auto const pipelineLayoutCreateInfo =
       vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
           &descriptorSetLayout);
-
-  mDevice->createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
-                                &mPipelineLayoutHandle);
+  const vk::Device& device = mContext->getDevice();
+  device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
+                              &mPipelineLayoutHandle);
 
   auto const pipelineCreateInfo =
       vk::GraphicsPipelineCreateInfo()
@@ -100,11 +100,12 @@ Pipeline::Pipeline(const SingleDeviceRef& device,
           .setLayout(mPipelineLayoutHandle)
           .setRenderPass(renderPass->getHandle());
 
-  mDevice->createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo, nullptr,
-                                   &mPipelineHandle);
+  device.createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo, nullptr,
+                                 &mPipelineHandle);
 }
 
 Pipeline::~Pipeline() {
+  const vk::Device& device = mContext->getDevice();
   // vkDestroyPipeline(deviceHandle, mPipelineHandle, nullptr);
-  mDevice->destroyPipelineLayout(mPipelineLayoutHandle, nullptr);
+  device.destroyPipelineLayout(mPipelineLayoutHandle, nullptr);
 }

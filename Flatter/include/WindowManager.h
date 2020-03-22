@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "rendering/vulkan/Device.h"
+#include "rendering/vulkan/Context.h"
 #include "rendering/vulkan/Instance.h"
 #include "rendering/vulkan/Renderer.h"
 #include "rendering/vulkan/Surface.h"
@@ -27,8 +27,7 @@ class WindowManager {
   SDL_Window* mWindow;
   InstanceRef mInstance;
   SurfaceRef mSurface;
-  SingleDeviceRef mDevice;
-  SwapchainRef mSwapchain;
+  ContextRef mContext;
   RendererRef mRenderer;
 };
 

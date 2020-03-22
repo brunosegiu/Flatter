@@ -7,6 +7,7 @@
 
 #include "rendering/vulkan/Instance.h"
 #include "rendering/vulkan/Surface.h"
+#include "rendering/vulkan/Swapchain.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -15,9 +16,9 @@ const int MAX_DESC_SETS = 256;
 class Surface;
 using SurfaceRef = std::shared_ptr<Surface>;
 
-class SingleDevice : public vk::Device {
+class Context {
  public:
-  SingleDevice(const InstanceRef& instance, const SurfaceRef& surface);
+  Context(const InstanceRef& instance, const SurfaceRef& surface);
 
   void allocBuffer(vk::DeviceSize size,
                    vk::BufferUsageFlags usage,
@@ -25,31 +26,39 @@ class SingleDevice : public vk::Device {
                    vk::Buffer& buffer,
                    vk::DeviceMemory& bufferMemory) const;
 
-  const vk::PhysicalDevice& getPhysicalHandle() const {
-    return mPhysicalDeviceHandle;
+  const vk::Device& getDevice() const { return mDevice; };
+  const vk::PhysicalDevice& getPhysicalDevice() const {
+    return mPhysicalDevice;
   };
   const unsigned int getQueueFamilyIndex() const { return mQueueFamilyIndex; };
-  const vk::Queue& getQueueHandle() const { return mQueueHandle; };
+  const vk::Queue& getQueue() const { return mQueue; };
+  const SwapchainRef& getSwapchain() const { return mSwapchain; };
 
   const vk::DescriptorPool& getDescriptorPool() const {
     return mDescriptorPoolHandle;
   };
   const vk::CommandPool& getCommandPool() const { return mCommandPoolHandle; };
 
-  virtual ~SingleDevice();
+  virtual ~Context();
 
  private:
-  vk::PhysicalDevice mPhysicalDeviceHandle;
-
+  // Member handles
+  vk::Device mDevice;
+  vk::PhysicalDevice mPhysicalDevice;
+  vk::Queue mQueue;
   unsigned int mQueueFamilyIndex;
-  vk::Queue mQueueHandle;
+  SwapchainRef mSwapchain;
 
+  SurfaceRef mSurface;
+
+  // Allocators and pools
   vk::DescriptorPool mDescriptorPoolHandle;
   vk::CommandPool mCommandPoolHandle;
 
   using PhysicalDeviceInfo =
       const std::pair<std::optional<vk::PhysicalDevice>, const unsigned int>;
 
+  // Helpers
   int findQueueFamily(
       const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties,
       const vk::PhysicalDevice& physicalDeviceHandle,
@@ -62,7 +71,7 @@ class SingleDevice : public vk::Device {
       vk::MemoryPropertyFlags requiredPropertyFlags) const;
 };
 
-using SingleDeviceRef = std::shared_ptr<SingleDevice>;
+using ContextRef = std::shared_ptr<Context>;
 
 }  // namespace Vulkan
 }  // namespace Rendering
