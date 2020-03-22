@@ -81,12 +81,12 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
 
 template <typename ValueType>
 void Uniform<ValueType>::update(const ValueType& newValue) {
-  if (newValue != mValue) {
-    const vk::Device& device = mContext->getDevice();
-    mValue = newValue;
-    auto data = device.mapMemory(mUniformBufferMemory, 0, sizeof(ValueType),
-                                 vk::MemoryMapFlags());
-    memcpy(data.value, &mValue, sizeof(ValueType));
-    device.unmapMemory(mUniformBufferMemory);
-  }
+  // if (newValue != mValue) {
+  const vk::Device& device = mContext->getDevice();
+  mValue = newValue;
+  auto data = device.mapMemory(mUniformBufferMemory, 0, sizeof(ValueType),
+                               vk::MemoryMapFlags());
+  memcpy(data.value, &mValue, sizeof(ValueType));
+  device.unmapMemory(mUniformBufferMemory);
+  //}
 }

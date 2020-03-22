@@ -1,6 +1,7 @@
 ﻿#include "WindowManager.h"
 
-#include "rendering/Camera.h"
+#include "commons/Timer.h"
+#include "input/CameraController.h"
 
 using namespace Game;
 using namespace Rendering::Vulkan;
@@ -23,13 +24,21 @@ WindowManager::WindowManager(const unsigned int width,
 
 void WindowManager::loop() {
   bool open = true;
-  Rendering::Camera c{};
+  Input::CameraController cameraController;
+
+  Commons::Timer timer;
+  float timeDelta = 0.0f;
+
   do {
     SDL_Event evt;
     while (SDL_PollEvent(&evt)) {
       open = !(evt.type == SDL_QUIT);
     }
-    mRenderer->draw(c);
+    cameraController.process(timeDelta);
+    mRenderer->draw(cameraController.getCamera());
+    timer.end();
+    timeDelta = timer.getDeltaMs();
+    timer.restart();
   } while (open);
 }
 

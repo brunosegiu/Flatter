@@ -200,7 +200,9 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\commons\Timer.cpp" />
     <ClCompile Include="source\Game.cpp" />
+    <ClCompile Include="source\input\CameraController.cpp" />
     <ClCompile Include="source\rendering\Camera.cpp" />
     <ClCompile Include="source\rendering\vulkan\Context.cpp" />
     <ClCompile Include="source\rendering\vulkan\Framebuffer.cpp" />
@@ -214,7 +216,9 @@
     <ClCompile Include="source\WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\commons\Timer.h" />
     <ClInclude Include="include\rendering\Camera.h" />
+    <ClInclude Include="include\input\CameraController.h" />
     <ClInclude Include="include\rendering\vulkan\Context.h" />
     <ClInclude Include="include\rendering\vulkan\Framebuffer.h" />
     <ClInclude Include="include\rendering\vulkan\Instance.h" />
