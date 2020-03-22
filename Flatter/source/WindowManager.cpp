@@ -7,7 +7,8 @@ using namespace Game;
 using namespace Rendering::Vulkan;
 
 WindowManager::WindowManager(const unsigned int width,
-                             const unsigned int height) {
+                             const unsigned int height)
+    : mWidth(width), mHeight(height) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   mWindow = SDL_CreateWindow("Vulkan Sample", SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED, width, height, 0);
@@ -24,7 +25,7 @@ WindowManager::WindowManager(const unsigned int width,
 
 void WindowManager::loop() {
   bool open = true;
-  Input::CameraController cameraController;
+  Input::CameraController cameraController(mWidth, mHeight);
 
   Commons::Timer timer;
   float timeDelta = 0.0f;

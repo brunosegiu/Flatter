@@ -7,9 +7,9 @@
 namespace Input {
 class CameraController {
  public:
-  CameraController();
+  CameraController(const unsigned int& width, const unsigned int& height);
 
-  void process(const float& delta);
+  void process(const float& timeDelta);
 
   const Rendering::Camera& getCamera() const { return mCamera; };
 
@@ -18,6 +18,13 @@ class CameraController {
  private:
   Rendering::Camera mCamera;
 
+  glm::vec2 mPrevMouseCoords;
+
   float mSpeed;
+
+  const float mWidth, mHeight;
+
+  void updateMovement(const float& timeDelt);
+  void updateRotation(const float& timeDelt);
 };
 }  // namespace Input

@@ -29,6 +29,9 @@ class WindowManager {
   SurfaceRef mSurface;
   ContextRef mContext;
   RendererRef mRenderer;
+
+  const unsigned int mWidth;
+  const unsigned int mHeight;
 };
 
 }  // namespace Game

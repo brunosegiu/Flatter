@@ -1,6 +1,7 @@
 ﻿#include "rendering/Camera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 using namespace Rendering;
 
@@ -15,7 +16,6 @@ Camera::Camera() {
   mDir = glm::vec3(0, 0, 1.0f);
   mUp = glm::vec3(0, 1, 0);
 
-  mView = glm::lookAt(mEye, mEye + mDir * glm::length(mEye), mUp);
   updateViewProjection();
 }
 
@@ -25,7 +25,7 @@ void Camera::updateViewProjection() {
 }
 
 void Camera::rotate(const float& angle, const glm::vec3& axis) {
-  mView = glm::rotate(mView, angle, axis);
+  mDir = glm::mat3(glm::rotate(angle, axis)) * mDir;
   updateViewProjection();
 }
 
@@ -59,6 +59,15 @@ void Camera::moveForwards(const float& value) {
 
 void Camera::moveBackwards(const float& value) {
   translate(-mDir * value);
+}
+
+void Camera::rotateUp(const float& pitch) {
+  rotate(pitch, mUp);
+}
+
+void Camera::rotateRight(const float& yaw) {
+  const glm::vec3 right = glm::cross(mDir, mUp);
+  rotate(yaw, right);
 }
 
 Camera::~Camera() {}

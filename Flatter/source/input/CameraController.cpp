@@ -2,24 +2,46 @@
 
 using namespace Input;
 
-CameraController::CameraController() : mCamera(), mSpeed(0.00001f) {}
+CameraController::CameraController(const unsigned int& width,
+                                   const unsigned int& height)
+    : mCamera(),
+      mSpeed(0.00001f),
+      mWidth(static_cast<float>(width)),
+      mHeight(static_cast<float>(height)) {}
 
-void CameraController::process(const float& delta) {
-  const float factor = mSpeed * delta;
-  const Uint8* state = SDL_GetKeyboardState(NULL);
+void CameraController::process(const float& timeDelta) {
+  updateMovement(timeDelta);
+  updateRotation(timeDelta);
+}
 
-  if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
+void CameraController::updateMovement(const float& timeDelta) {
+  const float factor = mSpeed * timeDelta;
+  const auto pressedKeys = SDL_GetKeyboardState(nullptr);
+
+  if (pressedKeys[SDL_SCANCODE_W] || pressedKeys[SDL_SCANCODE_UP]) {
     mCamera.moveForwards(factor);
   }
-  if (state[SDL_SCANCODE_A] || state[SDL_SCANCODE_LEFT]) {
+  if (pressedKeys[SDL_SCANCODE_A] || pressedKeys[SDL_SCANCODE_LEFT]) {
     mCamera.moveLeft(factor);
   }
-  if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_DOWN]) {
+  if (pressedKeys[SDL_SCANCODE_S] || pressedKeys[SDL_SCANCODE_DOWN]) {
     mCamera.moveBackwards(factor);
   }
-  if (state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
+  if (pressedKeys[SDL_SCANCODE_D] || pressedKeys[SDL_SCANCODE_RIGHT]) {
     mCamera.moveRight(factor);
   }
+}
+
+void CameraController::updateRotation(const float& timeDelta) {
+  glm::ivec2 mouseState;
+  SDL_GetMouseState(&mouseState.x, &mouseState.y);
+  const glm::vec2 currentPosNorm(static_cast<float>(mouseState.x) / mWidth,
+                                 static_cast<float>(mouseState.y) / mHeight);
+  const glm::vec2 movementDir = mPrevMouseCoords - currentPosNorm;
+  mPrevMouseCoords = currentPosNorm;
+
+  mCamera.rotateUp(movementDir.x);
+  mCamera.rotateRight(movementDir.y);
 }
 
 CameraController::~CameraController() {}

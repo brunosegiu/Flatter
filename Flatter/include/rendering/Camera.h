@@ -19,6 +19,9 @@ class Camera {
   void moveForwards(const float& value);
   void moveBackwards(const float& value);
 
+  void rotateUp(const float& pitch);
+  void rotateRight(const float& yaw);
+
   virtual ~Camera();
 
  private:
