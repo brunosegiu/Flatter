@@ -18,13 +18,12 @@ class CameraController {
  private:
   Rendering::Camera mCamera;
 
-  glm::vec2 mPrevMouseCoords;
-
   float mSpeed;
 
   const float mWidth, mHeight;
+  bool mIsFirstUpdate;
 
-  void updateMovement(const float& timeDelt);
-  void updateRotation(const float& timeDelt);
+  void updateMovement(const float& timeDelta);
+  void updateRotation(const float& timeDelta);
 };
 }  // namespace Input

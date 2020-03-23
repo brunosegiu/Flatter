@@ -10,7 +10,7 @@ WindowManager::WindowManager(const unsigned int width,
                              const unsigned int height)
     : mWidth(width), mHeight(height) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-  mWindow = SDL_CreateWindow("Vulkan Sample", SDL_WINDOWPOS_CENTERED,
+  mWindow = SDL_CreateWindow("Flatter", SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED, width, height, 0);
   assert(mWindow != nullptr);
 
@@ -33,13 +33,17 @@ void WindowManager::loop() {
   do {
     SDL_Event evt;
     while (SDL_PollEvent(&evt)) {
-      open = !(evt.type == SDL_QUIT);
+      open = !(evt.type == SDL_QUIT || (evt.type == SDL_KEYDOWN &&
+                                        (evt.key.keysym.sym == SDLK_ESCAPE)));
     }
+    SDL_WarpMouseInWindow(mWindow, unsigned int(mWidth / 2),
+                          unsigned int(mHeight / 2));
     cameraController.process(timeDelta);
     mRenderer->draw(cameraController.getCamera());
     timer.end();
     timeDelta = timer.getDeltaMs();
     timer.restart();
+
   } while (open);
 }
 

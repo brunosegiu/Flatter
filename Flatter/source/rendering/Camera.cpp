@@ -61,13 +61,10 @@ void Camera::moveBackwards(const float& value) {
   translate(-mDir * value);
 }
 
-void Camera::rotateUp(const float& pitch) {
-  rotate(pitch, mUp);
-}
-
-void Camera::rotateRight(const float& yaw) {
+void Camera::rotate(const float& yaw, const float& pitch) {
   const glm::vec3 right = glm::cross(mDir, mUp);
-  rotate(yaw, right);
+  rotate(yaw, mUp);
+  rotate(pitch, right);
 }
 
 Camera::~Camera() {}

@@ -7,7 +7,8 @@ CameraController::CameraController(const unsigned int& width,
     : mCamera(),
       mSpeed(0.00001f),
       mWidth(static_cast<float>(width)),
-      mHeight(static_cast<float>(height)) {}
+      mHeight(static_cast<float>(height)),
+      mIsFirstUpdate(true) {}
 
 void CameraController::process(const float& timeDelta) {
   updateMovement(timeDelta);
@@ -34,14 +35,15 @@ void CameraController::updateMovement(const float& timeDelta) {
 
 void CameraController::updateRotation(const float& timeDelta) {
   glm::ivec2 mouseState;
-  SDL_GetMouseState(&mouseState.x, &mouseState.y);
-  const glm::vec2 currentPosNorm(static_cast<float>(mouseState.x) / mWidth,
-                                 static_cast<float>(mouseState.y) / mHeight);
-  const glm::vec2 movementDir = mPrevMouseCoords - currentPosNorm;
-  mPrevMouseCoords = currentPosNorm;
-
-  mCamera.rotateUp(movementDir.x);
-  mCamera.rotateRight(movementDir.y);
+  if (mIsFirstUpdate) {
+    mIsFirstUpdate = false;
+  } else {
+    SDL_GetMouseState(&mouseState.x, &mouseState.y);
+    const glm::vec2 movementDir(
+        (-static_cast<float>(mouseState.x) / mWidth) + 0.5f,
+        (-static_cast<float>(mouseState.y) / mHeight) + 0.5f);
+    mCamera.rotate(movementDir.x, movementDir.y);
+  }
 }
 
 CameraController::~CameraController() {}
