@@ -211,6 +211,7 @@
     <ClCompile Include="source\commons\Timer.cpp" />
     <ClCompile Include="source\Game.cpp" />
     <ClCompile Include="source\input\CameraController.cpp" />
+    <ClCompile Include="source\input\InputController.cpp" />
     <ClCompile Include="source\rendering\Camera.cpp" />
     <ClCompile Include="source\rendering\loaders\GLTFLoader.cpp" />
     <ClCompile Include="source\rendering\Mesh.cpp" />
@@ -232,6 +233,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\commons\Timer.h" />
+    <ClInclude Include="include\input\InputController.h" />
+    <ClInclude Include="include\input\InputEventListener.h" />
     <ClInclude Include="include\rendering\Camera.h" />
     <ClInclude Include="include\input\CameraController.h" />
     <ClInclude Include="include\rendering\loaders\GLTFLoader.h" />

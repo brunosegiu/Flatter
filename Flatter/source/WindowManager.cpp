@@ -39,13 +39,6 @@ void WindowManager::loop() {
   float timeDelta = 0.0f;
 
   do {
-    SDL_Event evt;
-    while (SDL_PollEvent(&evt)) {
-      open = !(evt.type == SDL_QUIT || (evt.type == SDL_KEYDOWN &&
-                                        (evt.key.keysym.sym == SDLK_ESCAPE)));
-    }
-    SDL_WarpMouseInWindow(mWindow, static_cast<unsigned int>(mWidth / 2),
-                          static_cast<unsigned int>(mHeight / 2));
     cameraController.process(timeDelta);
     mRenderer->draw(cameraController.getCamera(), mScene);
     timer.end();
