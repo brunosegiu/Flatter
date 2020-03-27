@@ -6,13 +6,10 @@
 
 #include "rendering/Camera.h"
 #include "rendering/vulkan/ScreenFramebufferRing.h"
+#include "rendering/vulkan/VertexBuffer.h"
 #include "rendering/vulkan/core/Context.h"
-#include "rendering/vulkan/core/Framebuffer.h"
 #include "rendering/vulkan/core/Pipeline.h"
 #include "rendering/vulkan/core/RenderPass.h"
-#include "rendering/vulkan/core/Surface.h"
-#include "rendering/vulkan/core/Swapchain.h"
-#include "rendering/vulkan/core/Uniform.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -30,6 +27,8 @@ class Renderer {
   RenderPassRef mRenderPass;
   PipelineRef mPipeline;
   ScreenFramebufferRingRef mScreenFramebufferRing;
+
+  VertexBuffer mVertices;
 
   const ContextRef mContext;
 

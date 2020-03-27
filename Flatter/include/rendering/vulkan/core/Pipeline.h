@@ -16,7 +16,9 @@ class Pipeline {
  public:
   Pipeline(const ContextRef& context,
            const RenderPassRef& renderPass,
-           const vk::DescriptorSetLayout& descriptorSetLayout);
+           const vk::DescriptorSetLayout& descriptorSetLayout,
+           const vk::VertexInputBindingDescription& description,
+           const vk::VertexInputAttributeDescription& attrDescription);
 
   const vk::Pipeline& getHandle() { return mPipelineHandle; };
   const vk::PipelineLayout& getPipelineLayoutHandle() const {
