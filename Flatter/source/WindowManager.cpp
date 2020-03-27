@@ -36,8 +36,8 @@ void WindowManager::loop() {
       open = !(evt.type == SDL_QUIT || (evt.type == SDL_KEYDOWN &&
                                         (evt.key.keysym.sym == SDLK_ESCAPE)));
     }
-    SDL_WarpMouseInWindow(mWindow, unsigned int(mWidth / 2),
-                          unsigned int(mHeight / 2));
+    SDL_WarpMouseInWindow(mWindow, static_cast<unsigned int>(mWidth / 2),
+                          static_cast<unsigned int>(mHeight / 2));
     cameraController.process(timeDelta);
     mRenderer->draw(cameraController.getCamera());
     timer.end();

@@ -8,7 +8,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Context.h"
+#include "rendering/vulkan/core/Context.h"
 
 namespace Rendering {
 namespace Vulkan {

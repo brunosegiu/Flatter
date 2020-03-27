@@ -2,8 +2,8 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Context.h"
-#include "rendering/vulkan/RenderPass.h"
+#include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/core/RenderPass.h"
 
 namespace Rendering {
 namespace Vulkan {

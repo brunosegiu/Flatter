@@ -5,31 +5,17 @@
 #include <vulkan/vulkan.hpp>
 
 #include "rendering/Camera.h"
-#include "rendering/vulkan/Context.h"
-#include "rendering/vulkan/Framebuffer.h"
-#include "rendering/vulkan/Pipeline.h"
-#include "rendering/vulkan/RenderPass.h"
-#include "rendering/vulkan/Surface.h"
-#include "rendering/vulkan/Swapchain.h"
-#include "rendering/vulkan/Uniform.h"
+#include "rendering/vulkan/ScreenFramebufferRing.h"
+#include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/core/Framebuffer.h"
+#include "rendering/vulkan/core/Pipeline.h"
+#include "rendering/vulkan/core/RenderPass.h"
+#include "rendering/vulkan/core/Surface.h"
+#include "rendering/vulkan/core/Swapchain.h"
+#include "rendering/vulkan/core/Uniform.h"
 
 namespace Rendering {
 namespace Vulkan {
-
-using InFlightFrameResource = struct {
-  vk::Fence frameFenceHandle;
-  vk::Semaphore availableImageSemaphore;
-  vk::Semaphore finishedRenderSemaphore;
-};
-
-using CommandBufferResources = struct {
-  vk::CommandBuffer commandBuffer;
-  FramebufferRef framebuffer;
-
-  UniformMatrixRef matrixUniform;
-};
-
-const unsigned int FRAMES_IN_FLIGHT_COUNT = 2;
 
 class Renderer {
  public:
@@ -40,24 +26,12 @@ class Renderer {
   virtual ~Renderer();
 
  private:
-  unsigned int mCurrentFrameIndex;
-  unsigned int mCurrentImageIndex;
-  unsigned int mSwapchainImageCount;
-
   vk::DescriptorSetLayout mDescriptorSetLayout;
   RenderPassRef mRenderPass;
   PipelineRef mPipeline;
-  std::vector<std::shared_ptr<InFlightFrameResource>> mInFlightFrameResources;
-  std::vector<std::shared_ptr<CommandBufferResources>> mCommandBufferResources;
-  vk::Format mSurfaceFormat;
+  ScreenFramebufferRingRef mScreenFramebufferRing;
 
-  SwapchainRef mSwapchain;
   const ContextRef mContext;
-
-  // Initializers
-  void initInFlightFrameResources();
-
-  void initCommandResources();
 
   // Helpers
 
@@ -79,7 +53,10 @@ class Renderer {
   void draw(const vk::CommandBuffer& commandBuffer);
   void endCommand(const vk::CommandBuffer& commandBuffer);
   void present(const vk::CommandBuffer& commandBuffer,
-               const InFlightFrameResource& frameResources);
+               const vk::Semaphore& imageAvailableSemaphore,
+               const vk::Semaphore& renderingDoneSemaphore,
+               const vk::Fence& presentFrameFence,
+               const unsigned int imageIndex);
 };
 
 using RendererRef = std::shared_ptr<Renderer>;

@@ -5,9 +5,9 @@
 #include <utility>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Instance.h"
-#include "rendering/vulkan/Surface.h"
-#include "rendering/vulkan/Swapchain.h"
+#include "rendering/vulkan/core/Instance.h"
+#include "rendering/vulkan/core/Surface.h"
+#include "rendering/vulkan/core/Swapchain.h"
 
 namespace Rendering {
 namespace Vulkan {

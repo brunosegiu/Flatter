@@ -5,11 +5,11 @@
 #include <memory>
 #include <string>
 
-#include "rendering/vulkan/Context.h"
-#include "rendering/vulkan/Instance.h"
 #include "rendering/vulkan/Renderer.h"
-#include "rendering/vulkan/Surface.h"
-#include "rendering/vulkan/Swapchain.h"
+#include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/core/Instance.h"
+#include "rendering/vulkan/core/Surface.h"
+#include "rendering/vulkan/core/Swapchain.h"
 
 using namespace Rendering::Vulkan;
 

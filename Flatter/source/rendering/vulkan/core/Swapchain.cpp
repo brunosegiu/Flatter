@@ -1,4 +1,4 @@
-﻿#include "rendering/vulkan/Swapchain.h"
+﻿#include "rendering/vulkan/core/Swapchain.h"
 
 #include <assert.h>
 
@@ -44,7 +44,7 @@ Swapchain::Swapchain(const vk::Device& device,
   }
 
   const vk::SurfaceFormatKHR& surfaceFormat =
-      surface->getSurfaceFormat(physicalDevice);
+      surface->getFormat(physicalDevice);
   const auto swapChainCreateInfo =
       vk::SwapchainCreateInfoKHR()
           .setSurface(surface->mSurfaceHandle)

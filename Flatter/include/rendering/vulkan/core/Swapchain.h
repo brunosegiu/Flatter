@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Surface.h"
+#include "rendering/vulkan/core/Surface.h"
 
 namespace Rendering {
 namespace Vulkan {

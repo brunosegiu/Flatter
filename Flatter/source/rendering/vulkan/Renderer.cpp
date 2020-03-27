@@ -3,15 +3,10 @@
 using namespace Rendering::Vulkan;
 
 Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
-    : mContext(context),
-      mCurrentFrameIndex(0),
-      mCurrentImageIndex(0),
-      mSwapchainImageCount(context->getSwapchain()->getImageCount()),
-      mSurfaceFormat(
-          surface->getSurfaceFormat(context->getPhysicalDevice()).format) {
-  mRenderPass = std::make_shared<RenderPass>(context, mSurfaceFormat);
+    : mContext(context) {
+  mRenderPass = std::make_shared<RenderPass>(
+      context, surface->getFormat(context->getPhysicalDevice()).format);
   const vk::Device& device = mContext->getDevice();
-
   // UNIFORM
   auto const uboLayoutBinding =
       vk::DescriptorSetLayoutBinding()
@@ -31,86 +26,27 @@ Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
   mPipeline =
       std::make_shared<Pipeline>(mContext, mRenderPass, mDescriptorSetLayout);
 
-  initCommandResources();
-  initInFlightFrameResources();
-}
-
-void Renderer::initInFlightFrameResources() {
-  mInFlightFrameResources.reserve(FRAMES_IN_FLIGHT_COUNT);
-  const vk::Device& device = mContext->getDevice();
-  for (unsigned int frameIndex = 0; frameIndex < FRAMES_IN_FLIGHT_COUNT;
-       ++frameIndex) {
-    std::shared_ptr<InFlightFrameResource> frameResources =
-        std::make_shared<InFlightFrameResource>();
-
-    const vk::SemaphoreCreateInfo semaphoreCreateInfo{};
-    auto const fenceCreateInfo =
-        vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
-
-    device.createSemaphore(&semaphoreCreateInfo, nullptr,
-                           &frameResources->availableImageSemaphore);
-    device.createSemaphore(&semaphoreCreateInfo, nullptr,
-                           &frameResources->finishedRenderSemaphore);
-    device.createFence(&fenceCreateInfo, nullptr,
-                       &frameResources->frameFenceHandle);
-
-    mInFlightFrameResources.push_back(std::move(frameResources));
-  }
-}
-
-void Renderer::initCommandResources() {
-  mCommandBufferResources.reserve(mSwapchainImageCount);
-  const vk::Device& device = mContext->getDevice();
-  const SwapchainRef& swapchain = mContext->getSwapchain();
-  for (unsigned int imageIndex = 0; imageIndex < mSwapchainImageCount;
-       ++imageIndex) {
-    std::shared_ptr<CommandBufferResources> commandResources =
-        std::make_shared<CommandBufferResources>();
-
-    auto const commandBufferAllocInfo =
-        vk::CommandBufferAllocateInfo()
-            .setCommandPool(mContext->getCommandPool())
-            .setLevel(vk::CommandBufferLevel::ePrimary)
-            .setCommandBufferCount(1);
-    device.allocateCommandBuffers(&commandBufferAllocInfo,
-                                  &commandResources->commandBuffer);
-    commandResources->framebuffer = std::make_shared<Framebuffer>(
-        mContext, swapchain->getImage(imageIndex), mSurfaceFormat,
-        swapchain->getExtent(), mRenderPass);
-    commandResources->matrixUniform = std::make_shared<Uniform<glm::mat4>>(
-        mContext, mDescriptorSetLayout, glm::mat4(1.0f));
-    mCommandBufferResources.push_back(std::move(commandResources));
-  }
+  mScreenFramebufferRing = std::make_shared<ScreenFramebufferRing>(
+      mContext, surface, mRenderPass, mDescriptorSetLayout);
 }
 
 void Renderer::draw(const Camera& camera) {
-  mCurrentFrameIndex = (mCurrentFrameIndex++) % FRAMES_IN_FLIGHT_COUNT;
-
-  const InFlightFrameResource& frameResources =
-      *mInFlightFrameResources[mCurrentFrameIndex];
-  const SwapchainRef& swapchain = mContext->getSwapchain();
-
-  mCurrentImageIndex = swapchain->acquireNextImage(
-      frameResources.frameFenceHandle, frameResources.availableImageSemaphore);
-  assert(mCurrentImageIndex < mSwapchainImageCount);
-  const CommandBufferResources& commandResources =
-      *mCommandBufferResources[mCurrentImageIndex];
-
   const glm::mat4& mvp = camera.getViewProjection();
-  commandResources.matrixUniform->update(mvp);
-  const vk::CommandBuffer& currentCommandBuffer =
-      commandResources.commandBuffer;
-  const vk::Extent2D& imageExtent = swapchain->getExtent();
-
+  const RenderingResources& resources = mScreenFramebufferRing->cycle();
+  resources.matrixUniform->update(mvp);
+  const vk::CommandBuffer& currentCommandBuffer = resources.commandBuffer;
+  const vk::Extent2D& imageExtent = mContext->getSwapchain()->getExtent();
   beginCommand(currentCommandBuffer);
   bindPipeline(currentCommandBuffer, mPipeline);
   setViewportConstrains(currentCommandBuffer, imageExtent);
-  beginRenderPass(currentCommandBuffer, commandResources.framebuffer,
-                  mRenderPass, imageExtent);
-  bindUniforms(currentCommandBuffer, commandResources.matrixUniform, mPipeline);
+  beginRenderPass(currentCommandBuffer, resources.framebuffer, mRenderPass,
+                  imageExtent);
+  bindUniforms(currentCommandBuffer, resources.matrixUniform, mPipeline);
   draw(currentCommandBuffer);
   endCommand(currentCommandBuffer);
-  present(currentCommandBuffer, frameResources);
+  present(currentCommandBuffer, resources.availableImageSemaphore,
+          resources.finishedRenderSemaphore, resources.frameFenceHandle,
+          resources.imageIndex);
 }
 
 void Renderer::beginCommand(const vk::CommandBuffer& commandBuffer) {
@@ -174,29 +110,30 @@ void Renderer::endCommand(const vk::CommandBuffer& commandBuffer) {
 }
 
 void Renderer::present(const vk::CommandBuffer& commandBuffer,
-                       const InFlightFrameResource& frameResources) {
+                       const vk::Semaphore& imageAvailableSemaphore,
+                       const vk::Semaphore& renderingDoneSemaphore,
+                       const vk::Fence& presentFrameFence,
+                       const unsigned int imageIndex) {
   const SwapchainRef& swapchain = mContext->getSwapchain();
 
   const vk::PipelineStageFlags pipelineStageFlags{
       vk::PipelineStageFlagBits::eColorAttachmentOutput};
-  auto const submitInfo =
-      vk::SubmitInfo()
-          .setWaitSemaphoreCount(1)
-          .setPWaitSemaphores(&frameResources.availableImageSemaphore)
-          .setPWaitDstStageMask(&pipelineStageFlags)
-          .setCommandBufferCount(1)
-          .setPCommandBuffers(&commandBuffer)
-          .setSignalSemaphoreCount(1)
-          .setPSignalSemaphores(&frameResources.finishedRenderSemaphore);
+  auto const submitInfo = vk::SubmitInfo()
+                              .setWaitSemaphoreCount(1)
+                              .setPWaitSemaphores(&imageAvailableSemaphore)
+                              .setPWaitDstStageMask(&pipelineStageFlags)
+                              .setCommandBufferCount(1)
+                              .setPCommandBuffers(&commandBuffer)
+                              .setSignalSemaphoreCount(1)
+                              .setPSignalSemaphores(&renderingDoneSemaphore);
   const vk::Queue& queue = mContext->getQueue();
-  queue.submit(1, &submitInfo, frameResources.frameFenceHandle);
-  auto const presentInfo =
-      vk::PresentInfoKHR()
-          .setWaitSemaphoreCount(1)
-          .setPWaitSemaphores(&frameResources.finishedRenderSemaphore)
-          .setSwapchainCount(1)
-          .setPSwapchains(&swapchain->getHandle())
-          .setPImageIndices(&mCurrentImageIndex);
+  queue.submit(1, &submitInfo, presentFrameFence);
+  auto const presentInfo = vk::PresentInfoKHR()
+                               .setWaitSemaphoreCount(1)
+                               .setPWaitSemaphores(&renderingDoneSemaphore)
+                               .setSwapchainCount(1)
+                               .setPSwapchains(&swapchain->getHandle())
+                               .setPImageIndices(&imageIndex);
   queue.presentKHR(&presentInfo);
 }
 

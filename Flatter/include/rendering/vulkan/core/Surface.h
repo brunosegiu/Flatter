@@ -5,7 +5,7 @@
 #include <optional>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Instance.h"
+#include "rendering/vulkan/core/Instance.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -22,7 +22,7 @@ class Surface {
           const unsigned int height);
   const vk::SurfaceCapabilitiesKHR getCapabilities(
       const vk::PhysicalDevice& physicalDevice) const;
-  const vk::SurfaceFormatKHR& getSurfaceFormat(
+  const vk::SurfaceFormatKHR& getFormat(
       const vk::PhysicalDevice& physicalDevice) const;
 
   virtual ~Surface();

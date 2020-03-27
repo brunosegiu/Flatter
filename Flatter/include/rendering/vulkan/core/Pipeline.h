@@ -5,9 +5,9 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/Context.h"
-#include "rendering/vulkan/RenderPass.h"
-#include "rendering/vulkan/Shader.h"
+#include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/core/RenderPass.h"
+#include "rendering/vulkan/core/Shader.h"
 
 namespace Rendering {
 namespace Vulkan {

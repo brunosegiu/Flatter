@@ -1,4 +1,4 @@
-﻿#include "rendering/vulkan/Surface.h"
+﻿#include "rendering/vulkan/core/Surface.h"
 
 using namespace Rendering::Vulkan;
 
@@ -24,7 +24,7 @@ const vk::SurfaceCapabilitiesKHR Surface::getCapabilities(
   return surfaceCapabilities;
 }
 
-const vk::SurfaceFormatKHR& Surface::getSurfaceFormat(
+const vk::SurfaceFormatKHR& Surface::getFormat(
     const vk::PhysicalDevice& physicalDevice) const {
   uint32_t formatCount = 1;
   if (!mSurfaceFormat.has_value()) {
