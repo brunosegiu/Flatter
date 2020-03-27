@@ -64,14 +64,14 @@ void ScreenFramebufferRing::initCommandResources(
 
 const RenderingResources ScreenFramebufferRing::cycle() {
   mCurrentFrameIndex = (mCurrentFrameIndex++) % FRAMES_IN_FLIGHT_COUNT;
-  const InFlightFrameResources& frameResources =
-      mInFlightFrameResources[mCurrentFrameIndex];
+  const InFlightFrameResources& frameResources(
+      mInFlightFrameResources[mCurrentFrameIndex]);
   const SwapchainRef& swapchain = mContext->getSwapchain();
   mCurrentImageIndex = swapchain->acquireNextImage(
       frameResources.frameFenceHandle, frameResources.availableImageSemaphore);
   assert(mCurrentImageIndex < mSwapchainImageCount);
-  const CommandBufferResources& commandResources =
-      mCommandBufferResources[mCurrentImageIndex];
+  const CommandBufferResources& commandResources(
+      mCommandBufferResources[mCurrentImageIndex]);
 
   return RenderingResources(
       frameResources.frameFenceHandle, frameResources.availableImageSemaphore,

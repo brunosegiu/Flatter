@@ -55,7 +55,7 @@ void Renderer::draw(const Camera& camera) {
 }
 
 void Renderer::beginCommand(const vk::CommandBuffer& commandBuffer) {
-  auto const beginInfo = vk::CommandBufferBeginInfo().setFlags(
+  auto const beginInfo = vk::CommandBufferBeginInfo{}.setFlags(
       vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
   commandBuffer.begin(&beginInfo);
 }
@@ -67,7 +67,7 @@ void Renderer::beginRenderPass(const vk::CommandBuffer& commandBuffer,
                                const vk::Offset2D offset,
                                const vk::ClearValue clearValue) {
   vk::Rect2D renderArea(offset, extent);
-  auto const renderPassBeginInfo = vk::RenderPassBeginInfo()
+  auto const renderPassBeginInfo = vk::RenderPassBeginInfo{}
                                        .setRenderPass(renderPass->getHandle())
                                        .setFramebuffer(framebuffer->getHandle())
                                        .setClearValueCount(1)

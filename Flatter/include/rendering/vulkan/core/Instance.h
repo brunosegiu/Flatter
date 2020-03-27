@@ -14,9 +14,8 @@ class Instance : public vk::Instance {
   const std::vector<vk::PhysicalDevice> getAvailablePhysicalDevices() const;
   virtual ~Instance();
 
- private:
 #ifdef VULKAN_ENABLE_LUNARG_VALIDATION
-
+ private:
   static VKAPI_ATTR VkBool32 VKAPI_CALL
   VulkanReportFunc(VkDebugReportFlagsEXT flags,
                    VkDebugReportObjectTypeEXT objType,

@@ -1,5 +1,4 @@
-﻿
-#include <string>
+﻿#include <string>
 #include <vector>
 
 #include "WindowManager.h"

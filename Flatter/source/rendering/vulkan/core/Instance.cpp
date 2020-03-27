@@ -39,7 +39,7 @@ Instance::Instance() {
 #ifndef VULKAN_ENABLE_LUNARG_VALIDATION
   const std::vector<const char*> extensions{
       VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
-  createInfo.setEnabledExtensionCount(extensions.size())
+  imageViewCreateInfo.setEnabledExtensionCount(extensions.size())
       .setPpEnabledExtensionNames(extensions.data());
 #else
   const std::vector<const char*> extensions{VK_KHR_SURFACE_EXTENSION_NAME,
