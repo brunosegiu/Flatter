@@ -35,7 +35,7 @@ void Renderer::draw(const Camera& camera) {
   const glm::mat4& mvp = camera.getViewProjection();
   const RenderingResources& resources = mScreenFramebufferRing->cycle();
   resources.matrixUniform->update(mvp);
-  const vk::CommandBuffer& currentCommandBuffer = resources.commandBuffer;
+  const vk::CommandBuffer& currentCommandBuffer(resources.commandBuffer);
   const vk::Extent2D& imageExtent = mContext->getSwapchain()->getExtent();
   beginCommand(currentCommandBuffer);
   bindPipeline(currentCommandBuffer, mPipeline);

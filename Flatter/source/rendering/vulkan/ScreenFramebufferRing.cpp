@@ -33,6 +33,14 @@ void ScreenFramebufferRing::initInFlightFrameResources() {
                            &frameResources.finishedRenderSemaphore);
     device.createFence(&fenceCreateInfo, nullptr,
                        &frameResources.frameFenceHandle);
+
+    auto const commandBufferAllocInfo =
+        vk::CommandBufferAllocateInfo()
+            .setCommandPool(mContext->getCommandPool())
+            .setLevel(vk::CommandBufferLevel::ePrimary)
+            .setCommandBufferCount(1);
+    device.allocateCommandBuffers(&commandBufferAllocInfo,
+                                  &frameResources.commandBuffer);
   }
 }
 
@@ -45,15 +53,8 @@ void ScreenFramebufferRing::initCommandResources(
   for (unsigned int imageIndex = 0; imageIndex < mSwapchainImageCount;
        ++imageIndex) {
     mCommandBufferResources.emplace_back();
-    CommandBufferResources& commandResources =
+    SwapchainImageResources& commandResources =
         mCommandBufferResources[imageIndex];
-    auto const commandBufferAllocInfo =
-        vk::CommandBufferAllocateInfo()
-            .setCommandPool(mContext->getCommandPool())
-            .setLevel(vk::CommandBufferLevel::ePrimary)
-            .setCommandBufferCount(1);
-    device.allocateCommandBuffers(&commandBufferAllocInfo,
-                                  &commandResources.commandBuffer);
     commandResources.framebuffer = std::make_shared<Framebuffer>(
         mContext, swapchain->getImage(imageIndex), mSurfaceFormat,
         swapchain->getExtent(), renderPass);
@@ -63,19 +64,19 @@ void ScreenFramebufferRing::initCommandResources(
 }
 
 const RenderingResources ScreenFramebufferRing::cycle() {
-  mCurrentFrameIndex = (mCurrentFrameIndex++) % FRAMES_IN_FLIGHT_COUNT;
+  mCurrentFrameIndex = mCurrentFrameIndex % FRAMES_IN_FLIGHT_COUNT;
   const InFlightFrameResources& frameResources(
       mInFlightFrameResources[mCurrentFrameIndex]);
   const SwapchainRef& swapchain = mContext->getSwapchain();
   mCurrentImageIndex = swapchain->acquireNextImage(
       frameResources.frameFenceHandle, frameResources.availableImageSemaphore);
   assert(mCurrentImageIndex < mSwapchainImageCount);
-  const CommandBufferResources& commandResources(
+  const SwapchainImageResources& commandResources(
       mCommandBufferResources[mCurrentImageIndex]);
-
+  ++mCurrentFrameIndex;
   return RenderingResources(
       frameResources.frameFenceHandle, frameResources.availableImageSemaphore,
-      frameResources.finishedRenderSemaphore, commandResources.commandBuffer,
+      frameResources.finishedRenderSemaphore, frameResources.commandBuffer,
       commandResources.framebuffer, commandResources.matrixUniform,
       mCurrentImageIndex);
 }

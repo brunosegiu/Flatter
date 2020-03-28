@@ -21,10 +21,10 @@ using InFlightFrameResources = struct {
   vk::Fence frameFenceHandle;
   vk::Semaphore availableImageSemaphore;
   vk::Semaphore finishedRenderSemaphore;
+  vk::CommandBuffer commandBuffer;
 };
 
-using CommandBufferResources = struct {
-  vk::CommandBuffer commandBuffer;
+using SwapchainImageResources = struct {
   FramebufferRef framebuffer;
   UniformMatrixRef matrixUniform;
 };
@@ -75,7 +75,7 @@ class ScreenFramebufferRing {
   unsigned int mSwapchainImageCount;
 
   std::vector<InFlightFrameResources> mInFlightFrameResources;
-  std::vector<CommandBufferResources> mCommandBufferResources;
+  std::vector<SwapchainImageResources> mCommandBufferResources;
 
   // Initializers
   void initInFlightFrameResources();
