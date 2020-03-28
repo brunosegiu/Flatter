@@ -33,7 +33,7 @@ Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
 
 void Renderer::draw(const Camera& camera) {
   const glm::mat4& mvp = camera.getViewProjection();
-  const RenderingResources& resources = mScreenFramebufferRing->cycle();
+  const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
   resources.matrixUniform->update(mvp);
   const vk::CommandBuffer& currentCommandBuffer(resources.commandBuffer);
   const vk::Extent2D& imageExtent = mContext->getSwapchain()->getExtent();
@@ -49,8 +49,8 @@ void Renderer::draw(const Camera& camera) {
   currentCommandBuffer.draw(static_cast<uint32_t>(mVertices.mVertices.size()),
                             1, 0, 0);
   endCommand(currentCommandBuffer);
-  present(currentCommandBuffer, resources.availableImageSemaphore,
-          resources.finishedRenderSemaphore, resources.frameFenceHandle,
+  present(currentCommandBuffer, resources.imageAvailableSemaphore,
+          resources.imageRenderedSemaphore, resources.frameInUseFence,
           resources.imageIndex);
 }
 
@@ -132,7 +132,8 @@ void Renderer::present(const vk::CommandBuffer& commandBuffer,
                               .setSignalSemaphoreCount(1)
                               .setPSignalSemaphores(&renderingDoneSemaphore);
   const vk::Queue& queue = mContext->getQueue();
-  queue.submit(1, &submitInfo, presentFrameFence);
+  assert(queue.submit(1, &submitInfo, presentFrameFence) ==
+         vk::Result::eSuccess);
   auto const presentInfo = vk::PresentInfoKHR()
                                .setWaitSemaphoreCount(1)
                                .setPWaitSemaphores(&renderingDoneSemaphore)

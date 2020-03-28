@@ -18,11 +18,11 @@ class Swapchain {
   Swapchain(const vk::Device& device,
             const vk::PhysicalDevice& physicalDevice,
             const SurfaceRef& surface);
-  const unsigned int acquireNextImage(const vk::Fence& waitFor,
-                                      const vk::Semaphore& signalTo) const;
+  const unsigned int acquireNextImage(const vk::Fence& waitFrameReady,
+                                      const vk::Semaphore& signalImageReady);
   const vk::SwapchainKHR& getHandle() const { return mSwapchainHandle; };
   const vk::Extent2D& getExtent() const { return mSwapchainExtent; };
-  const unsigned int getImageCount() const { return mSwapchainImageCount; };
+  const unsigned int getImageCount() const { return mImageCount; };
   const vk::Image& getImage(const unsigned int index) const {
     return mSwapchainImages[index];
   };
@@ -30,8 +30,11 @@ class Swapchain {
 
  private:
   vk::SwapchainKHR mSwapchainHandle;
-  unsigned int mSwapchainImageCount;
+
+  unsigned int mImageCount;
   std::vector<vk::Image> mSwapchainImages;
+  std::vector<vk::Fence> mImageInUseFences;
+
   vk::Extent2D mSwapchainExtent;
 
   const vk::Device mDevice;

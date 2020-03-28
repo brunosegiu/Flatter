@@ -22,13 +22,13 @@ Swapchain::Swapchain(const vk::Device& device,
 
   vk::PresentModeKHR presentMode =
       std::find(presentModes.begin(), presentModes.end(),
-                vk::PresentModeKHR::eMailbox) == presentModes.end()
+                vk::PresentModeKHR::eFifo) != presentModes.end()
           ? vk::PresentModeKHR::eFifo
           : vk::PresentModeKHR::eMailbox;
 
-  mSwapchainImageCount = presentMode == vk::PresentModeKHR::eMailbox
-                             ? PRESENT_MODE_MAILBOX_IMAGE_COUNT
-                             : PRESENT_MODE_DEFAULT_IMAGE_COUNT;
+  mImageCount = presentMode == vk::PresentModeKHR::eFifo
+                    ? PRESENT_MODE_DEFAULT_IMAGE_COUNT
+                    : PRESENT_MODE_MAILBOX_IMAGE_COUNT;
 
   const vk::SurfaceCapabilitiesKHR surfaceCapabilities =
       surface->getCapabilities(physicalDevice);
@@ -48,7 +48,7 @@ Swapchain::Swapchain(const vk::Device& device,
   const auto swapChainCreateInfo =
       vk::SwapchainCreateInfoKHR()
           .setSurface(surface->mSurfaceHandle)
-          .setMinImageCount(mSwapchainImageCount)
+          .setMinImageCount(mImageCount)
           .setImageFormat(surfaceFormat.format)
           .setImageColorSpace(surfaceFormat.colorSpace)
           .setImageExtent(mSwapchainExtent)
@@ -62,21 +62,28 @@ Swapchain::Swapchain(const vk::Device& device,
 
   assert(mDevice.createSwapchainKHR(&swapChainCreateInfo, nullptr,
                                     &mSwapchainHandle) == vk::Result::eSuccess);
-  mDevice.getSwapchainImagesKHR(mSwapchainHandle, &mSwapchainImageCount,
+  mDevice.getSwapchainImagesKHR(mSwapchainHandle, &mImageCount,
                                 static_cast<vk::Image*>(nullptr));
-  mSwapchainImages = std::vector<vk::Image>(mSwapchainImageCount, vk::Image{});
-  mDevice.getSwapchainImagesKHR(mSwapchainHandle, &mSwapchainImageCount,
+  mSwapchainImages = std::vector<vk::Image>(mImageCount, vk::Image{});
+  mDevice.getSwapchainImagesKHR(mSwapchainHandle, &mImageCount,
                                 mSwapchainImages.data());
+
+  mImageInUseFences = std::vector<vk::Fence>(mImageCount, vk::Fence());
 }
 
 const unsigned int Swapchain::acquireNextImage(
-    const vk::Fence& waitFor,
-    const vk::Semaphore& signalTo) const {
-  mDevice.waitForFences(1, &waitFor, VK_TRUE, UINT64_MAX);
-  mDevice.resetFences(1, &waitFor);
+    const vk::Fence& waitFrameReady,
+    const vk::Semaphore& signalImageReady) {
+  mDevice.waitForFences(1, &waitFrameReady, VK_TRUE, UINT64_MAX);
   unsigned int imageIndex = 0;
-  mDevice.acquireNextImageKHR(mSwapchainHandle, UINT64_MAX, signalTo,
+  mDevice.acquireNextImageKHR(mSwapchainHandle, UINT64_MAX, signalImageReady,
                               vk::Fence(), &imageIndex);
+  if (mImageInUseFences[imageIndex]) {
+    mDevice.waitForFences(1, &mImageInUseFences[imageIndex], VK_TRUE,
+                          UINT64_MAX);
+  }
+  mImageInUseFences[imageIndex] = waitFrameReady;
+  mDevice.resetFences(1, &waitFrameReady);
   return imageIndex;
 }
 

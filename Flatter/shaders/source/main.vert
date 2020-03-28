@@ -14,10 +14,12 @@ out gl_PerVertex
 };
 
 layout(location = 0) out vec3 fragColor;
+layout(location = 1) out float depth;
 
 
 void main()
 {
     gl_Position = view.mvp * vec4(position, 1.0);
     fragColor = vec3(1.0f);
+    depth = gl_Position.z;
 }

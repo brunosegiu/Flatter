@@ -3,10 +3,11 @@
 #extension GL_KHR_vulkan_glsl : enable
 
 layout(location = 0) in vec3 fragColor;
+layout(location = 1) in float depth;
 
 layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    outColor = vec4(fragColor, 1.0);
+    outColor = vec4(vec3(depth / 100.0f), 1.0);
 }

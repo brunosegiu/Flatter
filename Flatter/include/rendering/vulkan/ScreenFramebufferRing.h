@@ -18,25 +18,27 @@ namespace Vulkan {
 const unsigned int FRAMES_IN_FLIGHT_COUNT = 2;
 
 using InFlightFrameResources = struct {
-  vk::Fence frameFenceHandle;
-  vk::Semaphore availableImageSemaphore;
-  vk::Semaphore finishedRenderSemaphore;
-  vk::CommandBuffer commandBuffer;
+  vk::Fence frameInUseFence;
+  vk::Semaphore imageAvailableSemaphore;
+  vk::Semaphore imageRenderedSemaphore;
 };
 
 using SwapchainImageResources = struct {
   FramebufferRef framebuffer;
+  vk::CommandBuffer commandBuffer;
+
   UniformMatrixRef matrixUniform;
 };
 
 using RenderingResources = struct RenderingResources {
-  const vk::Fence& frameFenceHandle;
-  const vk::Semaphore& availableImageSemaphore;
-  const vk::Semaphore& finishedRenderSemaphore;
+  const vk::Fence& frameInUseFence;
+  const vk::Semaphore& imageAvailableSemaphore;
+  const vk::Semaphore& imageRenderedSemaphore;
   const vk::CommandBuffer& commandBuffer;
   const FramebufferRef& framebuffer;
-  const UniformMatrixRef& matrixUniform;
   const unsigned int imageIndex;
+
+  const UniformMatrixRef& matrixUniform;
 
   RenderingResources(const vk::Fence& in_frameFenceHandle,
                      const vk::Semaphore& in_availableImageSemaphore,
@@ -45,9 +47,9 @@ using RenderingResources = struct RenderingResources {
                      const FramebufferRef& in_framebuffer,
                      const UniformMatrixRef& in_matrixUniform,
                      const unsigned int in_imageIndex)
-      : frameFenceHandle(in_frameFenceHandle),
-        availableImageSemaphore(in_availableImageSemaphore),
-        finishedRenderSemaphore(in_fin_ishedRenderSemaphore),
+      : frameInUseFence(in_frameFenceHandle),
+        imageAvailableSemaphore(in_availableImageSemaphore),
+        imageRenderedSemaphore(in_fin_ishedRenderSemaphore),
         commandBuffer(in_commandBuffer),
         framebuffer(in_framebuffer),
         matrixUniform(in_matrixUniform),
@@ -61,7 +63,7 @@ class ScreenFramebufferRing {
                         const RenderPassRef& renderPass,
                         const VkDescriptorSetLayout& descriptorSetLayout);
 
-  const RenderingResources cycle();
+  const RenderingResources swapBuffers();
 
   virtual ~ScreenFramebufferRing();
 
@@ -72,16 +74,16 @@ class ScreenFramebufferRing {
 
   unsigned int mCurrentFrameIndex;
   unsigned int mCurrentImageIndex;
-  unsigned int mSwapchainImageCount;
+  unsigned int mImageCount;
 
   std::vector<InFlightFrameResources> mInFlightFrameResources;
-  std::vector<SwapchainImageResources> mCommandBufferResources;
+  std::vector<SwapchainImageResources> mImagesResources;
 
   // Initializers
   void initInFlightFrameResources();
 
-  void initCommandResources(const RenderPassRef& renderPass,
-                            const VkDescriptorSetLayout& descriptorSetLayout);
+  void initImagesResources(const RenderPassRef& renderPass,
+                           const VkDescriptorSetLayout& descriptorSetLayout);
 };
 
 using ScreenFramebufferRingRef = std::shared_ptr<ScreenFramebufferRing>;
