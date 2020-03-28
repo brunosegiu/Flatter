@@ -67,23 +67,20 @@ Swapchain::Swapchain(const vk::Device& device,
   mSwapchainImages = std::vector<vk::Image>(mImageCount, vk::Image{});
   mDevice.getSwapchainImagesKHR(mSwapchainHandle, &mImageCount,
                                 mSwapchainImages.data());
-
-  mImageInUseFences = std::vector<vk::Fence>(mImageCount, vk::Fence());
 }
 
 const unsigned int Swapchain::acquireNextImage(
     const vk::Fence& waitFrameReady,
     const vk::Semaphore& signalImageReady) {
-  mDevice.waitForFences(1, &waitFrameReady, VK_TRUE, UINT64_MAX);
+  const vk::Result waitResult =
+      mDevice.waitForFences(1, &waitFrameReady, VK_TRUE, UINT64_MAX);
+  assert(waitResult == vk::Result::eSuccess);
+  assert(mDevice.resetFences(1, &waitFrameReady) == vk::Result::eSuccess);
+
   unsigned int imageIndex = 0;
-  mDevice.acquireNextImageKHR(mSwapchainHandle, UINT64_MAX, signalImageReady,
-                              vk::Fence(), &imageIndex);
-  if (mImageInUseFences[imageIndex]) {
-    mDevice.waitForFences(1, &mImageInUseFences[imageIndex], VK_TRUE,
-                          UINT64_MAX);
-  }
-  mImageInUseFences[imageIndex] = waitFrameReady;
-  mDevice.resetFences(1, &waitFrameReady);
+  assert(mDevice.acquireNextImageKHR(mSwapchainHandle, UINT64_MAX,
+                                     signalImageReady, vk::Fence{},
+                                     &imageIndex) == vk::Result::eSuccess);
   return imageIndex;
 }
 

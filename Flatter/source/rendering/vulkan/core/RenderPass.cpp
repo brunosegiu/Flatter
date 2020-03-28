@@ -6,7 +6,7 @@ RenderPass::RenderPass(const ContextRef& context,
                        const vk::Format& surfaceFormat)
     : mContext(context) {
   auto const colorAttachmentDescription =
-      vk::AttachmentDescription()
+      vk::AttachmentDescription{}
           .setFormat(surfaceFormat)
           .setSamples(vk::SampleCountFlagBits::e1)
           .setLoadOp(vk::AttachmentLoadOp::eClear)
@@ -17,29 +17,29 @@ RenderPass::RenderPass(const ContextRef& context,
           .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
   auto const colorReference =
-      vk::AttachmentReference()
+      vk::AttachmentReference{}
           .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
           .setAttachment(0);
 
   auto const subpassDescription =
-      vk::SubpassDescription()
+      vk::SubpassDescription{}
           .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
           .setColorAttachmentCount(1)
           .setPColorAttachments(&colorReference);
 
   auto const subpassDependency =
-      vk::SubpassDependency()
+      vk::SubpassDependency{}
           .setSrcSubpass(VK_SUBPASS_EXTERNAL)
           .setDstSubpass(0)
           .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
           .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-          .setSrcAccessMask(vk::AccessFlagBits())
+          .setSrcAccessMask(vk::AccessFlagBits{})
           .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite |
                             vk::AccessFlagBits::eColorAttachmentRead)
-          .setDependencyFlags(vk::DependencyFlags());
+          .setDependencyFlags(vk::DependencyFlags{});
 
   auto const renderPassCreateInfo =
-      vk::RenderPassCreateInfo()
+      vk::RenderPassCreateInfo{}
           .setAttachmentCount(1)
           .setPAttachments(&colorAttachmentDescription)
           .setSubpassCount(1)
@@ -47,7 +47,8 @@ RenderPass::RenderPass(const ContextRef& context,
           .setDependencyCount(1)
           .setPDependencies(&subpassDependency);
   const vk::Device& device = mContext->getDevice();
-  device.createRenderPass(&renderPassCreateInfo, nullptr, &mRenderPassHandle);
+  assert(device.createRenderPass(&renderPassCreateInfo, nullptr,
+                                 &mRenderPassHandle) == vk::Result::eSuccess);
 }
 
 RenderPass::~RenderPass() {

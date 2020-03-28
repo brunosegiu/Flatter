@@ -33,7 +33,6 @@ class Swapchain {
 
   unsigned int mImageCount;
   std::vector<vk::Image> mSwapchainImages;
-  std::vector<vk::Fence> mImageInUseFences;
 
   vk::Extent2D mSwapchainExtent;
 

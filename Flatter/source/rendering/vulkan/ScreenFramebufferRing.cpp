@@ -27,7 +27,7 @@ void ScreenFramebufferRing::initInFlightFrameResources() {
 
     const vk::SemaphoreCreateInfo semaphoreCreateInfo{};
     auto const fenceCreateInfo =
-        vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
+        vk::FenceCreateInfo{}.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
     device.createSemaphore(&semaphoreCreateInfo, nullptr,
                            &frameResources.imageAvailableSemaphore);
@@ -53,7 +53,7 @@ void ScreenFramebufferRing::initImagesResources(
         swapchain->getExtent(), renderPass);
 
     auto const commandBufferAllocInfo =
-        vk::CommandBufferAllocateInfo()
+        vk::CommandBufferAllocateInfo{}
             .setCommandPool(mContext->getCommandPool())
             .setLevel(vk::CommandBufferLevel::ePrimary)
             .setCommandBufferCount(1);
@@ -74,7 +74,7 @@ const RenderingResources ScreenFramebufferRing::swapBuffers() {
   assert(mCurrentImageIndex < mImageCount);
   const SwapchainImageResources& commandResources(
       mImagesResources[mCurrentImageIndex]);
-  mCurrentFrameIndex = (mCurrentFrameIndex++) % FRAMES_IN_FLIGHT_COUNT;
+  mCurrentFrameIndex = (++mCurrentFrameIndex) % FRAMES_IN_FLIGHT_COUNT;
   return RenderingResources(
       frameResources.frameInUseFence, frameResources.imageAvailableSemaphore,
       frameResources.imageRenderedSemaphore, commandResources.commandBuffer,

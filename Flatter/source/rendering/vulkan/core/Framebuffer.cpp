@@ -9,24 +9,25 @@ Framebuffer::Framebuffer(const ContextRef& context,
                          const RenderPassRef& renderPass)
     : mContext(context) {
   auto const subresourceRange =
-      vk::ImageSubresourceRange()
+      vk::ImageSubresourceRange{}
           .setAspectMask(vk::ImageAspectFlagBits::eColor)
           .setBaseMipLevel(0)
           .setLevelCount(1)
           .setBaseArrayLayer(0)
           .setLayerCount(1);
-  auto const imageViewCreateInfo = vk::ImageViewCreateInfo()
+  auto const imageViewCreateInfo = vk::ImageViewCreateInfo{}
                                        .setImage(swapchainImage)
                                        .setViewType(vk::ImageViewType::e2D)
                                        .setFormat(format)
                                        .setSubresourceRange(subresourceRange);
 
   const vk::Device& device = mContext->getDevice();
-  device.createImageView(&imageViewCreateInfo, nullptr,
-                         &mSwapchainImageViewHandle);
+  assert(device.createImageView(&imageViewCreateInfo, nullptr,
+                                &mSwapchainImageViewHandle) ==
+         vk::Result::eSuccess);
 
   auto const framebufferCreateInfo =
-      vk::FramebufferCreateInfo()
+      vk::FramebufferCreateInfo{}
           .setRenderPass(renderPass->getHandle())
           .setAttachmentCount(1)
           .setPAttachments(&mSwapchainImageViewHandle)
@@ -34,8 +35,8 @@ Framebuffer::Framebuffer(const ContextRef& context,
           .setHeight(extent.height)
           .setLayers(1);
 
-  device.createFramebuffer(&framebufferCreateInfo, nullptr,
-                           &mFramebufferHandle);
+  assert(device.createFramebuffer(&framebufferCreateInfo, nullptr,
+                                  &mFramebufferHandle) == vk::Result::eSuccess);
 }
 
 Framebuffer ::~Framebuffer() {

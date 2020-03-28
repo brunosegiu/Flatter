@@ -56,19 +56,19 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
                         mUniformBuffer, mUniformBufferMemory);
 
   const vk::DescriptorPool& descriptorPool = mContext->getDescriptorPool();
-  auto const allocInfo = vk::DescriptorSetAllocateInfo()
+  auto const allocInfo = vk::DescriptorSetAllocateInfo{}
                              .setDescriptorPool(descriptorPool)
                              .setDescriptorSetCount(1)
                              .setPSetLayouts(&descriptorSetLayout);
   device.allocateDescriptorSets(&allocInfo, &mDescriptorSet);
 
-  auto const bufferInfo = vk::DescriptorBufferInfo()
+  auto const bufferInfo = vk::DescriptorBufferInfo{}
                               .setBuffer(mUniformBuffer)
                               .setOffset(0)
                               .setRange(sizeof(ValueType));
 
   auto const descriptorWrite =
-      vk::WriteDescriptorSet()
+      vk::WriteDescriptorSet{}
           .setDstSet(mDescriptorSet)
           .setDstBinding(0)
           .setDstArrayElement(0)

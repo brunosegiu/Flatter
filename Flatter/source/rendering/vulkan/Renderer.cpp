@@ -9,14 +9,14 @@ Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
   const vk::Device& device = mContext->getDevice();
   // UNIFORM
   auto const uboLayoutBinding =
-      vk::DescriptorSetLayoutBinding()
+      vk::DescriptorSetLayoutBinding{}
           .setBinding(0)
           .setDescriptorType(vk::DescriptorType::eUniformBuffer)
           .setDescriptorCount(1)
           .setStageFlags(vk::ShaderStageFlagBits::eVertex);
 
   auto const layoutInfo =
-      vk::DescriptorSetLayoutCreateInfo().setBindingCount(1).setPBindings(
+      vk::DescriptorSetLayoutCreateInfo{}.setBindingCount(1).setPBindings(
           &uboLayoutBinding);
 
   device.createDescriptorSetLayout(&layoutInfo, nullptr, &mDescriptorSetLayout);
@@ -123,7 +123,7 @@ void Renderer::present(const vk::CommandBuffer& commandBuffer,
 
   const vk::PipelineStageFlags pipelineStageFlags{
       vk::PipelineStageFlagBits::eColorAttachmentOutput};
-  auto const submitInfo = vk::SubmitInfo()
+  auto const submitInfo = vk::SubmitInfo{}
                               .setWaitSemaphoreCount(1)
                               .setPWaitSemaphores(&imageAvailableSemaphore)
                               .setPWaitDstStageMask(&pipelineStageFlags)
@@ -132,9 +132,10 @@ void Renderer::present(const vk::CommandBuffer& commandBuffer,
                               .setSignalSemaphoreCount(1)
                               .setPSignalSemaphores(&renderingDoneSemaphore);
   const vk::Queue& queue = mContext->getQueue();
-  assert(queue.submit(1, &submitInfo, presentFrameFence) ==
-         vk::Result::eSuccess);
-  auto const presentInfo = vk::PresentInfoKHR()
+  const vk::Result submitResult =
+      queue.submit(1, &submitInfo, presentFrameFence);
+  assert(submitResult == vk::Result::eSuccess);
+  auto const presentInfo = vk::PresentInfoKHR{}
                                .setWaitSemaphoreCount(1)
                                .setPWaitSemaphores(&renderingDoneSemaphore)
                                .setSwapchainCount(1)

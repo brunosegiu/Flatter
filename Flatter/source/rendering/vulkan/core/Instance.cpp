@@ -27,7 +27,7 @@ Instance::VulkanReportFunc(VkDebugReportFlagsEXT flags,
 #endif
 
 Instance::Instance() {
-  auto const appInfo = vk::ApplicationInfo()
+  auto const appInfo = vk::ApplicationInfo{}
                            .setPApplicationName("Flatter")
                            .setApplicationVersion(VK_MAKE_VERSION(0, 0, 1))
                            .setPEngineName("Flatter Engine")

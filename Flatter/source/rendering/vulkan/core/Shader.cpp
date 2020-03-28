@@ -1,5 +1,7 @@
 ﻿#include "rendering/vulkan/core/Shader.h"
 
+#include <assert.h>
+
 #include <fstream>
 
 using namespace Rendering::Vulkan;
@@ -19,11 +21,12 @@ ShaderRef Shader::fromFile(const std::string& path, const ContextRef& context) {
 Shader::Shader(const ContextRef& context, const std::vector<char>& code)
     : mContext(context) {
   auto const shaderCreateInfo =
-      vk::ShaderModuleCreateInfo()
+      vk::ShaderModuleCreateInfo{}
           .setCodeSize(code.size() * sizeof(char))
           .setPCode(reinterpret_cast<const unsigned int*>(code.data()));
   const vk::Device& device = mContext->getDevice();
-  device.createShaderModule(&shaderCreateInfo, nullptr, &mShaderHandle);
+  assert(device.createShaderModule(&shaderCreateInfo, nullptr,
+                                   &mShaderHandle) == vk::Result::eSuccess);
 }
 
 Shader::~Shader() {

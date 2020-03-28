@@ -11,13 +11,13 @@ Pipeline::Pipeline(const ContextRef& context,
   mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", context);
   mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", context);
 
-  auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo()
+  auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo{}
                                      .setStage(vk::ShaderStageFlagBits::eVertex)
                                      .setModule(mVertexShader->getHandle())
                                      .setPName("main");
 
   auto const fragmentShaderStage =
-      vk::PipelineShaderStageCreateInfo()
+      vk::PipelineShaderStageCreateInfo{}
           .setStage(vk::ShaderStageFlagBits::eFragment)
           .setModule(mFragmentShader->getHandle())
           .setPName("main");
@@ -35,10 +35,10 @@ Pipeline::Pipeline(const ContextRef& context,
           .setPVertexAttributeDescriptions(&attrDescription);
 
   auto const inputAssemblyState =
-      vk::PipelineInputAssemblyStateCreateInfo()
+      vk::PipelineInputAssemblyStateCreateInfo{}
           .setTopology(vk::PrimitiveTopology::eTriangleList)
           .setPrimitiveRestartEnable(VK_FALSE);
-  auto const rasterizationState = vk::PipelineRasterizationStateCreateInfo()
+  auto const rasterizationState = vk::PipelineRasterizationStateCreateInfo{}
                                       .setDepthClampEnable(VK_FALSE)
                                       .setRasterizerDiscardEnable(VK_FALSE)
                                       .setPolygonMode(vk::PolygonMode::eFill)
@@ -49,13 +49,13 @@ Pipeline::Pipeline(const ContextRef& context,
                                       .setDepthBiasClamp(0.0f)
                                       .setDepthBiasSlopeFactor(0.0f)
                                       .setLineWidth(1.0f);
-  auto const viewportState = vk::PipelineViewportStateCreateInfo()
+  auto const viewportState = vk::PipelineViewportStateCreateInfo{}
                                  .setViewportCount(1)
                                  .setPViewports(0)
                                  .setScissorCount(1)
                                  .setPScissors(0);
   auto const multisampleState =
-      vk::PipelineMultisampleStateCreateInfo()
+      vk::PipelineMultisampleStateCreateInfo{}
           .setRasterizationSamples(vk::SampleCountFlagBits::e1)
           .setSampleShadingEnable(VK_FALSE)
           .setMinSampleShading(1.0f)
@@ -76,7 +76,7 @@ Pipeline::Pipeline(const ContextRef& context,
               vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
               vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
 
-  auto const colorBlendState = vk::PipelineColorBlendStateCreateInfo()
+  auto const colorBlendState = vk::PipelineColorBlendStateCreateInfo{}
                                    .setLogicOpEnable(VK_FALSE)
                                    .setAttachmentCount(1)
                                    .setPAttachments(&colorblendAttachmentState);
@@ -91,8 +91,9 @@ Pipeline::Pipeline(const ContextRef& context,
       vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
           &descriptorSetLayout);
   const vk::Device& device = mContext->getDevice();
-  device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
-                              &mPipelineLayoutHandle);
+  assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
+                                     &mPipelineLayoutHandle) ==
+         vk::Result::eSuccess);
 
   auto const pipelineCreateInfo =
       vk::GraphicsPipelineCreateInfo()
@@ -108,8 +109,9 @@ Pipeline::Pipeline(const ContextRef& context,
           .setLayout(mPipelineLayoutHandle)
           .setRenderPass(renderPass->getHandle());
 
-  device.createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo, nullptr,
-                                 &mPipelineHandle);
+  assert(device.createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo,
+                                        nullptr, &mPipelineHandle) ==
+         vk::Result::eSuccess);
 }
 
 Pipeline::~Pipeline() {

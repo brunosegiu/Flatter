@@ -25,7 +25,7 @@ Context::Context(const InstanceRef& instance, const SurfaceRef& surface)
 
   const std::vector<float> priorities{1.0f};
   auto const deviceQueueCreateInfo =
-      vk::DeviceQueueCreateInfo()
+      vk::DeviceQueueCreateInfo{}
           .setQueueFamilyIndex(this->mQueueFamilyIndex)
           .setQueueCount(1)
           .setPQueuePriorities(priorities.data());
@@ -38,22 +38,24 @@ Context::Context(const InstanceRef& instance, const SurfaceRef& surface)
   // Uniform descriptor pool
   vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer,
                                   MAX_DESC_SETS);
-  auto const poolCreateInfo = vk::DescriptorPoolCreateInfo()
+  auto const poolCreateInfo = vk::DescriptorPoolCreateInfo{}
                                   .setPoolSizeCount(1)
                                   .setPPoolSizes(&poolSize)
                                   .setMaxSets(MAX_DESC_SETS);
 
-  mDevice.createDescriptorPool(&poolCreateInfo, nullptr,
-                               &mDescriptorPoolHandle);
+  assert(mDevice.createDescriptorPool(&poolCreateInfo, nullptr,
+                                      &mDescriptorPoolHandle) ==
+         vk::Result::eSuccess);
 
   // Command pool
   auto const commandPoolCreateInfo =
-      vk::CommandPoolCreateInfo()
+      vk::CommandPoolCreateInfo{}
           .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
           .setQueueFamilyIndex(getQueueFamilyIndex());
 
-  mDevice.createCommandPool(&commandPoolCreateInfo, nullptr,
-                            &mCommandPoolHandle);
+  assert(mDevice.createCommandPool(&commandPoolCreateInfo, nullptr,
+                                   &mCommandPoolHandle) ==
+         vk::Result::eSuccess);
 
   // Swapchain
   mSwapchain = std::make_shared<Swapchain>(mDevice, mPhysicalDevice, mSurface);
@@ -126,7 +128,7 @@ void Context::allocBuffer(vk::DeviceSize size,
                           vk::Buffer& buffer,
                           vk::DeviceMemory& bufferMemory) const {
   auto const bufferCreateInfo =
-      vk::BufferCreateInfo().setSize(size).setUsage(usage).setSharingMode(
+      vk::BufferCreateInfo{}.setSize(size).setUsage(usage).setSharingMode(
           vk::SharingMode::eExclusive);
   mDevice.createBuffer(&bufferCreateInfo, nullptr, &buffer);
 
@@ -134,14 +136,16 @@ void Context::allocBuffer(vk::DeviceSize size,
   mDevice.getBufferMemoryRequirements(buffer, &memRequirements);
 
   auto const allocCreateInfo =
-      vk::MemoryAllocateInfo()
+      vk::MemoryAllocateInfo{}
           .setAllocationSize(memRequirements.size)
           .setMemoryTypeIndex(
               findBufferMemoryType(memRequirements.memoryTypeBits, properties));
 
-  mDevice.allocateMemory(&allocCreateInfo, nullptr, &bufferMemory);
+  assert(mDevice.allocateMemory(&allocCreateInfo, nullptr, &bufferMemory) ==
+         vk::Result::eSuccess);
 
-  mDevice.bindBufferMemory(buffer, bufferMemory, 0);
+  assert(mDevice.bindBufferMemory(buffer, bufferMemory, 0) ==
+         vk::Result::eSuccess);
 }
 
 Context::~Context() {

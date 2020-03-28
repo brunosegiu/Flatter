@@ -7,7 +7,7 @@ Surface::Surface(const SDL_SysWMinfo& info,
                  const unsigned int width,
                  const unsigned int height)
     : mInstance(instance), mWidth(width), mHeight(height) {
-  auto const surfaceCreateInfo = vk::Win32SurfaceCreateInfoKHR()
+  auto const surfaceCreateInfo = vk::Win32SurfaceCreateInfoKHR{}
                                      .setHinstance(GetModuleHandle(0))
                                      .setHwnd(info.info.win.window);
 
@@ -19,8 +19,8 @@ Surface::Surface(const SDL_SysWMinfo& info,
 const vk::SurfaceCapabilitiesKHR Surface::getCapabilities(
     const vk::PhysicalDevice& physicalDevice) const {
   vk::SurfaceCapabilitiesKHR surfaceCapabilities;
-  physicalDevice.getSurfaceCapabilitiesKHR(mSurfaceHandle,
-                                           &surfaceCapabilities);
+  assert(physicalDevice.getSurfaceCapabilitiesKHR(
+             mSurfaceHandle, &surfaceCapabilities) == vk::Result::eSuccess);
   return surfaceCapabilities;
 }
 

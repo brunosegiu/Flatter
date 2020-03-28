@@ -1,5 +1,7 @@
 ﻿#include "WindowManager.h"
 
+#include <iostream>
+
 #include "commons/Timer.h"
 #include "input/CameraController.h"
 
