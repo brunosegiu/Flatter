@@ -6,7 +6,6 @@
 
 #include "rendering/Camera.h"
 #include "rendering/vulkan/ScreenFramebufferRing.h"
-#include "rendering/vulkan/VertexBuffer.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/Pipeline.h"
 #include "rendering/vulkan/core/RenderPass.h"
@@ -27,8 +26,6 @@ class Renderer {
   RenderPassRef mRenderPass;
   PipelineRef mPipeline;
   ScreenFramebufferRingRef mScreenFramebufferRing;
-
-  VertexBuffer mVertices;
 
   const ContextRef mContext;
 

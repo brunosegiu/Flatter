@@ -214,7 +214,6 @@
     <ClCompile Include="source\rendering\vulkan\core\Surface.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Swapchain.cpp" />
     <ClCompile Include="source\rendering\vulkan\ScreenFramebufferRing.cpp" />
-    <ClCompile Include="source\rendering\vulkan\VertexBuffer.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -232,7 +231,6 @@
     <ClInclude Include="include\rendering\vulkan\core\Swapchain.h" />
     <ClInclude Include="include\rendering\vulkan\core\Uniform.h" />
     <ClInclude Include="include\rendering\vulkan\ScreenFramebufferRing.h" />
-    <ClInclude Include="include\rendering\vulkan\VertexBuffer.h" />
     <ClInclude Include="include\WindowManager.h" />
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,7 @@
 using namespace Rendering::Vulkan;
 
 Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
-    : mContext(context), mVertices(context) {
+    : mContext(context) {
   mRenderPass = std::make_shared<RenderPass>(
       context, surface->getFormat(context->getPhysicalDevice()).format);
   const vk::Device& device = mContext->getDevice();
@@ -23,9 +23,8 @@ Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
 
   // UNIFORM
 
-  mPipeline = std::make_shared<Pipeline>(
-      mContext, mRenderPass, mDescriptorSetLayout, mVertices.mDescription,
-      mVertices.mAttrDescription);
+  mPipeline =
+      std::make_shared<Pipeline>(mContext, mRenderPass, mDescriptorSetLayout);
 
   mScreenFramebufferRing = std::make_shared<ScreenFramebufferRing>(
       mContext, surface, mRenderPass, mDescriptorSetLayout);
@@ -45,9 +44,8 @@ void Renderer::draw(const Camera& camera) {
   bindUniforms(currentCommandBuffer, resources.matrixUniform, mPipeline);
 
   vk::DeviceSize offset{0};
-  currentCommandBuffer.bindVertexBuffers(0, 1, &mVertices.mBuffer, &offset);
-  currentCommandBuffer.draw(static_cast<uint32_t>(mVertices.mVertices.size()),
-                            1, 0, 0);
+  // currentCommandBuffer.bindVertexBuffers(0, 1, &mVertices.mBuffer, &offset);
+  currentCommandBuffer.draw(3, 1, 0, 0);
   endCommand(currentCommandBuffer);
   present(currentCommandBuffer, resources.imageAvailableSemaphore,
           resources.imageRenderedSemaphore, resources.frameInUseFence,
