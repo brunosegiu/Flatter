@@ -5,7 +5,7 @@ using namespace Rendering::Vulkan;
 Pipeline::Pipeline(const ContextRef& context,
                    const RenderPassRef& renderPass,
                    const vk::DescriptorSetLayout& descriptorSetLayout)
-    : mContext(context) {
+    : mContext(context), mVertices(context) {
   mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", context);
   mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", context);
 
@@ -25,7 +25,12 @@ Pipeline::Pipeline(const ContextRef& context,
 
   // Pipeline stages setup
 
-  const auto vertexInputState = vk::PipelineVertexInputStateCreateInfo{};
+  const auto vertexInputState =
+      vk::PipelineVertexInputStateCreateInfo{}
+          .setVertexBindingDescriptionCount(1)
+          .setVertexAttributeDescriptionCount(1)
+          .setPVertexBindingDescriptions(&mVertices.mBindingDescription)
+          .setPVertexAttributeDescriptions(&mVertices.mAttributeDescription);
 
   auto const inputAssemblyState =
       vk::PipelineInputAssemblyStateCreateInfo{}

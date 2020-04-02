@@ -5,6 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
+#include "rendering/vulkan/IndexedVertexBuffer.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/RenderPass.h"
 #include "rendering/vulkan/core/Shader.h"
@@ -24,6 +25,8 @@ class Pipeline {
   };
 
   virtual ~Pipeline();
+
+  IndexedVertexBuffer mVertices;
 
  private:
   vk::Pipeline mPipelineHandle;

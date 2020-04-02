@@ -35,6 +35,7 @@ void Renderer::draw(const Camera& camera) {
   const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
   resources.matrixUniform->update(mvp);
   const vk::CommandBuffer& currentCommandBuffer(resources.commandBuffer);
+
   const vk::Extent2D& imageExtent = mContext->getSwapchain()->getExtent();
   beginCommand(currentCommandBuffer);
   bindPipeline(currentCommandBuffer, mPipeline);
@@ -44,8 +45,13 @@ void Renderer::draw(const Camera& camera) {
   bindUniforms(currentCommandBuffer, resources.matrixUniform, mPipeline);
 
   vk::DeviceSize offset{0};
-  // currentCommandBuffer.bindVertexBuffers(0, 1, &mVertices.mBuffer, &offset);
-  currentCommandBuffer.draw(3, 1, 0, 0);
+  currentCommandBuffer.bindVertexBuffers(
+      0, 1, &mPipeline->mVertices.mVertexBuffer, &offset);
+  currentCommandBuffer.bindIndexBuffer(mPipeline->mVertices.mIndexBuffer,
+                                       offset, vk::IndexType::eUint32);
+  currentCommandBuffer.drawIndexed(mPipeline->mVertices.mIndices.size(), 1, 0,
+                                   0, 0);
+
   endCommand(currentCommandBuffer);
   present(currentCommandBuffer, resources.imageAvailableSemaphore,
           resources.imageRenderedSemaphore, resources.frameInUseFence,

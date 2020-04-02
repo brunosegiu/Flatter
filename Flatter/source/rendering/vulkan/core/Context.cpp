@@ -122,11 +122,11 @@ unsigned int Context::findBufferMemoryType(
   return -1;
 }
 
-void Context::allocBuffer(vk::DeviceSize size,
-                          vk::BufferUsageFlags usage,
-                          vk::MemoryPropertyFlags properties,
-                          vk::Buffer& buffer,
-                          vk::DeviceMemory& bufferMemory) const {
+void Context::createBuffer(vk::DeviceSize size,
+                           vk::BufferUsageFlags usage,
+                           vk::MemoryPropertyFlags properties,
+                           vk::Buffer& buffer,
+                           vk::DeviceMemory& bufferMemory) const {
   auto const bufferCreateInfo =
       vk::BufferCreateInfo{}.setSize(size).setUsage(usage).setSharingMode(
           vk::SharingMode::eExclusive);
@@ -146,6 +146,32 @@ void Context::allocBuffer(vk::DeviceSize size,
 
   assert(mDevice.bindBufferMemory(buffer, bufferMemory, 0) ==
          vk::Result::eSuccess);
+}
+
+void Context::copyBuffer(vk::Buffer srcBuffer,
+                         vk::Buffer dstBuffer,
+                         vk::DeviceSize bufferSize) const {
+  const auto commandAllocInfo = vk::CommandBufferAllocateInfo{}
+                                    .setLevel(vk::CommandBufferLevel::ePrimary)
+                                    .setCommandPool(mCommandPoolHandle)
+                                    .setCommandBufferCount(1);
+  vk::CommandBuffer commandBuffer{};
+  mDevice.allocateCommandBuffers(&commandAllocInfo, &commandBuffer);
+
+  const auto commandBeginInfo = vk::CommandBufferBeginInfo{}.setFlags(
+      vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+  commandBuffer.begin(&commandBeginInfo);
+  const auto region =
+      vk::BufferCopy{}.setSrcOffset(0).setDstOffset(0).setSize(bufferSize);
+  commandBuffer.copyBuffer(srcBuffer, dstBuffer, region);
+  commandBuffer.end();
+
+  const auto commandSubmitInfo =
+      vk::SubmitInfo{}.setCommandBufferCount(1).setPCommandBuffers(
+          &commandBuffer);
+  mQueue.submit(commandSubmitInfo, vk::Fence());
+  mQueue.waitIdle();
+  mDevice.freeCommandBuffers(mCommandPoolHandle, commandBuffer);
 }
 
 Context::~Context() {

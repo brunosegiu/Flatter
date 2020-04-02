@@ -50,10 +50,10 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
 
   vk::DeviceSize bufferSize = sizeof(ValueType);
 
-  mContext->allocBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
-                        vk::MemoryPropertyFlagBits::eHostVisible |
-                            vk::MemoryPropertyFlagBits::eHostCoherent,
-                        mUniformBuffer, mUniformBufferMemory);
+  mContext->createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
+                         vk::MemoryPropertyFlagBits::eHostVisible |
+                             vk::MemoryPropertyFlagBits::eHostCoherent,
+                         mUniformBuffer, mUniformBufferMemory);
 
   const vk::DescriptorPool& descriptorPool = mContext->getDescriptorPool();
   auto const allocInfo = vk::DescriptorSetAllocateInfo{}

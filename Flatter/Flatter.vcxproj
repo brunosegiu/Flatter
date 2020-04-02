@@ -208,6 +208,7 @@
     <ClCompile Include="source\rendering\vulkan\core\Framebuffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Instance.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Pipeline.cpp" />
+    <ClCompile Include="source\rendering\vulkan\IndexedVertexBuffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\Renderer.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\RenderPass.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Shader.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="include\rendering\vulkan\core\Framebuffer.h" />
     <ClInclude Include="include\rendering\vulkan\core\Instance.h" />
     <ClInclude Include="include\rendering\vulkan\core\Pipeline.h" />
+    <ClInclude Include="include\rendering\vulkan\IndexedVertexBuffer.h" />
     <ClInclude Include="include\rendering\vulkan\Renderer.h" />
     <ClInclude Include="include\rendering\vulkan\core\RenderPass.h" />
     <ClInclude Include="include\rendering\vulkan\core\Shader.h" />
