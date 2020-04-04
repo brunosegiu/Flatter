@@ -4,6 +4,7 @@
 
 #include "commons/Timer.h"
 #include "input/CameraController.h"
+#include "rendering/loaders/GLTFLoader.h"
 
 using namespace Game;
 using namespace Rendering::Vulkan;
@@ -23,6 +24,9 @@ WindowManager::WindowManager(const unsigned int width,
   mSurface = std::make_shared<Surface>(info, mInstance, width, height);
   mContext = std::make_shared<Context>(mInstance, mSurface);
   mRenderer = std::make_shared<Renderer>(mContext, mSurface);
+
+  Rendering::GLTFLoader loader(mContext);
+  mMesh = loader.load("assets/monkey.glb")[0];
 }
 
 void WindowManager::loop() {
@@ -41,7 +45,7 @@ void WindowManager::loop() {
     SDL_WarpMouseInWindow(mWindow, static_cast<unsigned int>(mWidth / 2),
                           static_cast<unsigned int>(mHeight / 2));
     cameraController.process(timeDelta);
-    mRenderer->draw(cameraController.getCamera());
+    mRenderer->draw(cameraController.getCamera(), mMesh);
     timer.end();
     timeDelta = timer.getDeltaMs();
     timer.restart();

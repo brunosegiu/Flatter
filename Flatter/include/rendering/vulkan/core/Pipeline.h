@@ -26,8 +26,6 @@ class Pipeline {
 
   virtual ~Pipeline();
 
-  IndexedVertexBuffer mVertices;
-
  private:
   vk::Pipeline mPipelineHandle;
   vk::PipelineLayout mPipelineLayoutHandle;

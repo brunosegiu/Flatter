@@ -7,21 +7,14 @@
 
 #include "rendering/vulkan/core/Context.h"
 
-const std::vector<glm::vec3> testVertices{
-    {-1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, -1.0f},
-    {-1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, 1.0f}, {1.0f, 1.0f, 1.0f},
-    {1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, -1.0f}};
-
-const std::vector<unsigned int> testIndices{1, 2, 0, 3, 6, 2, 7, 4, 6, 5, 0, 4,
-                                            6, 1, 2, 3, 5, 7, 1, 3, 2, 3, 7, 6,
-                                            7, 5, 4, 5, 1, 0, 6, 4, 0, 3, 1, 5};
-
 namespace Rendering {
 namespace Vulkan {
 
 class IndexedVertexBuffer {
  public:
-  IndexedVertexBuffer(const ContextRef& context);
+  IndexedVertexBuffer(const ContextRef& context,
+                      const std::vector<glm::vec3>& vertices,
+                      const std::vector<unsigned int>& indices);
 
   const size_t getVertexBufferSize() const {
     return mVertices.size() * sizeof(glm::vec3);
@@ -31,22 +24,22 @@ class IndexedVertexBuffer {
     return mIndices.size() * sizeof(unsigned int);
   };
 
+  static vk::VertexInputBindingDescription sBindingDescription;
+  static vk::VertexInputAttributeDescription sAttributeDescription;
+
   virtual ~IndexedVertexBuffer();
 
  public:
   IndexedVertexBuffer(IndexedVertexBuffer const&) = delete;
   IndexedVertexBuffer& operator=(IndexedVertexBuffer const&) = delete;
 
-  vk::VertexInputBindingDescription mBindingDescription;
-  vk::VertexInputAttributeDescription mAttributeDescription;
-
   vk::Buffer mVertexBuffer;
   vk::DeviceMemory mVertexBufferMemory;
   vk::Buffer mIndexBuffer;
   vk::DeviceMemory mIndexBufferMemory;
 
-  std::vector<glm::vec3> mVertices = testVertices;
-  std::vector<unsigned int> mIndices = testIndices;
+  std::vector<glm::vec3> mVertices;
+  std::vector<unsigned int> mIndices;
 
   const ContextRef mContext;
 };

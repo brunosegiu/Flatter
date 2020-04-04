@@ -2,15 +2,23 @@
 
 using namespace Rendering::Vulkan;
 
-IndexedVertexBuffer::IndexedVertexBuffer(const ContextRef& context)
-    : mContext(context) {
-  mBindingDescription.setBinding(0)
-      .setStride(sizeof(glm::vec3))
-      .setInputRate(vk::VertexInputRate::eVertex);
+vk::VertexInputBindingDescription IndexedVertexBuffer::sBindingDescription =
+    vk::VertexInputBindingDescription{}
+        .setBinding(0)
+        .setStride(sizeof(glm::vec3))
+        .setInputRate(vk::VertexInputRate::eVertex);
 
-  mAttributeDescription.setBinding(0).setLocation(0).setFormat(
-      vk::Format::eR32G32B32Sfloat);
+vk::VertexInputAttributeDescription IndexedVertexBuffer::sAttributeDescription =
+    vk::VertexInputAttributeDescription{}
+        .setBinding(0)
+        .setLocation(0)
+        .setFormat(vk::Format::eR32G32B32Sfloat);
 
+IndexedVertexBuffer::IndexedVertexBuffer(
+    const ContextRef& context,
+    const std::vector<glm::vec3>& vertices,
+    const std::vector<unsigned int>& indices)
+    : mContext(context), mVertices(vertices), mIndices(indices) {
   // Vertex buffer
   const size_t vertexBufferSize = getVertexBufferSize();
 

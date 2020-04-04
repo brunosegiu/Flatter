@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "rendering/Camera.h"
+#include "rendering/Mesh.h"
 #include "rendering/vulkan/ScreenFramebufferRing.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/Pipeline.h"
@@ -17,7 +18,7 @@ class Renderer {
  public:
   Renderer(const ContextRef& context, const SurfaceRef& surface);
 
-  void draw(const Rendering::Camera& camera);
+  void draw(const Rendering::Camera& camera, const MeshRef& mesh);
 
   virtual ~Renderer();
 
