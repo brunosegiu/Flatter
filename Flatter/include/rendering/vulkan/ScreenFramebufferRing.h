@@ -4,6 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
+#include "rendering/vulkan/DepthBuffer.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/Framebuffer.h"
 #include "rendering/vulkan/core/Pipeline.h"
@@ -45,15 +46,15 @@ using RenderingResources = struct RenderingResources {
                      const vk::Semaphore& in_fin_ishedRenderSemaphore,
                      const vk::CommandBuffer& in_commandBuffer,
                      const FramebufferRef& in_framebuffer,
-                     const UniformMatrixRef& in_matrixUniform,
-                     const unsigned int in_imageIndex)
+                     const unsigned int in_imageIndex,
+                     const UniformMatrixRef& in_matrixUniform)
       : frameInUseFence(in_frameFenceHandle),
         imageAvailableSemaphore(in_availableImageSemaphore),
         imageRenderedSemaphore(in_fin_ishedRenderSemaphore),
         commandBuffer(in_commandBuffer),
         framebuffer(in_framebuffer),
-        matrixUniform(in_matrixUniform),
-        imageIndex(in_imageIndex) {}
+        imageIndex(in_imageIndex),
+        matrixUniform(in_matrixUniform) {}
 };
 
 class ScreenFramebufferRing {
@@ -70,6 +71,7 @@ class ScreenFramebufferRing {
  private:
   ContextRef mContext;
   SurfaceRef mSurface;
+  DepthBufferRef mDepthBuffer;
   vk::Format mSurfaceFormat;
 
   unsigned int mCurrentFrameIndex;

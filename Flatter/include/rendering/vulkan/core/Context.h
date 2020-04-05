@@ -30,6 +30,15 @@ class Context {
                   vk::Buffer dstBuffer,
                   vk::DeviceSize bufferSize) const;
 
+  const vk::Format findSupportedFormat(
+      const std::vector<vk::Format>& candidates,
+      const vk::ImageTiling& tiling,
+      vk::FormatFeatureFlags& flags);
+
+  unsigned int findBufferMemoryType(
+      unsigned int memoryTypeMask,
+      vk::MemoryPropertyFlags requiredPropertyFlags) const;
+
   const vk::Device& getDevice() const { return mDevice; };
   const vk::PhysicalDevice& getPhysicalDevice() const {
     return mPhysicalDevice;
@@ -67,12 +76,10 @@ class Context {
       const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties,
       const vk::PhysicalDevice& physicalDeviceHandle,
       const vk::SurfaceKHR& surfaceHandle);
+
   PhysicalDeviceInfo findPhysicalDevice(
       const std::vector<vk::PhysicalDevice>& devices,
       const vk::SurfaceKHR& surfaceHandle);
-  unsigned int findBufferMemoryType(
-      unsigned int memoryTypeMask,
-      vk::MemoryPropertyFlags requiredPropertyFlags) const;
 };
 
 using ContextRef = std::shared_ptr<Context>;

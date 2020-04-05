@@ -99,7 +99,7 @@
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
 ;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
 ;TINYGLTF_NO_INCLUDE_JSON;VK_USE_LUNARG_VALIDATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -126,7 +126,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
 ;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
 ;TINYGLTF_NO_INCLUDE_JSON;VK_USE_LUNARG_VALIDATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -155,7 +155,7 @@
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
 ;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
 ;TINYGLTF_NO_INCLUDE_JSON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -186,7 +186,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
 ;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
 ;TINYGLTF_NO_INCLUDE_JSON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -219,6 +219,7 @@
     <ClCompile Include="source\rendering\vulkan\core\Framebuffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Instance.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Pipeline.cpp" />
+    <ClCompile Include="source\rendering\vulkan\DepthBuffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\IndexedVertexBuffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\Renderer.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\RenderPass.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="include\rendering\vulkan\core\Framebuffer.h" />
     <ClInclude Include="include\rendering\vulkan\core\Instance.h" />
     <ClInclude Include="include\rendering\vulkan\core\Pipeline.h" />
+    <ClInclude Include="include\rendering\vulkan\DepthBuffer.h" />
     <ClInclude Include="include\rendering\vulkan\IndexedVertexBuffer.h" />
     <ClInclude Include="include\rendering\vulkan\Renderer.h" />
     <ClInclude Include="include\rendering\vulkan\core\RenderPass.h" />

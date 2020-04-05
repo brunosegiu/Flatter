@@ -63,6 +63,13 @@ Pipeline::Pipeline(const ContextRef& context,
           .setAlphaToCoverageEnable(VK_FALSE)
           .setAlphaToOneEnable(VK_FALSE);
 
+  auto const depthStencilState = vk::PipelineDepthStencilStateCreateInfo{}
+                                     .setDepthTestEnable(true)
+                                     .setDepthWriteEnable(true)
+                                     .setDepthCompareOp(vk::CompareOp::eLess)
+                                     .setDepthBoundsTestEnable(false)
+                                     .setStencilTestEnable(false);
+
   auto const colorblendAttachmentState =
       vk::PipelineColorBlendAttachmentState()
           .setBlendEnable(VK_FALSE)
@@ -105,6 +112,7 @@ Pipeline::Pipeline(const ContextRef& context,
           .setPRasterizationState(&rasterizationState)
           .setPMultisampleState(&multisampleState)
           .setPColorBlendState(&colorBlendState)
+          .setPDepthStencilState(&depthStencilState)
           .setPDynamicState(&dynamicState)
           .setLayout(mPipelineLayoutHandle)
           .setRenderPass(renderPass->getHandle());

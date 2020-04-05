@@ -12,6 +12,9 @@ ScreenFramebufferRing::ScreenFramebufferRing(
       mSurfaceFormat(surface->getFormat(context->getPhysicalDevice()).format),
       mImageCount(context->getSwapchain()->getImageCount()),
       mCurrentFrameIndex(0) {
+  const SwapchainRef& swapchain = mContext->getSwapchain();
+  mDepthBuffer =
+      std::make_shared<DepthBuffer>(mContext, swapchain->getExtent());
   initImagesResources(renderPass, descriptorSetLayout);
   initInFlightFrameResources();
 }
@@ -50,7 +53,7 @@ void ScreenFramebufferRing::initImagesResources(
 
     commandResources.framebuffer = std::make_shared<Framebuffer>(
         mContext, swapchain->getImage(imageIndex), mSurfaceFormat,
-        swapchain->getExtent(), renderPass);
+        swapchain->getExtent(), renderPass, mDepthBuffer);
 
     auto const commandBufferAllocInfo =
         vk::CommandBufferAllocateInfo{}
@@ -78,8 +81,8 @@ const RenderingResources ScreenFramebufferRing::swapBuffers() {
   return RenderingResources(
       frameResources.frameInUseFence, frameResources.imageAvailableSemaphore,
       frameResources.imageRenderedSemaphore, commandResources.commandBuffer,
-      commandResources.framebuffer, commandResources.matrixUniform,
-      mCurrentImageIndex);
+      commandResources.framebuffer, mCurrentImageIndex,
+      commandResources.matrixUniform);
 }
 
 ScreenFramebufferRing::~ScreenFramebufferRing() {}

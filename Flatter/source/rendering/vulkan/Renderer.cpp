@@ -73,11 +73,17 @@ void Renderer::beginRenderPass(const vk::CommandBuffer& commandBuffer,
                                const vk::Offset2D offset,
                                const vk::ClearValue clearValue) {
   vk::Rect2D renderArea(offset, extent);
+
+  std::array<vk::ClearValue, 2> clearValues{};
+  clearValues[0].setColor(
+      vk::ClearColorValue(std::array<float, 4>{1.0f, 0.0f, 0.0f, 1.0f}));
+  clearValues[1].setDepthStencil(vk::ClearDepthStencilValue(1.0f, 1.0f));
+
   auto const renderPassBeginInfo = vk::RenderPassBeginInfo{}
                                        .setRenderPass(renderPass->getHandle())
                                        .setFramebuffer(framebuffer->getHandle())
-                                       .setClearValueCount(1)
-                                       .setPClearValues(&clearValue)
+                                       .setClearValueCount(clearValues.size())
+                                       .setPClearValues(clearValues.data())
                                        .setRenderArea(renderArea);
   commandBuffer.beginRenderPass(&renderPassBeginInfo,
                                 vk::SubpassContents::eInline);

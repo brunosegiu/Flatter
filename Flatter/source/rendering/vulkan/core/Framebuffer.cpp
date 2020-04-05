@@ -1,12 +1,15 @@
 ﻿#include "rendering/vulkan/core/Framebuffer.h"
 
+#include <array>
+
 using namespace Rendering::Vulkan;
 
 Framebuffer::Framebuffer(const ContextRef& context,
                          const vk::Image& swapchainImage,
                          const vk::Format& format,
                          const vk::Extent2D& extent,
-                         const RenderPassRef& renderPass)
+                         const RenderPassRef& renderPass,
+                         const DepthBufferRef& depthBuffer)
     : mContext(context) {
   auto const subresourceRange =
       vk::ImageSubresourceRange{}
@@ -23,17 +26,18 @@ Framebuffer::Framebuffer(const ContextRef& context,
 
   const vk::Device& device = mContext->getDevice();
   assert(device.createImageView(&imageViewCreateInfo, nullptr,
-                                &mSwapchainImageViewHandle) ==
-         vk::Result::eSuccess);
+                                &mSwapchainImageView) == vk::Result::eSuccess);
 
-  auto const framebufferCreateInfo =
-      vk::FramebufferCreateInfo{}
-          .setRenderPass(renderPass->getHandle())
-          .setAttachmentCount(1)
-          .setPAttachments(&mSwapchainImageViewHandle)
-          .setWidth(extent.width)
-          .setHeight(extent.height)
-          .setLayers(1);
+  const std::array<vk::ImageView, 2> attachments{mSwapchainImageView,
+                                                 depthBuffer->getImageView()};
+
+  auto const framebufferCreateInfo = vk::FramebufferCreateInfo{}
+                                         .setRenderPass(renderPass->getHandle())
+                                         .setAttachmentCount(attachments.size())
+                                         .setPAttachments(attachments.data())
+                                         .setWidth(extent.width)
+                                         .setHeight(extent.height)
+                                         .setLayers(1);
 
   assert(device.createFramebuffer(&framebufferCreateInfo, nullptr,
                                   &mFramebufferHandle) == vk::Result::eSuccess);
@@ -42,5 +46,5 @@ Framebuffer::Framebuffer(const ContextRef& context,
 Framebuffer ::~Framebuffer() {
   const vk::Device& device = mContext->getDevice();
   device.destroyFramebuffer(mFramebufferHandle, nullptr);
-  device.destroyImageView(mSwapchainImageViewHandle, nullptr);
+  device.destroyImageView(mSwapchainImageView, nullptr);
 }

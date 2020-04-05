@@ -174,6 +174,23 @@ void Context::copyBuffer(vk::Buffer srcBuffer,
   mDevice.freeCommandBuffers(mCommandPoolHandle, commandBuffer);
 }
 
+const vk::Format Context::findSupportedFormat(
+    const std::vector<vk::Format>& candidates,
+    const vk::ImageTiling& tiling,
+    vk::FormatFeatureFlags& flags) {
+  const auto formatIter = std::find_if(
+      candidates.begin(), candidates.end(), [&](const vk::Format& format) {
+        vk::FormatProperties formatProperties;
+        mPhysicalDevice.getFormatProperties(format, &formatProperties);
+        return (((tiling == vk::ImageTiling::eLinear &&
+                  (formatProperties.linearTilingFeatures & flags) == flags)) ||
+                ((tiling == vk::ImageTiling::eOptimal &&
+                  (formatProperties.optimalTilingFeatures & flags) == flags)));
+      });
+  assert(formatIter != candidates.end());
+  return *formatIter;
+}
+
 Context::~Context() {
   mDevice.destroyDescriptorPool(mDescriptorPoolHandle, nullptr);
   mDevice.destroyCommandPool(mCommandPoolHandle, nullptr);

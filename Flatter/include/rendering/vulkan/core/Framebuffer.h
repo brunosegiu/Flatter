@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "rendering/vulkan/DepthBuffer.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/RenderPass.h"
 
@@ -17,12 +18,13 @@ class Framebuffer {
               const vk::Image& swapchainImage,
               const vk::Format& format,
               const vk::Extent2D& extent,
-              const RenderPassRef& renderPass);
+              const RenderPassRef& renderPass,
+              const DepthBufferRef& depthBuffer);
   const vk::Framebuffer& getHandle() const { return mFramebufferHandle; };
   virtual ~Framebuffer();
 
  private:
-  vk::ImageView mSwapchainImageViewHandle;
+  vk::ImageView mSwapchainImageView;
   vk::Framebuffer mFramebufferHandle;
 
   ContextRef mContext;
