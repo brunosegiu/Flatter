@@ -52,12 +52,9 @@ Context::Context(const InstanceRef& instance, const SurfaceRef& surface)
       vk::CommandPoolCreateInfo{}
           .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
           .setQueueFamilyIndex(getQueueFamilyIndex());
-
   assert(mDevice.createCommandPool(&commandPoolCreateInfo, nullptr,
                                    &mCommandPoolHandle) ==
          vk::Result::eSuccess);
-
-  // Swapchain
   mSwapchain = std::make_shared<Swapchain>(mDevice, mPhysicalDevice, mSurface);
 }
 
@@ -120,58 +117,6 @@ unsigned int Context::findBufferMemoryType(
     }
   }
   return -1;
-}
-
-void Context::createBuffer(vk::DeviceSize size,
-                           vk::BufferUsageFlags usage,
-                           vk::MemoryPropertyFlags properties,
-                           vk::Buffer& buffer,
-                           vk::DeviceMemory& bufferMemory) const {
-  auto const bufferCreateInfo =
-      vk::BufferCreateInfo{}.setSize(size).setUsage(usage).setSharingMode(
-          vk::SharingMode::eExclusive);
-  mDevice.createBuffer(&bufferCreateInfo, nullptr, &buffer);
-
-  vk::MemoryRequirements memRequirements{};
-  mDevice.getBufferMemoryRequirements(buffer, &memRequirements);
-
-  auto const allocCreateInfo =
-      vk::MemoryAllocateInfo{}
-          .setAllocationSize(memRequirements.size)
-          .setMemoryTypeIndex(
-              findBufferMemoryType(memRequirements.memoryTypeBits, properties));
-
-  assert(mDevice.allocateMemory(&allocCreateInfo, nullptr, &bufferMemory) ==
-         vk::Result::eSuccess);
-
-  assert(mDevice.bindBufferMemory(buffer, bufferMemory, 0) ==
-         vk::Result::eSuccess);
-}
-
-void Context::copyBuffer(vk::Buffer srcBuffer,
-                         vk::Buffer dstBuffer,
-                         vk::DeviceSize bufferSize) const {
-  const auto commandAllocInfo = vk::CommandBufferAllocateInfo{}
-                                    .setLevel(vk::CommandBufferLevel::ePrimary)
-                                    .setCommandPool(mCommandPoolHandle)
-                                    .setCommandBufferCount(1);
-  vk::CommandBuffer commandBuffer{};
-  mDevice.allocateCommandBuffers(&commandAllocInfo, &commandBuffer);
-
-  const auto commandBeginInfo = vk::CommandBufferBeginInfo{}.setFlags(
-      vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-  commandBuffer.begin(&commandBeginInfo);
-  const auto region =
-      vk::BufferCopy{}.setSrcOffset(0).setDstOffset(0).setSize(bufferSize);
-  commandBuffer.copyBuffer(srcBuffer, dstBuffer, region);
-  commandBuffer.end();
-
-  const auto commandSubmitInfo =
-      vk::SubmitInfo{}.setCommandBufferCount(1).setPCommandBuffers(
-          &commandBuffer);
-  mQueue.submit(commandSubmitInfo, vk::Fence());
-  mQueue.waitIdle();
-  mDevice.freeCommandBuffers(mCommandPoolHandle, commandBuffer);
 }
 
 const vk::Format Context::findSupportedFormat(

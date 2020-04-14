@@ -6,4 +6,8 @@ using namespace Rendering;
 
 Scene::Scene() {}
 
+void Scene::add(const MeshRef mesh) {
+  mMeshes.push_back(mesh);
+}
+
 Scene::~Scene() {}

@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "rendering/Mesh.h"
+#include "rendering/Scene.h"
 #include "rendering/vulkan/Renderer.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/Instance.h"
@@ -30,7 +30,7 @@ class WindowManager {
   SurfaceRef mSurface;
   ContextRef mContext;
   RendererRef mRenderer;
-  Rendering::MeshRef mMesh;
+  Rendering::SceneRef mScene;
 
   const unsigned int mWidth;
   const unsigned int mHeight;

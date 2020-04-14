@@ -12,7 +12,7 @@ Camera::Camera() {
   mProjection =
       clipMatrix * glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 1000.0f);
 
-  mEye = glm::vec3(0, 0, -30.0f);
+  mEye = glm::vec3(0, 0, 10.0f);
   mDir = glm::vec3(0, 0, 1.0f);
   mUp = glm::vec3(0, 1, 0);
 

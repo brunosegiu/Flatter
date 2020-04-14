@@ -7,7 +7,7 @@ Mesh::Mesh(Rendering::Vulkan::IndexedVertexBufferRef vertexBuffer)
 
 Mesh::Mesh(const Rendering::Vulkan::ContextRef& context,
            const std::vector<glm::vec3>& vertices,
-           const std::vector<unsigned int>& indices) {
+           const std::vector<uint16_t>& indices) {
   mVertexBuffer = std::make_shared<Rendering::Vulkan::IndexedVertexBuffer>(
       context, vertices, indices);
 }

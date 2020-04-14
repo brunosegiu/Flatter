@@ -30,7 +30,7 @@ Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
       mContext, surface, mRenderPass, mDescriptorSetLayout);
 }
 
-void Renderer::draw(const Camera& camera, const MeshRef& mesh) {
+void Renderer::draw(const Camera& camera, const SceneRef& scene) {
   const glm::mat4& mvp = camera.getViewProjection();
   const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
   resources.matrixUniform->update(mvp);
@@ -44,15 +44,17 @@ void Renderer::draw(const Camera& camera, const MeshRef& mesh) {
                   imageExtent);
   bindUniforms(currentCommandBuffer, resources.matrixUniform, mPipeline);
 
-  const IndexedVertexBufferRef& indexedVertexBuffer =
-      mesh->getIndexedVertexBuffer();
-  vk::DeviceSize offset{0};
-  currentCommandBuffer.bindVertexBuffers(
-      0, 1, &indexedVertexBuffer->mVertexBuffer, &offset);
-  currentCommandBuffer.bindIndexBuffer(indexedVertexBuffer->mIndexBuffer,
-                                       offset, vk::IndexType::eUint32);
-  currentCommandBuffer.drawIndexed(indexedVertexBuffer->mIndices.size(), 1, 0,
-                                   0, 0);
+  for (const auto& mesh : scene->getMeshes()) {
+    const IndexedVertexBufferRef& indexedVertexBuffer =
+        mesh->getIndexedVertexBuffer();
+    vk::DeviceSize offset{0};
+    currentCommandBuffer.bindVertexBuffers(
+        0, 1, &indexedVertexBuffer->getVertexBuffer(), &offset);
+    currentCommandBuffer.bindIndexBuffer(indexedVertexBuffer->getIndexBuffer(),
+                                         offset, vk::IndexType::eUint16);
+    currentCommandBuffer.drawIndexed(indexedVertexBuffer->getIndexCount(), 1, 0,
+                                     0, 0);
+  }
 
   endCommand(currentCommandBuffer);
   present(currentCommandBuffer, resources.imageAvailableSemaphore,

@@ -9,7 +9,7 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     const vec3 normal = normalize(cross(dFdx(position), dFdy(position)));
-    const vec3 lightDir = normalize(vec3(0.0f, 1.0f, 0.5f));
+    const vec3 lightDir = normalize(vec3(0.1f, 1.0f, 0.1f));
     const float factor = dot(lightDir, normal);
-    outColor = vec4(0.0f, 0.3f, 0.5f, 1.0f) * factor;
+    outColor = vec4(0.0f, 0.5f, 0.6f, 1.0f) * factor;
 }

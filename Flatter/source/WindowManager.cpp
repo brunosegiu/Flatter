@@ -26,7 +26,9 @@ WindowManager::WindowManager(const unsigned int width,
   mRenderer = std::make_shared<Renderer>(mContext, mSurface);
 
   Rendering::GLTFLoader loader(mContext);
-  mMesh = loader.load("assets/monkey.glb")[0];
+  mScene = std::make_unique<Rendering::Scene>();
+  mScene->add(loader.load("assets/monkey.glb")[0]);
+  mScene->add(loader.load("assets/cube.glb")[0]);
 }
 
 void WindowManager::loop() {
@@ -45,7 +47,7 @@ void WindowManager::loop() {
     SDL_WarpMouseInWindow(mWindow, static_cast<unsigned int>(mWidth / 2),
                           static_cast<unsigned int>(mHeight / 2));
     cameraController.process(timeDelta);
-    mRenderer->draw(cameraController.getCamera(), mMesh);
+    mRenderer->draw(cameraController.getCamera(), mScene);
     timer.end();
     timeDelta = timer.getDeltaMs();
     timer.restart();

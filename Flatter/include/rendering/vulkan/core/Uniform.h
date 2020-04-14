@@ -5,6 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
+#include "rendering/vulkan/core/Buffer.h"
 #include "rendering/vulkan/core/Context.h"
 
 namespace Rendering {
@@ -28,8 +29,7 @@ class Uniform {
   vk::DescriptorSet mDescriptorSet;
   ValueType mValue;
 
-  vk::Buffer mUniformBuffer;
-  vk::DeviceMemory mUniformBufferMemory;
+  BufferRef mBuffer;
 
   ContextRef mContext;
 };
@@ -50,10 +50,10 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
 
   vk::DeviceSize bufferSize = sizeof(ValueType);
 
-  mContext->createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
-                         vk::MemoryPropertyFlagBits::eHostVisible |
-                             vk::MemoryPropertyFlagBits::eHostCoherent,
-                         mUniformBuffer, mUniformBufferMemory);
+  mBuffer = std::make_shared<Buffer>(
+      mContext, bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
+      vk::MemoryPropertyFlagBits::eHostVisible |
+          vk::MemoryPropertyFlagBits::eHostCoherent);
 
   const vk::DescriptorPool& descriptorPool = mContext->getDescriptorPool();
   auto const allocInfo = vk::DescriptorSetAllocateInfo{}
@@ -63,7 +63,7 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
   device.allocateDescriptorSets(&allocInfo, &mDescriptorSet);
 
   auto const bufferInfo = vk::DescriptorBufferInfo{}
-                              .setBuffer(mUniformBuffer)
+                              .setBuffer(mBuffer->getBuffer())
                               .setOffset(0)
                               .setRange(sizeof(ValueType));
 
@@ -82,11 +82,7 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
 template <typename ValueType>
 void Uniform<ValueType>::update(const ValueType& newValue) {
   if (newValue != mValue) {
-    const vk::Device& device = mContext->getDevice();
     mValue = newValue;
-    auto data = device.mapMemory(mUniformBufferMemory, 0, sizeof(ValueType),
-                                 vk::MemoryMapFlags());
-    memcpy(data.value, &mValue, sizeof(ValueType));
-    device.unmapMemory(mUniformBufferMemory);
+    mBuffer->map(&mValue);
   }
 }

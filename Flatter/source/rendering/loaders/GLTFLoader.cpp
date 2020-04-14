@@ -39,7 +39,7 @@ MeshRef processPrimitive(const Rendering::Vulkan ::ContextRef context,
   }
 
   const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
-  std::vector<unsigned int> indices(indexAccessor.count);
+  std::vector<uint16_t> indices;
   {
     const unsigned int indexCount = indexAccessor.count;
     const tinygltf::BufferView& indexBufferView =
@@ -47,12 +47,9 @@ MeshRef processPrimitive(const Rendering::Vulkan ::ContextRef context,
     const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
     const size_t indexOffset =
         indexBufferView.byteOffset + indexAccessor.byteOffset;
-    const uint16_t* indexDataUInt =
+    const uint16_t* pIndexData =
         reinterpret_cast<const uint16_t*>(&indexBuffer.data[indexOffset]);
-    for (unsigned int indexIndex = 0; indexIndex < indexCount; ++indexIndex) {
-      indices[indexIndex] =
-          static_cast<unsigned int>(indexDataUInt[indexIndex]);
-    }
+    indices = std::vector<uint16_t>(pIndexData, pIndexData + indexCount);
   }
 
   return std::make_shared<Rendering::Mesh>(context, positions, indices);

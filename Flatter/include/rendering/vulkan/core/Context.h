@@ -20,16 +20,6 @@ class Context {
  public:
   Context(const InstanceRef& instance, const SurfaceRef& surface);
 
-  void createBuffer(vk::DeviceSize size,
-                    vk::BufferUsageFlags usage,
-                    vk::MemoryPropertyFlags properties,
-                    vk::Buffer& buffer,
-                    vk::DeviceMemory& bufferMemory) const;
-
-  void copyBuffer(vk::Buffer srcBuffer,
-                  vk::Buffer dstBuffer,
-                  vk::DeviceSize bufferSize) const;
-
   const vk::Format findSupportedFormat(
       const std::vector<vk::Format>& candidates,
       const vk::ImageTiling& tiling,

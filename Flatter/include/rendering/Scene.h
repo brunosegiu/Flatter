@@ -10,6 +10,9 @@ class Scene {
  public:
   Scene();
 
+  void add(const MeshRef mesh);
+  const std::vector<MeshRef>& getMeshes() const { return mMeshes; };
+
   virtual ~Scene();
 
  private:

@@ -14,60 +14,45 @@ vk::VertexInputAttributeDescription IndexedVertexBuffer::sAttributeDescription =
         .setLocation(0)
         .setFormat(vk::Format::eR32G32B32Sfloat);
 
-IndexedVertexBuffer::IndexedVertexBuffer(
-    const ContextRef& context,
-    const std::vector<glm::vec3>& vertices,
-    const std::vector<unsigned int>& indices)
-    : mContext(context), mVertices(vertices), mIndices(indices) {
+IndexedVertexBuffer::IndexedVertexBuffer(const ContextRef& context,
+                                         const std::vector<glm::vec3>& vertices,
+                                         const std::vector<uint16_t>& indices)
+    : mContext(context),
+      mVertices(vertices),
+      mIndices(indices),
+      mIndexCount(static_cast<unsigned int>(mIndices.size())) {
   // Vertex buffer
   const size_t vertexBufferSize = getVertexBufferSize();
 
-  vk::Buffer stagingVertexBuffer{};
-  vk::DeviceMemory stagingVertexBufferMemory{};
-  mContext->createBuffer(vertexBufferSize,
-                         vk::BufferUsageFlagBits::eTransferSrc,
-                         vk::MemoryPropertyFlagBits::eHostVisible |
-                             vk::MemoryPropertyFlagBits::eHostCoherent,
-                         stagingVertexBuffer, stagingVertexBufferMemory);
-
+  Buffer stagingVertexBuffer(
+      mContext, vertexBufferSize,
+      vk::BufferUsageFlags(vk::BufferUsageFlagBits::eTransferSrc),
+      vk::MemoryPropertyFlagBits::eHostVisible |
+          vk::MemoryPropertyFlagBits::eHostCoherent);
   const vk::Device& device = mContext->getDevice();
+  stagingVertexBuffer.map(mVertices.data());
+  mVertexBuffer = std::make_shared<Buffer>(
+      mContext, vertexBufferSize,
+      vk::BufferUsageFlags(vk::BufferUsageFlagBits::eVertexBuffer |
+                           vk::BufferUsageFlagBits::eTransferDst),
+      vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-  auto data = device.mapMemory(stagingVertexBufferMemory, 0, vertexBufferSize,
-                               vk::MemoryMapFlags{});
-  memcpy(data.value, mVertices.data(), vertexBufferSize);
-  device.unmapMemory(stagingVertexBufferMemory);
-
-  mContext->createBuffer(vertexBufferSize,
-                         vk::BufferUsageFlagBits::eVertexBuffer |
-                             vk::BufferUsageFlagBits::eTransferDst,
-                         vk::MemoryPropertyFlagBits::eDeviceLocal,
-                         mVertexBuffer, mVertexBufferMemory);
-  mContext->copyBuffer(stagingVertexBuffer, mVertexBuffer, vertexBufferSize);
-  device.destroyBuffer(stagingVertexBuffer);
-  device.freeMemory(stagingVertexBufferMemory);
+  stagingVertexBuffer.copy(mVertexBuffer);
 
   // Index buffer
   const size_t indexBufferSize = getIndexBufferSize();
-  vk::Buffer stagingIndexBuffer{};
-  vk::DeviceMemory stagingIndexBufferMemory{};
-  mContext->createBuffer(indexBufferSize, vk::BufferUsageFlagBits::eTransferSrc,
-                         vk::MemoryPropertyFlagBits::eHostVisible |
-                             vk::MemoryPropertyFlagBits::eHostCoherent,
-                         stagingIndexBuffer, stagingIndexBufferMemory);
-
-  auto indexData = device.mapMemory(stagingIndexBufferMemory, 0,
-                                    indexBufferSize, vk::MemoryMapFlags{});
-  memcpy(indexData.value, mIndices.data(), indexBufferSize);
-  device.unmapMemory(stagingIndexBufferMemory);
-
-  mContext->createBuffer(indexBufferSize,
-                         vk::BufferUsageFlagBits::eIndexBuffer |
-                             vk::BufferUsageFlagBits::eTransferDst,
-                         vk::MemoryPropertyFlagBits::eDeviceLocal, mIndexBuffer,
-                         mIndexBufferMemory);
-  mContext->copyBuffer(stagingIndexBuffer, mIndexBuffer, indexBufferSize);
-  device.destroyBuffer(stagingIndexBuffer);
-  device.freeMemory(stagingIndexBufferMemory);
+  Buffer stagingIndexBuffer(
+      mContext, indexBufferSize,
+      vk::BufferUsageFlags(vk::BufferUsageFlagBits::eTransferSrc),
+      vk::MemoryPropertyFlagBits::eHostVisible |
+          vk::MemoryPropertyFlagBits::eHostCoherent);
+  stagingIndexBuffer.map(mIndices.data());
+  mIndexBuffer = std::make_shared<Buffer>(
+      mContext, indexBufferSize,
+      vk::BufferUsageFlags(vk::BufferUsageFlagBits::eIndexBuffer |
+                           vk::BufferUsageFlagBits::eTransferDst),
+      vk::MemoryPropertyFlagBits::eDeviceLocal);
+  stagingIndexBuffer.copy(mIndexBuffer);
 }
 
 IndexedVertexBuffer::~IndexedVertexBuffer() {}
