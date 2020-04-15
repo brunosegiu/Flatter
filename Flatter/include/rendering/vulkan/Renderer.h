@@ -18,7 +18,7 @@ class Renderer {
  public:
   Renderer(const ContextRef& context, const SurfaceRef& surface);
 
-  void draw(const Rendering::Camera& camera, const SceneRef& scene);
+  void draw(Rendering::Camera& camera, const SceneRef& scene);
 
   virtual ~Renderer();
 

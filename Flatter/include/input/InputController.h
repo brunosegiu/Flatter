@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 
+#include <glm/glm.hpp>
 #include <memory>
 #include <vector>
 
@@ -26,9 +27,11 @@ class InputController {
  private:
   std::vector<Input::InputEventListenerRef> mListeners;
 
-  const SDL_Window* mWindow;
+  SDL_Window* mWindow;
   const unsigned int mWinWidth;
   const unsigned int mWinHeight;
 };
+
+using InputControllerRef = std::shared_ptr<InputController>;
 
 }  // namespace Input

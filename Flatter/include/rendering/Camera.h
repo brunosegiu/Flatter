@@ -7,14 +7,16 @@ class Camera {
  public:
   Camera();
 
-  const glm::mat4& getViewProjection() const { return mVP; };
+  const glm::mat4& getViewProjection() {
+    updateViewProjection();
+    return mVP;
+  };
 
   void rotate(const float& angle, const glm::vec3& axis = glm::vec3(0, 1, 0));
   void rotate(const float& yaw, const float& pitch);
 
   void translate(const glm::vec3& value);
   void translateTo(const glm::vec3& value);
-  void scale(const glm::vec3& value);
 
   void moveRight(const float& value);
   void moveLeft(const float& value);

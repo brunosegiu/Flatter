@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include "commons/Timer.h"
-#include "input/CameraController.h"
 #include "rendering/loaders/GLTFLoader.h"
 
 using namespace Game;
@@ -11,7 +9,7 @@ using namespace Rendering::Vulkan;
 
 WindowManager::WindowManager(const unsigned int width,
                              const unsigned int height)
-    : mWidth(width), mHeight(height) {
+    : mWidth(width), mHeight(height), mOpen(true) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   mWindow = SDL_CreateWindow("Flatter", SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED, width, height, 0);
@@ -29,23 +27,16 @@ WindowManager::WindowManager(const unsigned int width,
   mScene = std::make_unique<Rendering::Scene>();
   mScene->add(loader.load("assets/monkey.glb")[0]);
   mScene->add(loader.load("assets/cube.glb")[0]);
+
+  mCameraController = std::make_shared<Input::CameraController>();
 }
 
-void WindowManager::loop() {
-  bool open = true;
-  Input::CameraController cameraController(mWidth, mHeight);
+void WindowManager::onQuit() {
+  mOpen = false;
+}
 
-  Commons::Timer timer;
-  float timeDelta = 0.0f;
-
-  do {
-    cameraController.process(timeDelta);
-    mRenderer->draw(cameraController.getCamera(), mScene);
-    timer.end();
-    timeDelta = timer.getDeltaMs();
-    timer.restart();
-
-  } while (open);
+void WindowManager::update(const float timeDelta) {
+  mRenderer->draw(mCameraController->getCamera(), mScene);
 }
 
 WindowManager ::~WindowManager() {

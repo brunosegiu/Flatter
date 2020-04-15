@@ -30,7 +30,7 @@ Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
       mContext, surface, mRenderPass, mDescriptorSetLayout);
 }
 
-void Renderer::draw(const Camera& camera, const SceneRef& scene) {
+void Renderer::draw(Camera& camera, const SceneRef& scene) {
   const glm::mat4& mvp = camera.getViewProjection();
   const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
   resources.matrixUniform->update(mvp);
