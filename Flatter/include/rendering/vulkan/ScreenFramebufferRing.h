@@ -4,14 +4,13 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "rendering/vulkan/DepthBuffer.h"
 #include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/core/DepthBufferAttachment.h"
 #include "rendering/vulkan/core/Framebuffer.h"
-#include "rendering/vulkan/core/Pipeline.h"
-#include "rendering/vulkan/core/RenderPass.h"
 #include "rendering/vulkan/core/Surface.h"
 #include "rendering/vulkan/core/Swapchain.h"
 #include "rendering/vulkan/core/Uniform.h"
+#include "rendering/vulkan/renderpasses/RenderPass.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -62,16 +61,19 @@ class ScreenFramebufferRing {
   ScreenFramebufferRing(const ContextRef& context,
                         const SurfaceRef& surface,
                         const RenderPassRef& renderPass,
-                        const VkDescriptorSetLayout& descriptorSetLayout);
+                        const VkDescriptorSetLayout& descriptorSetLayout,
+                        const DepthBufferAttachmentRef& depthBufferAtt);
 
   const RenderingResources swapBuffers();
 
   virtual ~ScreenFramebufferRing();
 
  private:
+  ScreenFramebufferRing(ScreenFramebufferRing const&) = delete;
+  ScreenFramebufferRing& operator=(ScreenFramebufferRing const&) = delete;
+
   ContextRef mContext;
   SurfaceRef mSurface;
-  DepthBufferRef mDepthBuffer;
   vk::Format mSurfaceFormat;
 
   unsigned int mCurrentFrameIndex;
@@ -85,7 +87,8 @@ class ScreenFramebufferRing {
   void initInFlightFrameResources();
 
   void initImagesResources(const RenderPassRef& renderPass,
-                           const VkDescriptorSetLayout& descriptorSetLayout);
+                           const VkDescriptorSetLayout& descriptorSetLayout,
+                           const DepthBufferAttachmentRef& depthBufferAtt);
 };
 
 using ScreenFramebufferRingRef = std::shared_ptr<ScreenFramebufferRing>;

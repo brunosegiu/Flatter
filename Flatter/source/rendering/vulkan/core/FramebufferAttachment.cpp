@@ -1,16 +1,16 @@
-﻿#include "rendering/vulkan/DepthBuffer.h"
+﻿#include "rendering/vulkan/core/FramebufferAttachment.h"
 
 using namespace Rendering::Vulkan;
 
-DepthBuffer::DepthBuffer(const ContextRef& context, const vk::Extent2D& extent)
+Rendering::Vulkan::FramebufferAttachment::FramebufferAttachment(
+    const ContextRef& context,
+    const vk::Extent2D& extent,
+    const vk::Format& format,
+    const vk::ImageUsageFlags& usage,
+    const vk::ImageAspectFlags& viewAspect,
+    const vk::ImageTiling tiling)
     : mContext(context) {
-  const vk::Format format = mContext->findSupportedFormat(
-      {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint,
-       vk::Format::eD24UnormS8Uint},
-      vk::ImageTiling::eOptimal,
-      vk::FormatFeatureFlags(
-          vk::FormatFeatureFlagBits::eDepthStencilAttachment));
-  const auto imageCreatInfo =
+  const auto imageCreateInfo =
       vk::ImageCreateInfo{}
           .setImageType(vk::ImageType::e2D)
           .setFormat(format)
@@ -18,11 +18,11 @@ DepthBuffer::DepthBuffer(const ContextRef& context, const vk::Extent2D& extent)
           .setMipLevels(1)
           .setArrayLayers(1)
           .setSamples(vk::SampleCountFlagBits::e1)
-          .setTiling(vk::ImageTiling::eOptimal)
-          .setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment)
+          .setTiling(tiling)
+          .setUsage(usage)
           .setInitialLayout(vk::ImageLayout::eUndefined);
   const vk::Device& device = mContext->getDevice();
-  const auto imageRes = device.createImage(imageCreatInfo, nullptr);
+  const auto imageRes = device.createImage(imageCreateInfo, nullptr);
   assert(imageRes.result == vk::Result::eSuccess);
   mImage = imageRes.value;
   vk::MemoryRequirements memoryReqs{};
@@ -36,13 +36,8 @@ DepthBuffer::DepthBuffer(const ContextRef& context, const vk::Extent2D& extent)
               vk::MemoryPropertyFlagBits::eDeviceLocal));
   device.allocateMemory(&memAllocInfo, nullptr, &mMemory);
   device.bindImageMemory(mImage, mMemory, 0);
-
-  vk::ImageAspectFlags mask = (format == vk::Format::eD32Sfloat)
-                                  ? vk::ImageAspectFlagBits::eDepth
-                                  : (vk::ImageAspectFlagBits::eDepth |
-                                     vk::ImageAspectFlagBits::eStencil);
   const auto subsurfaceRange = vk::ImageSubresourceRange{}
-                                   .setAspectMask(mask)
+                                   .setAspectMask(viewAspect)
                                    .setBaseMipLevel(0)
                                    .setLevelCount(1)
                                    .setBaseArrayLayer(0)
@@ -55,7 +50,7 @@ DepthBuffer::DepthBuffer(const ContextRef& context, const vk::Extent2D& extent)
   const auto imageViewRes =
       device.createImageView(imageViewCreateInfo, nullptr);
   assert(imageViewRes.result == vk::Result::eSuccess);
-  mImageView = imageViewRes.value;
+  mView = imageViewRes.value;
 }
 
-DepthBuffer::~DepthBuffer() {}
+Rendering::Vulkan::FramebufferAttachment::~FramebufferAttachment() {}

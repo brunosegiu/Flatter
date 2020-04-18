@@ -21,7 +21,7 @@ WindowManager::WindowManager(const unsigned int width,
   SDL_GetWindowWMInfo(mWindow, &info);
   mSurface = std::make_shared<Surface>(info, mInstance, width, height);
   mContext = std::make_shared<Context>(mInstance, mSurface);
-  mRenderer = std::make_shared<Renderer>(mContext, mSurface);
+  mRenderer = std::make_shared<SinglePassRenderer>(mContext, mSurface);
 
   Rendering::GLTFLoader loader(mContext);
   mScene = std::make_unique<Rendering::Scene>();

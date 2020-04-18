@@ -1,11 +1,14 @@
-﻿#include "rendering/vulkan/core/Pipeline.h"
+﻿#include "rendering/vulkan/pipelines/SinglePassPipeline.h"
+
+#include "rendering/vulkan/IndexedVertexBuffer.h"
 
 using namespace Rendering::Vulkan;
 
-Pipeline::Pipeline(const ContextRef& context,
-                   const RenderPassRef& renderPass,
-                   const vk::DescriptorSetLayout& descriptorSetLayout)
-    : mContext(context) {
+SinglePassPipeline::SinglePassPipeline(
+    const ContextRef& context,
+    const SingleRenderPassRef& renderPass,
+    const vk::DescriptorSetLayout& descriptorSetLayout)
+    : Pipeline(context) {
   mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", context);
   mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", context);
 
@@ -42,7 +45,7 @@ Pipeline::Pipeline(const ContextRef& context,
                                       .setDepthClampEnable(VK_FALSE)
                                       .setRasterizerDiscardEnable(VK_FALSE)
                                       .setPolygonMode(vk::PolygonMode::eFill)
-                                      .setCullMode(vk::CullModeFlagBits::eNone)
+                                      .setCullMode(vk::CullModeFlagBits::eFront)
                                       .setFrontFace(vk::FrontFace::eClockwise)
                                       .setDepthBiasEnable(VK_FALSE)
                                       .setDepthBiasConstantFactor(0.0f)
@@ -99,8 +102,7 @@ Pipeline::Pipeline(const ContextRef& context,
           &descriptorSetLayout);
   const vk::Device& device = mContext->getDevice();
   assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
-                                     &mPipelineLayoutHandle) ==
-         vk::Result::eSuccess);
+                                     &mPipelineLayout) == vk::Result::eSuccess);
 
   auto const pipelineCreateInfo =
       vk::GraphicsPipelineCreateInfo()
@@ -114,7 +116,7 @@ Pipeline::Pipeline(const ContextRef& context,
           .setPColorBlendState(&colorBlendState)
           .setPDepthStencilState(&depthStencilState)
           .setPDynamicState(&dynamicState)
-          .setLayout(mPipelineLayoutHandle)
+          .setLayout(mPipelineLayout)
           .setRenderPass(renderPass->getHandle());
 
   assert(device.createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo,
@@ -122,8 +124,4 @@ Pipeline::Pipeline(const ContextRef& context,
          vk::Result::eSuccess);
 }
 
-Pipeline::~Pipeline() {
-  const vk::Device& device = mContext->getDevice();
-  // vkDestroyPipeline(deviceHandle, mPipelineHandle, nullptr);
-  device.destroyPipelineLayout(mPipelineLayoutHandle, nullptr);
-}
+SinglePassPipeline::~SinglePassPipeline() {}

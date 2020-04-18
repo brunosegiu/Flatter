@@ -9,11 +9,11 @@
 #include "input/InputController.h"
 #include "input/InputEventListener.h"
 #include "rendering/Scene.h"
-#include "rendering/vulkan/Renderer.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/Instance.h"
 #include "rendering/vulkan/core/Surface.h"
 #include "rendering/vulkan/core/Swapchain.h"
+#include "rendering/vulkan/renderers/SinglePassRenderer.h"
 
 using namespace Rendering::Vulkan;
 
@@ -42,7 +42,7 @@ class WindowManager : public Input::InputEventListener,
   InstanceRef mInstance;
   SurfaceRef mSurface;
   ContextRef mContext;
-  RendererRef mRenderer;
+  SinglePassRendererRef mRenderer;
   Rendering::SceneRef mScene;
 
   Input::CameraControllerRef mCameraController;

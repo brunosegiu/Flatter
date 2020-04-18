@@ -9,7 +9,7 @@ Framebuffer::Framebuffer(const ContextRef& context,
                          const vk::Format& format,
                          const vk::Extent2D& extent,
                          const RenderPassRef& renderPass,
-                         const DepthBufferRef& depthBuffer)
+                         const DepthBufferAttachmentRef& depthBuffer)
     : mContext(context) {
   auto const subresourceRange =
       vk::ImageSubresourceRange{}
@@ -31,13 +31,14 @@ Framebuffer::Framebuffer(const ContextRef& context,
   const std::array<vk::ImageView, 2> attachments{mSwapchainImageView,
                                                  depthBuffer->getImageView()};
 
-  auto const framebufferCreateInfo = vk::FramebufferCreateInfo{}
-                                         .setRenderPass(renderPass->getHandle())
-                                         .setAttachmentCount(attachments.size())
-                                         .setPAttachments(attachments.data())
-                                         .setWidth(extent.width)
-                                         .setHeight(extent.height)
-                                         .setLayers(1);
+  auto const framebufferCreateInfo =
+      vk::FramebufferCreateInfo{}
+          .setRenderPass(renderPass->getHandle())
+          .setAttachmentCount(static_cast<unsigned int>(attachments.size()))
+          .setPAttachments(attachments.data())
+          .setWidth(extent.width)
+          .setHeight(extent.height)
+          .setLayers(1);
 
   assert(device.createFramebuffer(&framebufferCreateInfo, nullptr,
                                   &mFramebufferHandle) == vk::Result::eSuccess);

@@ -1,20 +1,21 @@
-﻿#include "rendering/vulkan/core/RenderPass.h"
+﻿#include "rendering/vulkan/renderPasses/GBufferRenderPass.h"
 
 using namespace Rendering::Vulkan;
 
-RenderPass::RenderPass(const ContextRef& context,
-                       const vk::Format& surfaceFormat)
-    : mContext(context) {
+GBufferRenderPass::GBufferRenderPass(const ContextRef& context,
+                                     const vk::Format& colorFormat,
+                                     const vk::Format& depthFormat)
+    : RenderPass(context) {
   auto const colorAttachmentDescription =
       vk::AttachmentDescription{}
-          .setFormat(surfaceFormat)
+          .setFormat(colorFormat)
           .setSamples(vk::SampleCountFlagBits::e1)
           .setLoadOp(vk::AttachmentLoadOp::eClear)
           .setStoreOp(vk::AttachmentStoreOp::eStore)
           .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
           .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
           .setInitialLayout(vk::ImageLayout::eUndefined)
-          .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+          .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
   auto const colorReference =
       vk::AttachmentReference{}
@@ -23,7 +24,7 @@ RenderPass::RenderPass(const ContextRef& context,
 
   auto const depthAttachmentDescription =
       vk::AttachmentDescription{}
-          .setFormat(vk::Format::eD32Sfloat)
+          .setFormat(depthFormat)
           .setSamples(vk::SampleCountFlagBits::e1)
           .setLoadOp(vk::AttachmentLoadOp::eClear)
           .setStoreOp(vk::AttachmentStoreOp::eDontCare)
@@ -32,7 +33,7 @@ RenderPass::RenderPass(const ContextRef& context,
           .setInitialLayout(vk::ImageLayout::eUndefined)
           .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
-  auto const depthAttachmentRef =
+  auto const depthReference =
       vk::AttachmentReference{}.setAttachment(1).setLayout(
           vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
@@ -41,35 +42,42 @@ RenderPass::RenderPass(const ContextRef& context,
           .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
           .setColorAttachmentCount(1)
           .setPColorAttachments(&colorReference)
-          .setPDepthStencilAttachment(&depthAttachmentRef);
+          .setPDepthStencilAttachment(&depthReference);
 
-  auto const subpassDependency =
+  auto const layoutDependencies = std::vector<vk::SubpassDependency>{
       vk::SubpassDependency{}
           .setSrcSubpass(VK_SUBPASS_EXTERNAL)
           .setDstSubpass(0)
+          .setSrcStageMask(vk::PipelineStageFlagBits::eFragmentShader)
+          .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+          .setSrcAccessMask(vk::AccessFlagBits::eShaderRead)
+          .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+          .setDependencyFlags(vk::DependencyFlagBits::eByRegion),
+      vk::SubpassDependency{}
+          .setSrcSubpass(0)
+          .setDstSubpass(VK_SUBPASS_EXTERNAL)
           .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
           .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
           .setSrcAccessMask(vk::AccessFlagBits{})
           .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite |
                             vk::AccessFlagBits::eColorAttachmentRead)
-          .setDependencyFlags(vk::DependencyFlags{});
+          .setDependencyFlags(vk::DependencyFlags{})};
 
   const std::vector<vk::AttachmentDescription> attachments{
       colorAttachmentDescription, depthAttachmentDescription};
 
-  auto const renderPassCreateInfo = vk::RenderPassCreateInfo{}
-                                        .setAttachmentCount(attachments.size())
-                                        .setPAttachments(attachments.data())
-                                        .setSubpassCount(1)
-                                        .setPSubpasses(&subpassDescription)
-                                        .setDependencyCount(1)
-                                        .setPDependencies(&subpassDependency);
+  auto const renderPassCreateInfo =
+      vk::RenderPassCreateInfo{}
+          .setAttachmentCount(static_cast<unsigned int>(attachments.size()))
+          .setPAttachments(attachments.data())
+          .setSubpassCount(1)
+          .setPSubpasses(&subpassDescription)
+          .setDependencyCount(
+              static_cast<unsigned int>(layoutDependencies.size()))
+          .setPDependencies(layoutDependencies.data());
   const vk::Device& device = mContext->getDevice();
   assert(device.createRenderPass(&renderPassCreateInfo, nullptr,
                                  &mRenderPassHandle) == vk::Result::eSuccess);
 }
 
-RenderPass::~RenderPass() {
-  const vk::Device& device = mContext->getDevice();
-  device.destroyRenderPass(mRenderPassHandle, NULL);
-}
+GBufferRenderPass::~GBufferRenderPass() {}

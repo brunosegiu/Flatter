@@ -39,12 +39,6 @@
     <ClCompile Include="source\rendering\vulkan\core\Instance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\core\Pipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\core\RenderPass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\rendering\vulkan\core\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,9 +49,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\rendering\vulkan\ScreenFramebufferRing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\rendering\vulkan\IndexedVertexBuffer.cpp">
@@ -72,13 +63,40 @@
     <ClCompile Include="source\rendering\loaders\GLTFLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\DepthBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\rendering\vulkan\core\Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\input\InputController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\core\FramebufferAttachment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\core\DepthBufferAttachment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\pipelines\Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderPasses\RenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderPasses\SingleRenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderers\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderers\DeferredRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderers\SinglePassRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\pipelines\SinglePassPipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderPasses\GBufferRenderPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -104,12 +122,6 @@
     <ClInclude Include="include\rendering\vulkan\core\Instance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\rendering\vulkan\core\Pipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rendering\vulkan\core\RenderPass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\rendering\vulkan\core\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -125,9 +137,6 @@
     <ClInclude Include="include\rendering\vulkan\ScreenFramebufferRing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\rendering\vulkan\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\rendering\vulkan\IndexedVertexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -140,9 +149,6 @@
     <ClInclude Include="include\rendering\loaders\GLTFLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\rendering\vulkan\DepthBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\rendering\vulkan\core\Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -152,9 +158,51 @@
     <ClInclude Include="include\input\InputEventListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\core\FramebufferAttachment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\core\DepthBufferAttachment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\pipelines\Pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\renderPasses\RenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\pipelines\SinglePassPipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\pipelines\DeferredPipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\rendering\vulkan\pipelines\DeferredPipeline.cpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\renderPasses\SingleRenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\renderers\Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\renderers\DeferredRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\renderers\SinglePassRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\renderPasses\GBufferRenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\source\main.frag" />
     <CustomBuild Include="shaders\source\main.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\source\gbuffer.frag" />
+    <None Include="shaders\source\gbuffer.vert" />
+    <None Include="shaders\source\offscreen.frag" />
+    <None Include="shaders\source\offscreen.vert" />
   </ItemGroup>
 </Project>
