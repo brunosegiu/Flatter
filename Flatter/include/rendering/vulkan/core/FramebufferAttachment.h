@@ -6,7 +6,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class FramebufferAttachment {
  public:
   FramebufferAttachment(
@@ -18,6 +17,7 @@ class FramebufferAttachment {
       const vk::ImageTiling tiling = vk::ImageTiling::eOptimal);
 
   const vk::ImageView& getImageView() const { return mView; };
+  const vk::Format& getFormat() const { return mFormat; };
 
   virtual ~FramebufferAttachment();
 
@@ -25,6 +25,7 @@ class FramebufferAttachment {
   vk::Image mImage;
   vk::ImageView mView;
   vk::DeviceMemory mMemory;
+  vk::Format mFormat;
 
   ContextRef mContext;
 
@@ -34,6 +35,5 @@ class FramebufferAttachment {
 };
 
 using FramebufferAttachmentRef = std::shared_ptr<FramebufferAttachment>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

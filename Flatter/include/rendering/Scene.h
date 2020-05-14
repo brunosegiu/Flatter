@@ -23,5 +23,4 @@ class Scene {
 };
 
 using SceneRef = std::shared_ptr<Scene>;
-
 }  // namespace Rendering

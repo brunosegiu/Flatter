@@ -29,6 +29,8 @@ WindowManager::WindowManager(const unsigned int width,
   mScene->add(loader.load("assets/cube.glb")[0]);
 
   mCameraController = std::make_shared<Input::CameraController>();
+
+  mDeff = std::make_shared<DeferredRenderer>(mContext, mSurface);
 }
 
 void WindowManager::onQuit() {
@@ -36,12 +38,19 @@ void WindowManager::onQuit() {
 }
 
 void WindowManager::update(const float timeDelta) {
-  mRenderer->draw(mCameraController->getCamera(), mScene);
+  mDeff->draw(mCameraController->getCamera(), mScene);
 }
 
 WindowManager ::~WindowManager() {
   const vk::Device& device = mContext->getDevice();
   device.waitIdle();
+
+  mRenderer.reset();
+  delete mRenderer.get();
+
+  mContext.reset();
+  delete mContext.get();
+
   SDL_DestroyWindow(mWindow);
   SDL_Quit();
 }

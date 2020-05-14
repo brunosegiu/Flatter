@@ -13,12 +13,12 @@
 #include "rendering/vulkan/core/Instance.h"
 #include "rendering/vulkan/core/Surface.h"
 #include "rendering/vulkan/core/Swapchain.h"
+#include "rendering/vulkan/renderers/DeferredRenderer.h"
 #include "rendering/vulkan/renderers/SinglePassRenderer.h"
 
 using namespace Rendering::Vulkan;
 
 namespace Game {
-
 class WindowManager : public Input::InputEventListener,
                       public std::enable_shared_from_this<WindowManager> {
  public:
@@ -43,6 +43,7 @@ class WindowManager : public Input::InputEventListener,
   SurfaceRef mSurface;
   ContextRef mContext;
   SinglePassRendererRef mRenderer;
+  DeferredRendererRef mDeff;
   Rendering::SceneRef mScene;
 
   Input::CameraControllerRef mCameraController;
@@ -51,5 +52,4 @@ class WindowManager : public Input::InputEventListener,
   const unsigned int mHeight;
   bool mOpen;
 };
-
 }  // namespace Game

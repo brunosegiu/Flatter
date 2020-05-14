@@ -1,14 +1,13 @@
-﻿#include "rendering/vulkan/renderpasses/SingleRenderPass.h"
+﻿#include "rendering/vulkan/renderPasses/FullscreenRenderPass.h"
 
 using namespace Rendering::Vulkan;
 
-SingleRenderPass::SingleRenderPass(const ContextRef& context,
-                                   const vk::Format& surfaceFormat,
-                                   const vk::Format& depthFormat)
+FullscreenRenderPass::FullscreenRenderPass(const ContextRef& context,
+                                           const vk::Format& colorFormat)
     : RenderPass(context) {
   auto const colorAttachmentDescription =
       vk::AttachmentDescription{}
-          .setFormat(surfaceFormat)
+          .setFormat(colorFormat)
           .setSamples(vk::SampleCountFlagBits::e1)
           .setLoadOp(vk::AttachmentLoadOp::eClear)
           .setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -22,27 +21,11 @@ SingleRenderPass::SingleRenderPass(const ContextRef& context,
           .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
           .setAttachment(0);
 
-  auto const depthAttachmentDescription =
-      vk::AttachmentDescription{}
-          .setFormat(depthFormat)
-          .setSamples(vk::SampleCountFlagBits::e1)
-          .setLoadOp(vk::AttachmentLoadOp::eClear)
-          .setStoreOp(vk::AttachmentStoreOp::eDontCare)
-          .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-          .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-          .setInitialLayout(vk::ImageLayout::eUndefined)
-          .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-  auto const depthAttachmentRef =
-      vk::AttachmentReference{}.setAttachment(1).setLayout(
-          vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
   auto const subpassDescription =
       vk::SubpassDescription{}
           .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
           .setColorAttachmentCount(1)
-          .setPColorAttachments(&colorReference)
-          .setPDepthStencilAttachment(&depthAttachmentRef);
+          .setPColorAttachments(&colorReference);
 
   auto const subpassDependency =
       vk::SubpassDependency{}
@@ -55,13 +38,10 @@ SingleRenderPass::SingleRenderPass(const ContextRef& context,
                             vk::AccessFlagBits::eColorAttachmentRead)
           .setDependencyFlags(vk::DependencyFlags{});
 
-  const std::vector<vk::AttachmentDescription> attachments{
-      colorAttachmentDescription, depthAttachmentDescription};
-
   auto const renderPassCreateInfo =
       vk::RenderPassCreateInfo{}
-          .setAttachmentCount(static_cast<unsigned int>(attachments.size()))
-          .setPAttachments(attachments.data())
+          .setAttachmentCount(1)
+          .setPAttachments(&colorAttachmentDescription)
           .setSubpassCount(1)
           .setPSubpasses(&subpassDescription)
           .setDependencyCount(1)
@@ -72,4 +52,4 @@ SingleRenderPass::SingleRenderPass(const ContextRef& context,
                                  &mRenderPassHandle) == vk::Result::eSuccess);
 }
 
-SingleRenderPass::~SingleRenderPass() {}
+FullscreenRenderPass::~FullscreenRenderPass() {}

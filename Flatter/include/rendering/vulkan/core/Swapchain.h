@@ -6,7 +6,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class FrameController;
 using FrameControllerRef = std::shared_ptr<FrameController>;
 
@@ -40,6 +39,5 @@ class Swapchain {
 };
 
 using SwapchainRef = std::shared_ptr<Swapchain>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

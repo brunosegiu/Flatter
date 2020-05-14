@@ -8,7 +8,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class SingleRenderPass : public RenderPass {
  public:
   SingleRenderPass(const ContextRef& context,
@@ -23,6 +22,5 @@ class SingleRenderPass : public RenderPass {
 };
 
 using SingleRenderPassRef = std::shared_ptr<SingleRenderPass>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

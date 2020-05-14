@@ -7,7 +7,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class RenderPass {
  public:
   RenderPass(const ContextRef& context);
@@ -26,6 +25,5 @@ class RenderPass {
 };
 
 using RenderPassRef = std::shared_ptr<RenderPass>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

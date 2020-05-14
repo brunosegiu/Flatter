@@ -23,7 +23,7 @@ class Context {
   const vk::Format findSupportedFormat(
       const std::vector<vk::Format>& candidates,
       const vk::ImageTiling& tiling,
-      vk::FormatFeatureFlags& flags);
+      vk::FormatFeatureFlags flags);
 
   unsigned int findBufferMemoryType(
       unsigned int memoryTypeMask,
@@ -73,6 +73,5 @@ class Context {
 };
 
 using ContextRef = std::shared_ptr<Context>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

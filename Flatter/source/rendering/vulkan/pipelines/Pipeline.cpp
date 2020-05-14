@@ -6,6 +6,6 @@ Pipeline::Pipeline(const ContextRef& context) : mContext(context) {}
 
 Pipeline::~Pipeline() {
   const vk::Device& device = mContext->getDevice();
-  device.destroyPipeline(mPipelineHandle, nullptr);
-  device.destroyPipelineLayout(mPipelineLayout, nullptr);
+  // device.destroyPipeline(mPipelineHandle, nullptr);
+  // device.destroyPipelineLayout(mPipelineLayout, nullptr);
 }

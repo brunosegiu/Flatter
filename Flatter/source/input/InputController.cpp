@@ -12,6 +12,15 @@ void InputController::attach(const InputEventListenerRef& listener) {
 }
 
 void InputController::processEvents(const float timeDelta) const {
+  glm::ivec2 mouseState;
+  SDL_GetMouseState(&mouseState.x, &mouseState.y);
+  const glm::vec2 mousePosNorm(
+      (0.5f - static_cast<float>(mouseState.x) / mWinWidth),
+      (0.5f - static_cast<float>(mouseState.y) / mWinHeight));
+  for (const auto& listener : mListeners) {
+    listener->onCursorMovement(timeDelta, mousePosNorm);
+  }
+
   SDL_Event evt;
   while (SDL_PollEvent(&evt)) {
     const bool shouldQuit =
@@ -33,15 +42,6 @@ void InputController::processEvents(const float timeDelta) const {
         listener->onKeyPress(timeDelta, static_cast<SDL_Scancode>(keyIndex));
       }
     }
-  }
-
-  glm::ivec2 mouseState;
-  SDL_GetMouseState(&mouseState.x, &mouseState.y);
-  const glm::vec2 mousePosNorm(
-      (0.5f - static_cast<float>(mouseState.x) / mWinWidth),
-      (0.5f - static_cast<float>(mouseState.y) / mWinHeight));
-  for (const auto& listener : mListeners) {
-    listener->onCursorMovement(timeDelta, mousePosNorm);
   }
 }
 

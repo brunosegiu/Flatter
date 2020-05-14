@@ -9,7 +9,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class Surface {
  public:
   vk::SurfaceKHR mSurfaceHandle;
@@ -33,6 +32,5 @@ class Surface {
 };
 
 using SurfaceRef = std::shared_ptr<Surface>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

@@ -10,7 +10,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class IndexedVertexBuffer {
  public:
   IndexedVertexBuffer(const ContextRef& context,

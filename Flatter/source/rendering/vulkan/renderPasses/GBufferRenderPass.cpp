@@ -48,20 +48,21 @@ GBufferRenderPass::GBufferRenderPass(const ContextRef& context,
       vk::SubpassDependency{}
           .setSrcSubpass(VK_SUBPASS_EXTERNAL)
           .setDstSubpass(0)
-          .setSrcStageMask(vk::PipelineStageFlagBits::eFragmentShader)
+          .setSrcStageMask(vk::PipelineStageFlagBits::eBottomOfPipe)
           .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-          .setSrcAccessMask(vk::AccessFlagBits::eShaderRead)
-          .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+          .setSrcAccessMask(vk::AccessFlagBits::eMemoryRead)
+          .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead |
+                            vk::AccessFlagBits::eColorAttachmentWrite)
           .setDependencyFlags(vk::DependencyFlagBits::eByRegion),
       vk::SubpassDependency{}
           .setSrcSubpass(0)
           .setDstSubpass(VK_SUBPASS_EXTERNAL)
           .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-          .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-          .setSrcAccessMask(vk::AccessFlagBits{})
-          .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite |
-                            vk::AccessFlagBits::eColorAttachmentRead)
-          .setDependencyFlags(vk::DependencyFlags{})};
+          .setDstStageMask(vk::PipelineStageFlagBits::eBottomOfPipe)
+          .setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentRead |
+                            vk::AccessFlagBits::eColorAttachmentWrite)
+          .setDstAccessMask(vk::AccessFlagBits::eMemoryRead)
+          .setDependencyFlags(vk::DependencyFlagBits::eByRegion)};
 
   const std::vector<vk::AttachmentDescription> attachments{
       colorAttachmentDescription, depthAttachmentDescription};

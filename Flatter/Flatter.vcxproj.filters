@@ -87,9 +87,6 @@
     <ClCompile Include="source\rendering\vulkan\renderers\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\renderers\DeferredRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\rendering\vulkan\renderers\SinglePassRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -97,6 +94,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\rendering\vulkan\renderPasses\GBufferRenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderPasses\OffscreenRenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\pipelines\FullscreenPipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\pipelines\DeferredPipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\renderers\DeferredRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\uniforms\UniformLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -129,9 +141,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\rendering\vulkan\core\Swapchain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rendering\vulkan\core\Uniform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\rendering\vulkan\ScreenFramebufferRing.h">
@@ -176,9 +185,6 @@
     <ClInclude Include="include\rendering\vulkan\pipelines\DeferredPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\rendering\vulkan\pipelines\DeferredPipeline.cpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\rendering\vulkan\renderPasses\SingleRenderPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -194,15 +200,25 @@
     <ClInclude Include="include\rendering\vulkan\renderPasses\GBufferRenderPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\renderPasses\FullscreenRenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\pipelines\FullscreenPipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\uniforms\Uniform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\uniforms\UniformLayout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="shaders\source\fullscreen.frag" />
+    <CustomBuild Include="shaders\source\fullscreen.vert" />
+    <CustomBuild Include="shaders\source\gbuffer.frag" />
+    <CustomBuild Include="shaders\source\gbuffer.vert" />
     <CustomBuild Include="shaders\source\main.frag" />
     <CustomBuild Include="shaders\source\main.vert" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\source\gbuffer.frag" />
-    <None Include="shaders\source\gbuffer.vert" />
-    <None Include="shaders\source\offscreen.frag" />
-    <None Include="shaders\source\offscreen.vert" />
   </ItemGroup>
 </Project>

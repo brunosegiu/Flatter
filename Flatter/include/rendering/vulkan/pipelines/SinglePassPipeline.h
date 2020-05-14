@@ -9,15 +9,15 @@
 #include "rendering/vulkan/core/Shader.h"
 #include "rendering/vulkan/pipelines/Pipeline.h"
 #include "rendering/vulkan/renderPasses/SingleRenderPass.h"
+#include "rendering/vulkan/uniforms/UniformLayout.h"
 
 namespace Rendering {
 namespace Vulkan {
-
 class SinglePassPipeline : public Pipeline {
  public:
   SinglePassPipeline(const ContextRef& context,
                      const SingleRenderPassRef& renderPass,
-                     const vk::DescriptorSetLayout& descriptorSetLayout);
+                     const UniformLayoutRef& uniformLayout);
 
   virtual ~SinglePassPipeline();
 
@@ -30,6 +30,5 @@ class SinglePassPipeline : public Pipeline {
 };
 
 using SinglePassPipelineRef = std::shared_ptr<SinglePassPipeline>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

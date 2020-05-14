@@ -11,33 +11,25 @@ SinglePassRenderer::SinglePassRenderer(const ContextRef& context,
       context, surface->getFormat(context->getPhysicalDevice()).format,
       mDepthBuffer->getFormat());
   const vk::Device& device = mContext->getDevice();
-  // UNIFORM
-  auto const uboLayoutBinding =
-      vk::DescriptorSetLayoutBinding{}
-          .setBinding(0)
-          .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-          .setDescriptorCount(1)
-          .setStageFlags(vk::ShaderStageFlagBits::eVertex);
 
-  auto const layoutInfo =
-      vk::DescriptorSetLayoutCreateInfo{}.setBindingCount(1).setPBindings(
-          &uboLayoutBinding);
+  mUniformLayout = std::make_shared<UniformLayout>(
+      mContext,
+      std::vector<vk::DescriptorType>{vk::DescriptorType::eUniformBuffer},
+      vk::ShaderStageFlagBits::eVertex);
 
-  device.createDescriptorSetLayout(&layoutInfo, nullptr, &mDescriptorSetLayout);
-
-  // UNIFORM
+  mMatrixUniform = std::make_shared<Uniform<glm::mat4>>(
+      mContext, mUniformLayout, glm::mat4(1.0f));
 
   mPipeline = std::make_shared<SinglePassPipeline>(mContext, mRenderPass,
-                                                   mDescriptorSetLayout);
-
+                                                   mUniformLayout);
   mScreenFramebufferRing = std::make_shared<ScreenFramebufferRing>(
-      mContext, surface, mRenderPass, mDescriptorSetLayout, mDepthBuffer);
+      mContext, surface, mRenderPass, mDepthBuffer);
 }
 
 void SinglePassRenderer::draw(Camera& camera, const SceneRef& scene) {
   const glm::mat4& mvp = camera.getViewProjection();
   const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
-  resources.matrixUniform->update(mvp);
+  mMatrixUniform->update(mvp);
   const vk::CommandBuffer& currentCommandBuffer(resources.commandBuffer);
 
   const vk::Extent2D& imageExtent = mContext->getSwapchain()->getExtent();
@@ -46,7 +38,7 @@ void SinglePassRenderer::draw(Camera& camera, const SceneRef& scene) {
   setViewportConstrains(currentCommandBuffer, imageExtent);
   beginRenderPass(currentCommandBuffer, resources.framebuffer, mRenderPass,
                   imageExtent);
-  bindUniforms(currentCommandBuffer, resources.matrixUniform, mPipeline);
+  bindUniforms(currentCommandBuffer, mMatrixUniform, mPipeline);
 
   for (const auto& mesh : scene->getMeshes()) {
     const IndexedVertexBufferRef& indexedVertexBuffer =
@@ -123,10 +115,6 @@ void SinglePassRenderer::bindUniforms(const vk::CommandBuffer& commandBuffer,
   commandBuffer.bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics, pipeline->getPipelineLayout(), 0, 1,
       &uniformMatrix->getDescriptorHandle(), 0, nullptr);
-}
-
-void SinglePassRenderer::draw(const vk::CommandBuffer& commandBuffer) {
-  commandBuffer.draw(3, 1, 0, 0);
 }
 
 void SinglePassRenderer::endCommand(const vk::CommandBuffer& commandBuffer) {

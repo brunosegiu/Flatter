@@ -24,5 +24,4 @@ class CameraController : public InputEventListener {
 };
 
 using CameraControllerRef = std::shared_ptr<CameraController>;
-
 }  // namespace Input

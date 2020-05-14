@@ -14,15 +14,11 @@ class DepthBufferAttachment : public FramebufferAttachment {
 
   DepthBufferAttachment(const ContextRef& context, const vk::Extent2D& extent);
 
-  const vk::Format& getFormat() const { return mFormat; };
-
   virtual ~DepthBufferAttachment();
 
  private:
   DepthBufferAttachment(DepthBufferAttachment const&) = delete;
   DepthBufferAttachment& operator=(DepthBufferAttachment const&) = delete;
-
-  vk::Format mFormat;
 };
 
 using DepthBufferAttachmentRef = std::shared_ptr<DepthBufferAttachment>;

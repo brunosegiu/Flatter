@@ -10,10 +10,11 @@
 #include "rendering/vulkan/pipelines/SinglePassPipeline.h"
 #include "rendering/vulkan/renderPasses/SingleRenderPass.h"
 #include "rendering/vulkan/renderers/Renderer.h"
+#include "rendering/vulkan/uniforms/Uniform.h"
+#include "rendering/vulkan/uniforms/UniformLayout.h"
 
 namespace Rendering {
 namespace Vulkan {
-
 class SinglePassRenderer : public Renderer {
  public:
   SinglePassRenderer(const ContextRef& context, const SurfaceRef& surface);
@@ -26,9 +27,11 @@ class SinglePassRenderer : public Renderer {
   SinglePassRenderer(SinglePassRenderer const&) = delete;
   SinglePassRenderer& operator=(SinglePassRenderer const&) = delete;
 
-  vk::DescriptorSetLayout mDescriptorSetLayout;
   SingleRenderPassRef mRenderPass;
   SinglePassPipelineRef mPipeline;
+
+  UniformLayoutRef mUniformLayout;
+  UniformMatrixRef mMatrixUniform;
 
   DepthBufferAttachmentRef mDepthBuffer;
 
@@ -49,7 +52,6 @@ class SinglePassRenderer : public Renderer {
   void bindUniforms(const vk::CommandBuffer& commandBuffer,
                     const UniformMatrixRef& uniformMatrix,
                     const SinglePassPipelineRef& pipeline);
-  void draw(const vk::CommandBuffer& commandBuffer);
   void endCommand(const vk::CommandBuffer& commandBuffer);
   void present(const vk::CommandBuffer& commandBuffer,
                const vk::Semaphore& imageAvailableSemaphore,
@@ -59,6 +61,5 @@ class SinglePassRenderer : public Renderer {
 };
 
 using SinglePassRendererRef = std::shared_ptr<SinglePassRenderer>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

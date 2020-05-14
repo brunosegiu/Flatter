@@ -8,14 +8,14 @@
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/Shader.h"
 #include "rendering/vulkan/pipelines/Pipeline.h"
-#include "rendering/vulkan/renderPasses/RenderPass.h"
+#include "rendering/vulkan/renderPasses/GBufferRenderPass.h"
 
 namespace Rendering {
 namespace Vulkan {
-
 class DeferredPipeline : public Pipeline {
  public:
-  DeferredPipeline(const ContextRef& context, const RenderPassRef& renderPass);
+  DeferredPipeline(const ContextRef& context,
+                   const GBufferRenderPassRef& renderPass);
 
   virtual ~DeferredPipeline();
 
@@ -28,6 +28,5 @@ class DeferredPipeline : public Pipeline {
 };
 
 using DeferredPipelineRef = std::shared_ptr<DeferredPipeline>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

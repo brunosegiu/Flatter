@@ -8,7 +8,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class RenderPass;
 using RenderPassRef = std::shared_ptr<RenderPass>;
 
@@ -31,6 +30,5 @@ class Framebuffer {
 };
 
 using FramebufferRef = std::shared_ptr<Framebuffer>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

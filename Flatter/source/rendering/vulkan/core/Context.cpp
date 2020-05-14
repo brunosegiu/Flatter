@@ -122,7 +122,7 @@ unsigned int Context::findBufferMemoryType(
 const vk::Format Context::findSupportedFormat(
     const std::vector<vk::Format>& candidates,
     const vk::ImageTiling& tiling,
-    vk::FormatFeatureFlags& flags) {
+    vk::FormatFeatureFlags flags) {
   const auto formatIter = std::find_if(
       candidates.begin(), candidates.end(), [&](const vk::Format& format) {
         vk::FormatProperties formatProperties;

@@ -8,7 +8,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class GBufferRenderPass : public RenderPass {
  public:
   GBufferRenderPass(const ContextRef& context,
@@ -23,6 +22,5 @@ class GBufferRenderPass : public RenderPass {
 };
 
 using GBufferRenderPassRef = std::shared_ptr<GBufferRenderPass>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

@@ -11,7 +11,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class Renderer {
  public:
   Renderer(const ContextRef& context);
@@ -30,6 +29,5 @@ class Renderer {
 };
 
 using RendererRef = std::shared_ptr<Renderer>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

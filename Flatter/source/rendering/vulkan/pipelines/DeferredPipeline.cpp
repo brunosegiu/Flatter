@@ -5,7 +5,7 @@
 using namespace Rendering::Vulkan;
 
 DeferredPipeline::DeferredPipeline(const ContextRef& context,
-                                   const RenderPassRef& renderPass)
+                                   const GBufferRenderPassRef& renderPass)
     : Pipeline(context) {
   mVertexShader = Shader::fromFile("shaders/build/gbuffer.vert.spv", context);
   mFragmentShader = Shader::fromFile("shaders/build/gbuffer.frag.spv", context);
@@ -13,13 +13,13 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
   auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo{}
                                      .setStage(vk::ShaderStageFlagBits::eVertex)
                                      .setModule(mVertexShader->getHandle())
-                                     .setPName("gbuffer");
+                                     .setPName("main");
 
   auto const fragmentShaderStage =
       vk::PipelineShaderStageCreateInfo{}
           .setStage(vk::ShaderStageFlagBits::eFragment)
           .setModule(mFragmentShader->getHandle())
-          .setPName("gbuffer");
+          .setPName("main");
 
   const std::vector<vk::PipelineShaderStageCreateInfo> stages{
       vertexShaderStage, fragmentShaderStage};
@@ -44,7 +44,7 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
                                       .setDepthClampEnable(false)
                                       .setRasterizerDiscardEnable(false)
                                       .setPolygonMode(vk::PolygonMode::eFill)
-                                      .setCullMode(vk::CullModeFlagBits::eFront)
+                                      .setCullMode(vk::CullModeFlagBits::eBack)
                                       .setFrontFace(vk::FrontFace::eClockwise)
                                       .setDepthBiasEnable(false)
                                       .setDepthBiasConstantFactor(0.0f)

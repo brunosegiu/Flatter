@@ -3,7 +3,6 @@
 #include "rendering/Mesh.h"
 
 namespace Rendering {
-
 class GLTFLoader {
  public:
   GLTFLoader(const Rendering::Vulkan::ContextRef& context);
@@ -15,5 +14,4 @@ class GLTFLoader {
  private:
   const Rendering::Vulkan ::ContextRef mContext;
 };
-
 }  // namespace Rendering

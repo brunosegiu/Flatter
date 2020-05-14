@@ -9,7 +9,7 @@ Rendering::Vulkan::FramebufferAttachment::FramebufferAttachment(
     const vk::ImageUsageFlags& usage,
     const vk::ImageAspectFlags& viewAspect,
     const vk::ImageTiling tiling)
-    : mContext(context) {
+    : mContext(context), mFormat(format) {
   const auto imageCreateInfo =
       vk::ImageCreateInfo{}
           .setImageType(vk::ImageType::e2D)

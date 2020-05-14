@@ -9,7 +9,6 @@
 #include "input/InputEventListener.h"
 
 namespace Input {
-
 class InputController {
  public:
   InputController(SDL_Window* window,
@@ -33,5 +32,4 @@ class InputController {
 };
 
 using InputControllerRef = std::shared_ptr<InputController>;
-
 }  // namespace Input

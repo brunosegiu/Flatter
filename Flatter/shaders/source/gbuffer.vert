@@ -2,24 +2,20 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_KHR_vulkan_glsl : enable
 
-layout (location = 0) out vec2 uv;
+layout(location = 0) in vec3 position;
+
+layout(set = 0, binding = 0) uniform View {
+    mat4 mvp;
+} view;
+
+layout (location = 0) out vec3 fragPosition;
 
 out gl_PerVertex
 {
     vec4 gl_Position;
 };
 
-vec2 positions[3] = vec2[](
-    vec2(-1.0f,  1.0f),
-    vec2(-1.0f, -3.0f),
-    vec2( 3.0f,  1.0f)
-);
-
 void main()
 {
-    float x = -1.0f + float((gl_VertexID & 1) << 2);
-    float y = -1.0f + float((gl_VertexID & 2) << 1);
-    uv.x = (x+1.0f)*0.5f;
-    uv.y = (y+1.0f)*0.5f;
-    gl_Position = vec4(x, y, 0f, 1f);
+    gl_Position = view.mvp * vec4(position, 1.0);
 }

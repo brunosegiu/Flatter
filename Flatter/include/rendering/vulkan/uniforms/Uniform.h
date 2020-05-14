@@ -7,15 +7,15 @@
 
 #include "rendering/vulkan/core/Buffer.h"
 #include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/uniforms/UniformLayout.h"
 
 namespace Rendering {
 namespace Vulkan {
-
 template <typename ValueType>
 class Uniform {
  public:
   Uniform(const ContextRef& context,
-          const vk::DescriptorSetLayout& descriptorSetLayout,
+          const UniformLayoutRef& layout,
           ValueType value);
 
   const vk::DescriptorSet& getDescriptorHandle() const {
@@ -35,7 +35,6 @@ class Uniform {
 };
 
 using UniformMatrixRef = std::shared_ptr<Uniform<glm::mat4>>;
-
 }  // namespace Vulkan
 }  // namespace Rendering
 
@@ -43,7 +42,7 @@ using namespace Rendering::Vulkan;
 
 template <typename ValueType>
 Uniform<ValueType>::Uniform(const ContextRef& context,
-                            const vk::DescriptorSetLayout& descriptorSetLayout,
+                            const UniformLayoutRef& layout,
                             ValueType value)
     : mValue(value), mContext(context) {
   const vk::Device& device = mContext->getDevice();
@@ -59,7 +58,7 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
   auto const allocInfo = vk::DescriptorSetAllocateInfo{}
                              .setDescriptorPool(descriptorPool)
                              .setDescriptorSetCount(1)
-                             .setPSetLayouts(&descriptorSetLayout);
+                             .setPSetLayouts(&layout->getHandle());
   device.allocateDescriptorSets(&allocInfo, &mDescriptorSet);
 
   auto const bufferInfo = vk::DescriptorBufferInfo{}

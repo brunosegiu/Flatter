@@ -9,7 +9,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class Pipeline {
  public:
   Pipeline(const ContextRef& context);
@@ -32,6 +31,5 @@ class Pipeline {
 };
 
 using PipelineRef = std::shared_ptr<Pipeline>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

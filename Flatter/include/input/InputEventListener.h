@@ -8,7 +8,6 @@
 #include "input/InputEventListener.h"
 
 namespace Input {
-
 class InputEventListener {
  public:
   InputEventListener(){};
@@ -23,5 +22,4 @@ class InputEventListener {
 };
 
 using InputEventListenerRef = std::shared_ptr<InputEventListener>;
-
 }  // namespace Input

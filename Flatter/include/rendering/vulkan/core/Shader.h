@@ -12,7 +12,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class Shader;
 using ShaderRef = std::shared_ptr<Shader>;
 
@@ -31,6 +30,5 @@ class Shader {
   const ContextRef mContext;
   vk::ShaderModule mShaderHandle;
 };
-
 }  // namespace Vulkan
 }  // namespace Rendering

@@ -28,8 +28,12 @@ Framebuffer::Framebuffer(const ContextRef& context,
   assert(device.createImageView(&imageViewCreateInfo, nullptr,
                                 &mSwapchainImageView) == vk::Result::eSuccess);
 
-  const std::array<vk::ImageView, 2> attachments{mSwapchainImageView,
-                                                 depthBuffer->getImageView()};
+  std::vector<vk::ImageView> attachments;
+  if (depthBuffer) {
+    attachments = {mSwapchainImageView, depthBuffer->getImageView()};
+  } else {
+    attachments = {mSwapchainImageView};
+  }
 
   auto const framebufferCreateInfo =
       vk::FramebufferCreateInfo{}
