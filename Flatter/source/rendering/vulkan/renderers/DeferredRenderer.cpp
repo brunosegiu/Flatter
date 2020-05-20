@@ -8,7 +8,7 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
   // Shared resources
   const vk::Device& device = mContext->getDevice();
   const vk::Extent2D extent(mContext->getSwapchain()->getExtent());
-  mDescriptorPool = std::make_shared<DescriptorPool>(mContext, 1, 1, 3);
+  mDescriptorPool = std::make_shared<DescriptorPool>(mContext, 1, 3, 10);
 
   // GBuffer resources
   mDeferredLayout = std::make_shared<DescriptorLayout>(
@@ -22,15 +22,27 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
       vk::ImageUsageFlagBits::eColorAttachment |
           vk::ImageUsageFlagBits::eSampled,
       vk::ImageAspectFlagBits::eColor);
+  mPosAtt = std::make_shared<FramebufferAttachment>(
+      mContext, extent, vk::Format::eR16G16B16A16Sfloat,
+      vk::ImageUsageFlagBits::eColorAttachment |
+          vk::ImageUsageFlagBits::eSampled,
+      vk::ImageAspectFlagBits::eColor);
+  mNormAtt = std::make_shared<FramebufferAttachment>(
+      mContext, extent, vk::Format::eR16G16B16A16Sfloat,
+      vk::ImageUsageFlagBits::eColorAttachment |
+          vk::ImageUsageFlagBits::eSampled,
+      vk::ImageAspectFlagBits::eColor);
   mDepthAtt = std::make_shared<DepthBufferAttachment>(mContext, extent);
 
   mDeferredPipeline = std::make_shared<DeferredPipeline>(
-      mContext, mDeferredLayout, mColorAtt->getFormat(),
-      mDepthAtt->getFormat());
+      mContext, mDeferredLayout, mColorAtt->getFormat(), mPosAtt->getFormat(),
+      mNormAtt->getFormat(), mDepthAtt->getFormat());
 
   mGBuffer = std::make_shared<Framebuffer>(
       mContext, mDeferredPipeline,
-      std::vector<FramebufferAttachmentRef>{mColorAtt, mDepthAtt}, extent);
+      std::vector<FramebufferAttachmentRef>{mColorAtt, mPosAtt, mNormAtt,
+                                            mDepthAtt},
+      extent);
 
   mMatrixUniform = std::make_shared<Uniform<glm::mat4>>(
       mContext, mDeferredLayout, mDescriptorPool,
@@ -43,6 +55,10 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
       mContext,
       std::vector<std::pair<vk::DescriptorType, vk::ShaderStageFlags>>{
           {vk::DescriptorType::eCombinedImageSampler,
+           vk::ShaderStageFlagBits::eFragment},
+          {vk::DescriptorType::eCombinedImageSampler,
+           vk::ShaderStageFlagBits::eFragment},
+          {vk::DescriptorType::eCombinedImageSampler,
            vk::ShaderStageFlagBits::eFragment}});
   mFullscreenRenderPass = std::make_shared<FullscreenRenderPass>(
       mContext, surface->getFormat(mContext->getPhysicalDevice()).format);
@@ -52,8 +68,20 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
   mScreenFramebufferRing = std::make_shared<ScreenFramebufferRing>(
       mContext, surface, mFullscreenRenderPass);
 
-  mSampler = std::make_shared<Sampler>(mContext, mDescriptorPool,
-                                       mFullscreenLayout, mColorAtt, 0);
+  auto const descriptorAllocInfo =
+      vk::DescriptorSetAllocateInfo{}
+          .setDescriptorPool(mDescriptorPool->getDescriptorPool())
+          .setDescriptorSetCount(1)
+          .setPSetLayouts(&mFullscreenLayout->getHandle());
+  assert(device.allocateDescriptorSets(&descriptorAllocInfo, &mDescriptorSet) ==
+         vk::Result::eSuccess);
+
+  mAlbedoSampler =
+      std::make_shared<Sampler>(mContext, mDescriptorSet, mColorAtt, 0);
+  mPositionSampler =
+      std::make_shared<Sampler>(mContext, mDescriptorSet, mPosAtt, 1);
+  mNormalSampler =
+      std::make_shared<Sampler>(mContext, mDescriptorSet, mNormAtt, 2);
 }
 
 void DeferredRenderer::draw(Rendering::Camera& camera, const SceneRef& scene) {
@@ -84,10 +112,14 @@ void DeferredRenderer::drawDeferred(const RenderingResources& resources,
   const glm::mat4& mvp = camera.getViewProjection();
   mMatrixUniform->update(mvp);
   const auto cmdBeginInfo = vk::CommandBufferBeginInfo{};
-  std::array<vk::ClearValue, 2> clearValues{};
+  std::array<vk::ClearValue, 4> clearValues{};
   clearValues[0].setColor(
-      vk::ClearColorValue(std::array<float, 4>{1.0f, 0.0f, 0.0f, 1.0f}));
-  clearValues[1].setDepthStencil(vk::ClearDepthStencilValue(1.0f, 1u));
+      vk::ClearColorValue(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f}));
+  clearValues[1].setColor(
+      vk::ClearColorValue(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f}));
+  clearValues[2].setColor(
+      vk::ClearColorValue(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f}));
+  clearValues[3].setDepthStencil(vk::ClearDepthStencilValue(1.0f, 1u));
   const vk::Extent2D screenExtent = mContext->getSwapchain()->getExtent();
   const vk::Rect2D extent{{0, 0}, screenExtent};
   const auto renderPassBeginInfo =
@@ -95,7 +127,7 @@ void DeferredRenderer::drawDeferred(const RenderingResources& resources,
           .setRenderPass(mDeferredPipeline->getRenderPass()->getHandle())
           .setFramebuffer(mGBuffer->getHandle())
           .setRenderArea(extent)
-          .setClearValueCount(2)
+          .setClearValueCount(static_cast<unsigned int>(clearValues.size()))
           .setPClearValues(clearValues.data());
 
   mDeferredCB.begin(cmdBeginInfo);
@@ -138,8 +170,8 @@ void DeferredRenderer::drawFullscreen(const RenderingResources& resources) {
                                     mFullscreenPipeline->getHandle());
   currentCommandBuffer.bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
-      mFullscreenPipeline->getPipelineLayout(), 0, 1,
-      &mSampler->getDescriptorSet(), 0, nullptr);
+      mFullscreenPipeline->getPipelineLayout(), 0, 1, &mDescriptorSet, 0,
+      nullptr);
   const auto clearValues = vk::ClearValue{}.setColor(
       vk::ClearColorValue(std::array<float, 4>{1.0f, 0.0f, 0.0f, 1.0f}));
   const vk::Extent2D screenExtent = mContext->getSwapchain()->getExtent();

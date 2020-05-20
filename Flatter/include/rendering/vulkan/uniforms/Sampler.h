@@ -14,12 +14,9 @@ namespace Vulkan {
 class Sampler {
  public:
   Sampler(const ContextRef& context,
-          const DescriptorPoolRef& descriptorPool,
-          const DescriptorLayoutRef& layout,
+          const vk::DescriptorSet descriptorSet,
           const FramebufferAttachmentRef& framebufferAttachment,
           const unsigned int binding);
-
-  const vk::DescriptorSet& getDescriptorSet() const { return mDescriptorSet; };
 
   virtual ~Sampler();
 
@@ -28,7 +25,6 @@ class Sampler {
   Sampler& operator=(Sampler const&) = delete;
 
   vk::Sampler mSampler;
-  vk::DescriptorSet mDescriptorSet;
 
   ContextRef mContext;
 };

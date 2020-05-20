@@ -8,7 +8,7 @@ layout(set = 0, binding = 0) uniform View {
     mat4 mvp;
 } view;
 
-layout (location = 0) out vec3 fragPosition;
+layout (location = 0) out vec3 outFragPos;
 
 out gl_PerVertex
 {
@@ -18,4 +18,5 @@ out gl_PerVertex
 void main()
 {
     gl_Position = view.mvp * vec4(position, 1.0);
+    outFragPos = position;
 }

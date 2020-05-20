@@ -6,11 +6,13 @@ using namespace Rendering::Vulkan;
 
 DeferredPipeline::DeferredPipeline(const ContextRef& context,
                                    const DescriptorLayoutRef& descriptorLayout,
-                                   const vk::Format& colorFormat,
+                                   const vk::Format& albedoFormat,
+                                   const vk::Format& positionFormat,
+                                   const vk::Format& normalFormat,
                                    const vk::Format& depthFormat)
     : Pipeline(context) {
-  mRenderPass =
-      std::make_shared<GBufferRenderPass>(mContext, colorFormat, depthFormat);
+  mRenderPass = std::make_shared<GBufferRenderPass>(
+      mContext, albedoFormat, positionFormat, normalFormat, depthFormat);
 
   mVertexShader = Shader::fromFile("shaders/build/gbuffer.vert.spv", context,
                                    vk::ShaderStageFlagBits::eVertex);
@@ -48,6 +50,7 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
           .setDepthBiasClamp(0.0f)
           .setDepthBiasSlopeFactor(0.0f)
           .setLineWidth(1.0f);
+
   auto const viewportState = vk::PipelineViewportStateCreateInfo{}
                                  .setViewportCount(1)
                                  .setPViewports(0)
@@ -69,23 +72,51 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
                                      .setDepthBoundsTestEnable(false)
                                      .setStencilTestEnable(false);
 
-  auto const colorblendAttachmentState =
-      vk::PipelineColorBlendAttachmentState()
-          .setBlendEnable(false)
-          .setSrcColorBlendFactor(vk::BlendFactor::eOne)
-          .setDstColorBlendFactor(vk::BlendFactor::eZero)
-          .setColorBlendOp(vk::BlendOp::eAdd)
-          .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-          .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
-          .setAlphaBlendOp(vk::BlendOp::eAdd)
-          .setColorWriteMask(
-              vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
-              vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
+  const std::vector<vk::PipelineColorBlendAttachmentState>
+      colorblendAttachmentState{
+          vk::PipelineColorBlendAttachmentState()
+              .setBlendEnable(false)
+              .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+              .setDstColorBlendFactor(vk::BlendFactor::eZero)
+              .setColorBlendOp(vk::BlendOp::eAdd)
+              .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+              .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+              .setAlphaBlendOp(vk::BlendOp::eAdd)
+              .setColorWriteMask(vk::ColorComponentFlagBits::eR |
+                                 vk::ColorComponentFlagBits::eG |
+                                 vk::ColorComponentFlagBits::eB |
+                                 vk::ColorComponentFlagBits::eA),
+          vk::PipelineColorBlendAttachmentState()
+              .setBlendEnable(false)
+              .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+              .setDstColorBlendFactor(vk::BlendFactor::eZero)
+              .setColorBlendOp(vk::BlendOp::eAdd)
+              .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+              .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+              .setAlphaBlendOp(vk::BlendOp::eAdd)
+              .setColorWriteMask(vk::ColorComponentFlagBits::eR |
+                                 vk::ColorComponentFlagBits::eG |
+                                 vk::ColorComponentFlagBits::eB |
+                                 vk::ColorComponentFlagBits::eA),
+          vk::PipelineColorBlendAttachmentState()
+              .setBlendEnable(false)
+              .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+              .setDstColorBlendFactor(vk::BlendFactor::eZero)
+              .setColorBlendOp(vk::BlendOp::eAdd)
+              .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+              .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+              .setAlphaBlendOp(vk::BlendOp::eAdd)
+              .setColorWriteMask(vk::ColorComponentFlagBits::eR |
+                                 vk::ColorComponentFlagBits::eG |
+                                 vk::ColorComponentFlagBits::eB |
+                                 vk::ColorComponentFlagBits::eA)};
 
-  auto const colorBlendState = vk::PipelineColorBlendStateCreateInfo{}
-                                   .setLogicOpEnable(false)
-                                   .setAttachmentCount(1)
-                                   .setPAttachments(&colorblendAttachmentState);
+  auto const colorBlendState =
+      vk::PipelineColorBlendStateCreateInfo{}
+          .setLogicOpEnable(false)
+          .setAttachmentCount(
+              static_cast<unsigned int>(colorblendAttachmentState.size()))
+          .setPAttachments(colorblendAttachmentState.data());
 
   const std::vector<vk::DynamicState> dynamicStates{vk::DynamicState::eViewport,
                                                     vk::DynamicState::eScissor};

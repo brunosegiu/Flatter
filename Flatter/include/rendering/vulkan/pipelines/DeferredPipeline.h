@@ -17,7 +17,9 @@ class DeferredPipeline : public Pipeline {
  public:
   DeferredPipeline(const ContextRef& context,
                    const DescriptorLayoutRef& descriptorLayout,
-                   const vk::Format& colorFormat,
+                   const vk::Format& albedoFormat,
+                   const vk::Format& positionFormat,
+                   const vk::Format& normalFormat,
                    const vk::Format& depthFormat);
 
   virtual ~DeferredPipeline();

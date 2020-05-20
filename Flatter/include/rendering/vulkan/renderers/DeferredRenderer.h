@@ -44,12 +44,14 @@ class DeferredRenderer : public Renderer {
 
   FullscreenRenderPassRef mFullscreenRenderPass;
   FullscreenPipelineRef mFullscreenPipeline;
-  SamplerRef mSampler;
+  SamplerRef mAlbedoSampler, mPositionSampler, mNormalSampler;
 
-  FramebufferAttachmentRef mColorAtt;
+  FramebufferAttachmentRef mColorAtt, mPosAtt, mNormAtt;
   DepthBufferAttachmentRef mDepthAtt;
 
   vk::CommandBuffer mDeferredCB;
+
+  vk::DescriptorSet mDescriptorSet;
 
   // Helpers
   void drawDeferred(const RenderingResources& resources,

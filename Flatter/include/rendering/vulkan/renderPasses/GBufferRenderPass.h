@@ -11,7 +11,9 @@ namespace Vulkan {
 class GBufferRenderPass : public RenderPass {
  public:
   GBufferRenderPass(const ContextRef& context,
-                    const vk::Format& colorFormat,
+                    const vk::Format& albedoFormat,
+                    const vk::Format& positionFormat,
+                    const vk::Format& normalFormat,
                     const vk::Format& depthFormat);
 
   virtual ~GBufferRenderPass();

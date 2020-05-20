@@ -3,12 +3,14 @@
 using namespace Rendering::Vulkan;
 
 GBufferRenderPass::GBufferRenderPass(const ContextRef& context,
-                                     const vk::Format& colorFormat,
+                                     const vk::Format& albedoFormat,
+                                     const vk::Format& positionFormat,
+                                     const vk::Format& normalFormat,
                                      const vk::Format& depthFormat)
     : RenderPass(context) {
   auto const colorAttachmentDescription =
       vk::AttachmentDescription{}
-          .setFormat(colorFormat)
+          .setFormat(albedoFormat)
           .setSamples(vk::SampleCountFlagBits::e1)
           .setLoadOp(vk::AttachmentLoadOp::eClear)
           .setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -17,10 +19,39 @@ GBufferRenderPass::GBufferRenderPass(const ContextRef& context,
           .setInitialLayout(vk::ImageLayout::eUndefined)
           .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
-  auto const colorReference =
+  auto const positionAttachmentDescription =
+      vk::AttachmentDescription{}
+          .setFormat(positionFormat)
+          .setSamples(vk::SampleCountFlagBits::e1)
+          .setLoadOp(vk::AttachmentLoadOp::eClear)
+          .setStoreOp(vk::AttachmentStoreOp::eStore)
+          .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+          .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+          .setInitialLayout(vk::ImageLayout::eUndefined)
+          .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+  auto const normalAttachmentDescription =
+      vk::AttachmentDescription{}
+          .setFormat(normalFormat)
+          .setSamples(vk::SampleCountFlagBits::e1)
+          .setLoadOp(vk::AttachmentLoadOp::eClear)
+          .setStoreOp(vk::AttachmentStoreOp::eStore)
+          .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+          .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+          .setInitialLayout(vk::ImageLayout::eUndefined)
+          .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+  const std::vector<vk::AttachmentReference> colorReference{
       vk::AttachmentReference{}
           .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
-          .setAttachment(0);
+          .setAttachment(0),
+      vk::AttachmentReference{}
+          .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+          .setAttachment(1),
+      vk::AttachmentReference{}
+          .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+          .setAttachment(2),
+  };
 
   auto const depthAttachmentDescription =
       vk::AttachmentDescription{}
@@ -34,14 +65,16 @@ GBufferRenderPass::GBufferRenderPass(const ContextRef& context,
           .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
   auto const depthReference =
-      vk::AttachmentReference{}.setAttachment(1).setLayout(
-          vk::ImageLayout::eDepthStencilAttachmentOptimal);
+      vk::AttachmentReference{}
+          .setAttachment(static_cast<unsigned int>(colorReference.size()))
+          .setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
   auto const subpassDescription =
       vk::SubpassDescription{}
           .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-          .setColorAttachmentCount(1)
-          .setPColorAttachments(&colorReference)
+          .setColorAttachmentCount(
+              static_cast<unsigned int>(colorReference.size()))
+          .setPColorAttachments(colorReference.data())
           .setPDepthStencilAttachment(&depthReference);
 
   auto const layoutDependencies = std::vector<vk::SubpassDependency>{
@@ -65,7 +98,8 @@ GBufferRenderPass::GBufferRenderPass(const ContextRef& context,
           .setDependencyFlags(vk::DependencyFlagBits::eByRegion)};
 
   const std::vector<vk::AttachmentDescription> attachments{
-      colorAttachmentDescription, depthAttachmentDescription};
+      colorAttachmentDescription, positionAttachmentDescription,
+      normalAttachmentDescription, depthAttachmentDescription};
 
   auto const renderPassCreateInfo =
       vk::RenderPassCreateInfo{}

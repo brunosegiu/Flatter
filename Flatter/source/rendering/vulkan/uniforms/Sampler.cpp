@@ -5,8 +5,7 @@
 using namespace Rendering::Vulkan;
 
 Sampler::Sampler(const ContextRef& context,
-                 const DescriptorPoolRef& descriptorPool,
-                 const DescriptorLayoutRef& layout,
+                 const vk::DescriptorSet descriptorSet,
                  const FramebufferAttachmentRef& framebufferAttachment,
                  const unsigned int binding)
     : mContext(context) {
@@ -29,13 +28,6 @@ Sampler::Sampler(const ContextRef& context,
   assert(device.createSampler(&samplerCreateInfo, nullptr, &mSampler) ==
          vk::Result::eSuccess);
 
-  auto const descriptorAllocInfo =
-      vk::DescriptorSetAllocateInfo{}
-          .setDescriptorPool(descriptorPool->getDescriptorPool())
-          .setDescriptorSetCount(1)
-          .setPSetLayouts(&layout->getHandle());
-  device.allocateDescriptorSets(&descriptorAllocInfo, &mDescriptorSet);
-
   const auto descriptorImageInfo =
       vk::DescriptorImageInfo{}
           .setSampler(mSampler)
@@ -44,7 +36,7 @@ Sampler::Sampler(const ContextRef& context,
 
   const auto writeDescriptorSet =
       vk::WriteDescriptorSet{}
-          .setDstSet(mDescriptorSet)
+          .setDstSet(descriptorSet)
           .setDstBinding(binding)
           .setDstArrayElement(0)
           .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
