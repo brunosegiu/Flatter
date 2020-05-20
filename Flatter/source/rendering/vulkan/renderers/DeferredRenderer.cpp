@@ -82,19 +82,7 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
       std::make_shared<Sampler>(mContext, mDescriptorSet, mPosAtt, 1);
   mNormalSampler =
       std::make_shared<Sampler>(mContext, mDescriptorSet, mNormAtt, 2);
-}
 
-void DeferredRenderer::draw(Rendering::Camera& camera, const SceneRef& scene) {
-  const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
-  drawDeferred(resources, camera, scene);
-  drawFullscreen(resources);
-}
-
-void DeferredRenderer::drawDeferred(const RenderingResources& resources,
-                                    Rendering::Camera& camera,
-                                    const SceneRef& scene) {
-  // TODO: Pass a fence to swapchain instead of allocatting new command
-  // buffers
   auto const commandBufferAllocInfo =
       vk::CommandBufferAllocateInfo{}
           .setCommandPool(mContext->getCommandPool())
@@ -108,7 +96,26 @@ void DeferredRenderer::drawDeferred(const RenderingResources& resources,
       mContext->getDevice().createSemaphore(offscreenSemaphoreCreateInfo);
   assert(semaphoreRes.result == vk::Result::eSuccess);
   mOffscreenSemaphore = semaphoreRes.value;
-  // TODO
+
+  auto const fenceCreateInfo =
+      vk::FenceCreateInfo{}.setFlags(vk::FenceCreateFlagBits::eSignaled);
+  device.createFence(&fenceCreateInfo, nullptr, &mDeferredFence);
+}
+
+void DeferredRenderer::draw(Rendering::Camera& camera, const SceneRef& scene) {
+  const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
+  drawDeferred(resources, camera, scene);
+  drawFullscreen(resources);
+}
+
+void DeferredRenderer::drawDeferred(const RenderingResources& resources,
+                                    Rendering::Camera& camera,
+                                    const SceneRef& scene) {
+  const vk::Result waitResult = mContext->getDevice().waitForFences(
+      1, &mDeferredFence, VK_TRUE, UINT64_MAX);
+  assert(waitResult == vk::Result::eSuccess);
+  assert(mContext->getDevice().resetFences(1, &mDeferredFence) ==
+         vk::Result::eSuccess);
   const glm::mat4& mvp = camera.getViewProjection();
   mMatrixUniform->update(mvp);
   const auto cmdBeginInfo = vk::CommandBufferBeginInfo{};
@@ -158,7 +165,8 @@ void DeferredRenderer::drawDeferred(const RenderingResources& resources,
   }
   mDeferredCB.endRenderPass();
   mDeferredCB.end();
-  submit(mDeferredCB, resources.imageAvailableSemaphore, mOffscreenSemaphore);
+  submit(mDeferredCB, resources.imageAvailableSemaphore, mOffscreenSemaphore,
+         mDeferredFence);
 }
 
 void DeferredRenderer::drawFullscreen(const RenderingResources& resources) {

@@ -28,5 +28,5 @@ void main() {
 	vec3 N = normalize(normal);
 	float NdotL = max(0.0, dot(N, L));
 	vec3 diff = albedo.rgb * NdotL;
-	outColor = vec4(albedo * NdotL,1.0f);	
+	outColor = vec4(albedo * NdotL,1.0f);
 }

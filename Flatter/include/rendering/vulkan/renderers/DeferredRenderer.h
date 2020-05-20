@@ -50,6 +50,7 @@ class DeferredRenderer : public Renderer {
   DepthBufferAttachmentRef mDepthAtt;
 
   vk::CommandBuffer mDeferredCB;
+  vk::Fence mDeferredFence;
 
   vk::DescriptorSet mDescriptorSet;
 
