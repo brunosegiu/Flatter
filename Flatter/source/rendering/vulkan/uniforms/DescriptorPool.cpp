@@ -9,9 +9,15 @@ DescriptorPool::DescriptorPool(const ContextRef& context,
                                unsigned int textureCount,
                                unsigned int maxDescSets)
     : mContext(context) {
-  std::vector<vk::DescriptorPoolSize> poolSize{
-      {vk::DescriptorType::eUniformBuffer, uniformCount},
-      {vk::DescriptorType::eCombinedImageSampler, textureCount}};
+  std::vector<vk::DescriptorPoolSize> poolSize{};
+  if (uniformCount > 0) {
+    poolSize.push_back({vk::DescriptorType::eUniformBuffer, uniformCount});
+  }
+  if (textureCount > 0) {
+    poolSize.push_back(
+        {vk::DescriptorType::eCombinedImageSampler, textureCount});
+  }
+
   auto const poolCreateInfo =
       vk::DescriptorPoolCreateInfo{}
           .setPoolSizeCount(static_cast<unsigned int>(poolSize.size()))
