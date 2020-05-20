@@ -11,8 +11,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-const int MAX_DESC_SETS = 256;
-
 class Surface;
 using SurfaceRef = std::shared_ptr<Surface>;
 
@@ -23,7 +21,7 @@ class Context {
   const vk::Format findSupportedFormat(
       const std::vector<vk::Format>& candidates,
       const vk::ImageTiling& tiling,
-      vk::FormatFeatureFlags& flags);
+      vk::FormatFeatureFlags flags);
 
   unsigned int findBufferMemoryType(
       unsigned int memoryTypeMask,
@@ -36,10 +34,6 @@ class Context {
   const unsigned int getQueueFamilyIndex() const { return mQueueFamilyIndex; };
   const vk::Queue& getQueue() const { return mQueue; };
   const SwapchainRef& getSwapchain() const { return mSwapchain; };
-
-  const vk::DescriptorPool& getDescriptorPool() const {
-    return mDescriptorPoolHandle;
-  };
   const vk::CommandPool& getCommandPool() const { return mCommandPoolHandle; };
 
   virtual ~Context();
@@ -55,7 +49,6 @@ class Context {
   SurfaceRef mSurface;
 
   // Allocators and pools
-  vk::DescriptorPool mDescriptorPoolHandle;
   vk::CommandPool mCommandPoolHandle;
 
   using PhysicalDeviceInfo =
@@ -73,6 +66,5 @@ class Context {
 };
 
 using ContextRef = std::shared_ptr<Context>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

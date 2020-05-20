@@ -1,29 +1,27 @@
 ﻿#pragma once
 
-#include <SDL2/SDL.h>
-
+#include "input/InputEventListener.h"
 #include "rendering/Camera.h"
 
 namespace Input {
-class CameraController {
+class CameraController : public InputEventListener {
  public:
-  CameraController(const unsigned int& width, const unsigned int& height);
+  CameraController();
 
-  void process(const float& timeDelta);
+  void onKeyPress(const float timeDelta, const SDL_Scancode key) override;
+  void onCursorMovement(const float timeDelta,
+                        const glm::vec2& position) override;
+  void onMouseClick(const float timeDelta) override;
 
-  const Rendering::Camera& getCamera() const { return mCamera; };
+  Rendering::Camera& getCamera() { return mCamera; };
 
   virtual ~CameraController();
 
  private:
   Rendering::Camera mCamera;
-
   float mSpeed;
-
-  const float mWidth, mHeight;
   bool mIsFirstUpdate;
-
-  void updateMovement(const float& timeDelta);
-  void updateRotation(const float& timeDelta);
 };
+
+using CameraControllerRef = std::shared_ptr<CameraController>;
 }  // namespace Input

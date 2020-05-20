@@ -21,6 +21,7 @@ Instance::VulkanReportFunc(VkDebugReportFlagsEXT flags,
       ">>> VULKAN Validation Error: " + std::string(msg);
   OutputDebugString(message.c_str());
   std::cout << message << std::endl;
+  __debugbreak();
   return VK_FALSE;
 }
 

@@ -73,23 +73,31 @@
     <IncludePath>D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <PreBuildEventUseInBuild />
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <PreBuildEventUseInBuild />
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\VulkanSDK\1.1.121.2\Include;D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\Flatter\vcpkg\packages\sdl2_x64-windows\lib\manual-link;C:\VulkanSDK\1.1.121.2\Bin;C:\VulkanSDK\1.1.121.2\Lib;$(LibraryPath)</LibraryPath>
     <PreBuildEventUseInBuild />
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\VulkanSDK\1.1.121.2\Include;D:\Code\Flatter\Flatter\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\Flatter\vcpkg\packages\sdl2_x64-windows\lib\manual-link;C:\VulkanSDK\1.1.121.2\Bin;C:\VulkanSDK\1.1.121.2\Lib;$(LibraryPath)</LibraryPath>
     <PreBuildEventUseInBuild />
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -117,6 +125,27 @@
       <Message>
       </Message>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Message>Compiling shader</Message>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -144,6 +173,27 @@
       <Message>
       </Message>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Message>Compiling shader</Message>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -175,6 +225,27 @@
       <Message>
       </Message>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Message>Compiling shader</Message>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -206,32 +277,69 @@
       <Message>
       </Message>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Message>Compiling shader</Message>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\commons\Timer.cpp" />
     <ClCompile Include="source\Game.cpp" />
     <ClCompile Include="source\input\CameraController.cpp" />
+    <ClCompile Include="source\input\InputController.cpp" />
     <ClCompile Include="source\rendering\Camera.cpp" />
     <ClCompile Include="source\rendering\loaders\GLTFLoader.cpp" />
     <ClCompile Include="source\rendering\Mesh.cpp" />
     <ClCompile Include="source\rendering\Scene.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Buffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Context.cpp" />
+    <ClCompile Include="source\rendering\vulkan\uniforms\DescriptorPool.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Framebuffer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\core\SwapchainFramebuffer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\core\FramebufferAttachment.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Instance.cpp" />
-    <ClCompile Include="source\rendering\vulkan\core\Pipeline.cpp" />
-    <ClCompile Include="source\rendering\vulkan\DepthBuffer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\pipelines\DeferredPipeline.cpp" />
+    <ClCompile Include="source\rendering\vulkan\pipelines\FullscreenPipeline.cpp" />
+    <ClCompile Include="source\rendering\vulkan\pipelines\Pipeline.cpp" />
+    <ClCompile Include="source\rendering\vulkan\core\DepthBufferAttachment.cpp" />
     <ClCompile Include="source\rendering\vulkan\IndexedVertexBuffer.cpp" />
-    <ClCompile Include="source\rendering\vulkan\Renderer.cpp" />
-    <ClCompile Include="source\rendering\vulkan\core\RenderPass.cpp" />
+    <ClCompile Include="source\rendering\vulkan\pipelines\SinglePassPipeline.cpp" />
+    <ClCompile Include="source\rendering\vulkan\renderers\DeferredRenderer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\renderers\Renderer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\renderers\SinglePassRenderer.cpp" />
+    <ClCompile Include="source\rendering\vulkan\renderPasses\OffscreenRenderPass.cpp" />
+    <ClCompile Include="source\rendering\vulkan\renderPasses\GBufferRenderPass.cpp" />
+    <ClCompile Include="source\rendering\vulkan\renderPasses\RenderPass.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Shader.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Surface.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Swapchain.cpp" />
+    <ClCompile Include="source\rendering\vulkan\renderPasses\SingleRenderPass.cpp" />
     <ClCompile Include="source\rendering\vulkan\ScreenFramebufferRing.cpp" />
+    <ClCompile Include="source\rendering\vulkan\uniforms\DescriptorLayout.cpp" />
+    <ClCompile Include="source\rendering\vulkan\uniforms\Sampler.cpp" />
     <ClCompile Include="source\WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\commons\Timer.h" />
+    <ClInclude Include="include\input\InputController.h" />
+    <ClInclude Include="include\input\InputEventListener.h" />
     <ClInclude Include="include\rendering\Camera.h" />
     <ClInclude Include="include\input\CameraController.h" />
     <ClInclude Include="include\rendering\loaders\GLTFLoader.h" />
@@ -239,58 +347,75 @@
     <ClInclude Include="include\rendering\Scene.h" />
     <ClInclude Include="include\rendering\vulkan\core\Buffer.h" />
     <ClInclude Include="include\rendering\vulkan\core\Context.h" />
+    <ClInclude Include="include\rendering\vulkan\uniforms\DescriptorPool.h" />
     <ClInclude Include="include\rendering\vulkan\core\Framebuffer.h" />
+    <ClInclude Include="include\rendering\vulkan\core\SwapchainFramebuffer.h" />
+    <ClInclude Include="include\rendering\vulkan\core\FramebufferAttachment.h" />
     <ClInclude Include="include\rendering\vulkan\core\Instance.h" />
-    <ClInclude Include="include\rendering\vulkan\core\Pipeline.h" />
-    <ClInclude Include="include\rendering\vulkan\DepthBuffer.h" />
+    <ClInclude Include="include\rendering\vulkan\uniforms\DescriptorLayout.h" />
+    <ClInclude Include="include\rendering\vulkan\pipelines\DeferredPipeline.h" />
+    <ClInclude Include="include\rendering\vulkan\pipelines\FullscreenPipeline.h" />
+    <ClInclude Include="include\rendering\vulkan\pipelines\Pipeline.h" />
+    <ClInclude Include="include\rendering\vulkan\core\DepthBufferAttachment.h" />
     <ClInclude Include="include\rendering\vulkan\IndexedVertexBuffer.h" />
-    <ClInclude Include="include\rendering\vulkan\Renderer.h" />
-    <ClInclude Include="include\rendering\vulkan\core\RenderPass.h" />
+    <ClInclude Include="include\rendering\vulkan\pipelines\SinglePassPipeline.h" />
+    <ClInclude Include="include\rendering\vulkan\renderers\DeferredRenderer.h" />
+    <ClInclude Include="include\rendering\vulkan\renderers\Renderer.h" />
+    <ClInclude Include="include\rendering\vulkan\renderers\SinglePassRenderer.h" />
+    <ClInclude Include="include\rendering\vulkan\renderPasses\FullscreenRenderPass.h" />
+    <ClInclude Include="include\rendering\vulkan\renderPasses\GBufferRenderPass.h" />
+    <ClInclude Include="include\rendering\vulkan\renderPasses\RenderPass.h" />
     <ClInclude Include="include\rendering\vulkan\core\Shader.h" />
     <ClInclude Include="include\rendering\vulkan\core\Surface.h" />
     <ClInclude Include="include\rendering\vulkan\core\Swapchain.h" />
-    <ClInclude Include="include\rendering\vulkan\core\Uniform.h" />
+    <ClInclude Include="include\rendering\vulkan\uniforms\Sampler.h" />
+    <ClInclude Include="include\rendering\vulkan\uniforms\Uniform.h" />
+    <ClInclude Include="include\rendering\vulkan\renderPasses\SingleRenderPass.h" />
     <ClInclude Include="include\rendering\vulkan\ScreenFramebufferRing.h" />
     <ClInclude Include="include\WindowManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="shaders\source\main.frag">
+    <CustomBuild Include="shaders\source\fullscreen.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling shader</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling shader</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling shader</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling shader</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="shaders\source\fullscreen.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="shaders\source\gbuffer.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="shaders\source\gbuffer.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="shaders\source\main.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="shaders\source\main.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling shader</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling shader</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling shader</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling shader</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\build\%(Filename)%(Extension).spv</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

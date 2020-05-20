@@ -7,22 +7,23 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class RenderPass {
  public:
-  RenderPass(const ContextRef& context, const vk::Format& surfaceFormat);
+  RenderPass(const ContextRef& context);
 
   const vk::RenderPass& getHandle() const { return mRenderPassHandle; };
 
   virtual ~RenderPass();
 
- private:
+ protected:
+  RenderPass(RenderPass const&) = delete;
+  RenderPass& operator=(RenderPass const&) = delete;
+
   vk::RenderPass mRenderPassHandle;
 
   ContextRef mContext;
 };
 
 using RenderPassRef = std::shared_ptr<RenderPass>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

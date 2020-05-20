@@ -14,6 +14,8 @@ vk::VertexInputAttributeDescription IndexedVertexBuffer::sAttributeDescription =
         .setLocation(0)
         .setFormat(vk::Format::eR32G32B32Sfloat);
 
+vk::IndexType IndexedVertexBuffer::sIndexType = vk::IndexType::eUint16;
+
 IndexedVertexBuffer::IndexedVertexBuffer(const ContextRef& context,
                                          const std::vector<glm::vec3>& vertices,
                                          const std::vector<uint16_t>& indices)

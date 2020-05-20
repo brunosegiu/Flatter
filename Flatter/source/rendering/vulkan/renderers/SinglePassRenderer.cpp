@@ -1,48 +1,46 @@
-﻿#include "rendering/vulkan/Renderer.h"
+﻿#include "rendering/vulkan/renderers/SinglePassRenderer.h"
 
 using namespace Rendering::Vulkan;
 
-Renderer::Renderer(const ContextRef& context, const SurfaceRef& surface)
-    : mContext(context) {
-  mRenderPass = std::make_shared<RenderPass>(
-      context, surface->getFormat(context->getPhysicalDevice()).format);
+SinglePassRenderer::SinglePassRenderer(const ContextRef& context,
+                                       const SurfaceRef& surface)
+    : Renderer(context) {
+  mDepthBuffer = std::make_shared<DepthBufferAttachment>(
+      mContext, mContext->getSwapchain()->getExtent());
+  mRenderPass = std::make_shared<SingleRenderPass>(
+      context, surface->getFormat(context->getPhysicalDevice()).format,
+      mDepthBuffer->getFormat());
   const vk::Device& device = mContext->getDevice();
-  // UNIFORM
-  auto const uboLayoutBinding =
-      vk::DescriptorSetLayoutBinding{}
-          .setBinding(0)
-          .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-          .setDescriptorCount(1)
-          .setStageFlags(vk::ShaderStageFlagBits::eVertex);
 
-  auto const layoutInfo =
-      vk::DescriptorSetLayoutCreateInfo{}.setBindingCount(1).setPBindings(
-          &uboLayoutBinding);
+  mDescriptorPool = std::make_shared<DescriptorPool>(mContext, 1, 0, 3);
 
-  device.createDescriptorSetLayout(&layoutInfo, nullptr, &mDescriptorSetLayout);
+  mDescriptorLayout = std::make_shared<DescriptorLayout>(
+      mContext,
+      std::vector<std::pair<vk::DescriptorType, vk::ShaderStageFlags>>{
+          {vk::DescriptorType::eUniformBuffer,
+           vk::ShaderStageFlagBits::eVertex}});
 
-  // UNIFORM
+  mMatrixUniform = std::make_shared<Uniform<glm::mat4>>(
+      mContext, mDescriptorLayout, mDescriptorPool, 0, glm::mat4(1.0f));
 
-  mPipeline =
-      std::make_shared<Pipeline>(mContext, mRenderPass, mDescriptorSetLayout);
-
+  mPipeline = std::make_shared<SinglePassPipeline>(mContext, mRenderPass,
+                                                   mDescriptorLayout);
   mScreenFramebufferRing = std::make_shared<ScreenFramebufferRing>(
-      mContext, surface, mRenderPass, mDescriptorSetLayout);
+      mContext, surface, mRenderPass, mDepthBuffer);
 }
 
-void Renderer::draw(const Camera& camera, const SceneRef& scene) {
-  const glm::mat4& mvp = camera.getViewProjection();
+void SinglePassRenderer::draw(Camera& camera, const SceneRef& scene) {
   const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
-  resources.matrixUniform->update(mvp);
   const vk::CommandBuffer& currentCommandBuffer(resources.commandBuffer);
-
   const vk::Extent2D& imageExtent = mContext->getSwapchain()->getExtent();
+  const glm::mat4& mvp = camera.getViewProjection();
+  mMatrixUniform->update(mvp);
   beginCommand(currentCommandBuffer);
   bindPipeline(currentCommandBuffer, mPipeline);
   setViewportConstrains(currentCommandBuffer, imageExtent);
   beginRenderPass(currentCommandBuffer, resources.framebuffer, mRenderPass,
                   imageExtent);
-  bindUniforms(currentCommandBuffer, resources.matrixUniform, mPipeline);
+  bindUniforms(currentCommandBuffer, mMatrixUniform, mPipeline);
 
   for (const auto& mesh : scene->getMeshes()) {
     const IndexedVertexBufferRef& indexedVertexBuffer =
@@ -62,43 +60,46 @@ void Renderer::draw(const Camera& camera, const SceneRef& scene) {
           resources.imageIndex);
 }
 
-void Renderer::beginCommand(const vk::CommandBuffer& commandBuffer) {
+void SinglePassRenderer::beginCommand(const vk::CommandBuffer& commandBuffer) {
   auto const beginInfo = vk::CommandBufferBeginInfo{}.setFlags(
       vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
   commandBuffer.begin(&beginInfo);
 }
 
-void Renderer::beginRenderPass(const vk::CommandBuffer& commandBuffer,
-                               const FramebufferRef& framebuffer,
-                               const RenderPassRef& renderPass,
-                               const vk::Extent2D extent,
-                               const vk::Offset2D offset,
-                               const vk::ClearValue clearValue) {
+void SinglePassRenderer::beginRenderPass(
+    const vk::CommandBuffer& commandBuffer,
+    const SwapchainFramebufferRef& framebuffer,
+    const RenderPassRef& renderPass,
+    const vk::Extent2D extent,
+    const vk::Offset2D offset,
+    const vk::ClearValue clearValue) {
   vk::Rect2D renderArea(offset, extent);
 
   std::array<vk::ClearValue, 2> clearValues{};
   clearValues[0].setColor(
       vk::ClearColorValue(std::array<float, 4>{1.0f, 0.0f, 0.0f, 1.0f}));
-  clearValues[1].setDepthStencil(vk::ClearDepthStencilValue(1.0f, 1.0f));
+  clearValues[1].setDepthStencil(vk::ClearDepthStencilValue(1.0f, 1u));
 
-  auto const renderPassBeginInfo = vk::RenderPassBeginInfo{}
-                                       .setRenderPass(renderPass->getHandle())
-                                       .setFramebuffer(framebuffer->getHandle())
-                                       .setClearValueCount(clearValues.size())
-                                       .setPClearValues(clearValues.data())
-                                       .setRenderArea(renderArea);
+  auto const renderPassBeginInfo =
+      vk::RenderPassBeginInfo{}
+          .setRenderPass(renderPass->getHandle())
+          .setFramebuffer(framebuffer->getHandle())
+          .setClearValueCount(static_cast<unsigned int>(clearValues.size()))
+          .setPClearValues(clearValues.data())
+          .setRenderArea(renderArea);
   commandBuffer.beginRenderPass(&renderPassBeginInfo,
                                 vk::SubpassContents::eInline);
 }
 
-void Renderer::bindPipeline(const vk::CommandBuffer& commandBuffer,
-                            const PipelineRef& pipeline) {
+void SinglePassRenderer::bindPipeline(const vk::CommandBuffer& commandBuffer,
+                                      const SinglePassPipelineRef& pipeline) {
   commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics,
                              pipeline->getHandle());
 }
 
-void Renderer::setViewportConstrains(const vk::CommandBuffer& commandBuffer,
-                                     const vk::Extent2D extent) {
+void SinglePassRenderer::setViewportConstrains(
+    const vk::CommandBuffer& commandBuffer,
+    const vk::Extent2D extent) {
   const vk::Viewport viewport{0.0f,
                               0.0f,
                               static_cast<float>(extent.width),
@@ -111,28 +112,24 @@ void Renderer::setViewportConstrains(const vk::CommandBuffer& commandBuffer,
   commandBuffer.setScissor(0, 1, &scissors);
 }
 
-void Renderer::bindUniforms(const vk::CommandBuffer& commandBuffer,
-                            const UniformMatrixRef& uniformMatrix,
-                            const PipelineRef& pipeline) {
+void SinglePassRenderer::bindUniforms(const vk::CommandBuffer& commandBuffer,
+                                      const UniformMatrixRef& uniformMatrix,
+                                      const SinglePassPipelineRef& pipeline) {
   commandBuffer.bindDescriptorSets(
-      vk::PipelineBindPoint::eGraphics, pipeline->getPipelineLayoutHandle(), 0,
-      1, &uniformMatrix->getDescriptorHandle(), 0, nullptr);
+      vk::PipelineBindPoint::eGraphics, pipeline->getPipelineLayout(), 0, 1,
+      &uniformMatrix->getDescriptorHandle(), 0, nullptr);
 }
 
-void Renderer::draw(const vk::CommandBuffer& commandBuffer) {
-  commandBuffer.draw(3, 1, 0, 0);
-}
-
-void Renderer::endCommand(const vk::CommandBuffer& commandBuffer) {
+void SinglePassRenderer::endCommand(const vk::CommandBuffer& commandBuffer) {
   commandBuffer.endRenderPass();
   commandBuffer.end();
 }
 
-void Renderer::present(const vk::CommandBuffer& commandBuffer,
-                       const vk::Semaphore& imageAvailableSemaphore,
-                       const vk::Semaphore& renderingDoneSemaphore,
-                       const vk::Fence& presentFrameFence,
-                       const unsigned int imageIndex) {
+void SinglePassRenderer::present(const vk::CommandBuffer& commandBuffer,
+                                 const vk::Semaphore& imageAvailableSemaphore,
+                                 const vk::Semaphore& renderingDoneSemaphore,
+                                 const vk::Fence& presentFrameFence,
+                                 const unsigned int imageIndex) {
   const SwapchainRef& swapchain = mContext->getSwapchain();
 
   const vk::PipelineStageFlags pipelineStageFlags{
@@ -158,4 +155,4 @@ void Renderer::present(const vk::CommandBuffer& commandBuffer,
   queue.presentKHR(&presentInfo);
 }
 
-Renderer::~Renderer() {}
+SinglePassRenderer::~SinglePassRenderer() {}

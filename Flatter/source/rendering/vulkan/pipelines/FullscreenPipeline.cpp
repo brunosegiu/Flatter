@@ -1,54 +1,42 @@
-﻿#include "rendering/vulkan/core/Pipeline.h"
+﻿#include "rendering/vulkan/pipelines/FullscreenPipeline.h"
 
 using namespace Rendering::Vulkan;
 
-Pipeline::Pipeline(const ContextRef& context,
-                   const RenderPassRef& renderPass,
-                   const vk::DescriptorSetLayout& descriptorSetLayout)
-    : mContext(context) {
-  mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", context);
-  mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", context);
-
-  auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo{}
-                                     .setStage(vk::ShaderStageFlagBits::eVertex)
-                                     .setModule(mVertexShader->getHandle())
-                                     .setPName("main");
-
-  auto const fragmentShaderStage =
-      vk::PipelineShaderStageCreateInfo{}
-          .setStage(vk::ShaderStageFlagBits::eFragment)
-          .setModule(mFragmentShader->getHandle())
-          .setPName("main");
+FullscreenPipeline::FullscreenPipeline(
+    const ContextRef& context,
+    const DescriptorLayoutRef& descriptorLayout,
+    const FullscreenRenderPassRef& renderPass)
+    : Pipeline(context) {
+  mVertexShader = Shader::fromFile("shaders/build/fullscreen.vert.spv", context,
+                                   vk::ShaderStageFlagBits::eVertex);
+  mFragmentShader =
+      Shader::fromFile("shaders/build/fullscreen.frag.spv", context,
+                       vk::ShaderStageFlagBits::eFragment);
 
   const std::vector<vk::PipelineShaderStageCreateInfo> stages{
-      vertexShaderStage, fragmentShaderStage};
+      mVertexShader->getStageInfo(), mFragmentShader->getStageInfo()};
 
   // Pipeline stages setup
 
-  const auto vertexInputState =
-      vk::PipelineVertexInputStateCreateInfo{}
-          .setVertexBindingDescriptionCount(1)
-          .setVertexAttributeDescriptionCount(1)
-          .setPVertexBindingDescriptions(
-              &IndexedVertexBuffer::sBindingDescription)
-          .setPVertexAttributeDescriptions(
-              &IndexedVertexBuffer::sAttributeDescription);
+  const auto vertexInputState = vk::PipelineVertexInputStateCreateInfo{};
 
   auto const inputAssemblyState =
       vk::PipelineInputAssemblyStateCreateInfo{}
           .setTopology(vk::PrimitiveTopology::eTriangleList)
-          .setPrimitiveRestartEnable(VK_FALSE);
+          .setPrimitiveRestartEnable(false);
+
   auto const rasterizationState = vk::PipelineRasterizationStateCreateInfo{}
-                                      .setDepthClampEnable(VK_FALSE)
-                                      .setRasterizerDiscardEnable(VK_FALSE)
+                                      .setDepthClampEnable(false)
+                                      .setRasterizerDiscardEnable(false)
                                       .setPolygonMode(vk::PolygonMode::eFill)
-                                      .setCullMode(vk::CullModeFlagBits::eNone)
+                                      .setCullMode(vk::CullModeFlagBits::eBack)
                                       .setFrontFace(vk::FrontFace::eClockwise)
-                                      .setDepthBiasEnable(VK_FALSE)
+                                      .setDepthBiasEnable(false)
                                       .setDepthBiasConstantFactor(0.0f)
                                       .setDepthBiasClamp(0.0f)
                                       .setDepthBiasSlopeFactor(0.0f)
                                       .setLineWidth(1.0f);
+
   auto const viewportState = vk::PipelineViewportStateCreateInfo{}
                                  .setViewportCount(1)
                                  .setPViewports(0)
@@ -57,22 +45,22 @@ Pipeline::Pipeline(const ContextRef& context,
   auto const multisampleState =
       vk::PipelineMultisampleStateCreateInfo{}
           .setRasterizationSamples(vk::SampleCountFlagBits::e1)
-          .setSampleShadingEnable(VK_FALSE)
+          .setSampleShadingEnable(false)
           .setMinSampleShading(1.0f)
           .setPSampleMask(0)
-          .setAlphaToCoverageEnable(VK_FALSE)
-          .setAlphaToOneEnable(VK_FALSE);
+          .setAlphaToCoverageEnable(false)
+          .setAlphaToOneEnable(false);
 
   auto const depthStencilState = vk::PipelineDepthStencilStateCreateInfo{}
-                                     .setDepthTestEnable(true)
-                                     .setDepthWriteEnable(true)
+                                     .setDepthTestEnable(false)
+                                     .setDepthWriteEnable(false)
                                      .setDepthCompareOp(vk::CompareOp::eLess)
                                      .setDepthBoundsTestEnable(false)
                                      .setStencilTestEnable(false);
 
   auto const colorblendAttachmentState =
       vk::PipelineColorBlendAttachmentState()
-          .setBlendEnable(VK_FALSE)
+          .setBlendEnable(false)
           .setSrcColorBlendFactor(vk::BlendFactor::eOne)
           .setDstColorBlendFactor(vk::BlendFactor::eZero)
           .setColorBlendOp(vk::BlendOp::eAdd)
@@ -84,7 +72,7 @@ Pipeline::Pipeline(const ContextRef& context,
               vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
 
   auto const colorBlendState = vk::PipelineColorBlendStateCreateInfo{}
-                                   .setLogicOpEnable(VK_FALSE)
+                                   .setLogicOpEnable(false)
                                    .setAttachmentCount(1)
                                    .setPAttachments(&colorblendAttachmentState);
 
@@ -96,11 +84,10 @@ Pipeline::Pipeline(const ContextRef& context,
           .setPDynamicStates(dynamicStates.data());
   auto const pipelineLayoutCreateInfo =
       vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
-          &descriptorSetLayout);
+          &descriptorLayout->getHandle());
   const vk::Device& device = mContext->getDevice();
   assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
-                                     &mPipelineLayoutHandle) ==
-         vk::Result::eSuccess);
+                                     &mPipelineLayout) == vk::Result::eSuccess);
 
   auto const pipelineCreateInfo =
       vk::GraphicsPipelineCreateInfo()
@@ -114,7 +101,7 @@ Pipeline::Pipeline(const ContextRef& context,
           .setPColorBlendState(&colorBlendState)
           .setPDepthStencilState(&depthStencilState)
           .setPDynamicState(&dynamicState)
-          .setLayout(mPipelineLayoutHandle)
+          .setLayout(mPipelineLayout)
           .setRenderPass(renderPass->getHandle());
 
   assert(device.createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo,
@@ -122,8 +109,4 @@ Pipeline::Pipeline(const ContextRef& context,
          vk::Result::eSuccess);
 }
 
-Pipeline::~Pipeline() {
-  const vk::Device& device = mContext->getDevice();
-  // vkDestroyPipeline(deviceHandle, mPipelineHandle, nullptr);
-  device.destroyPipelineLayout(mPipelineLayoutHandle, nullptr);
-}
+FullscreenPipeline::~FullscreenPipeline() {}

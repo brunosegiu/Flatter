@@ -37,6 +37,5 @@ class Buffer {
 };
 
 using BufferRef = std::shared_ptr<Buffer>;
-
 }  // namespace Vulkan
 }  // namespace Rendering

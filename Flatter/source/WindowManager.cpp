@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include "commons/Timer.h"
-#include "input/CameraController.h"
 #include "rendering/loaders/GLTFLoader.h"
 
 using namespace Game;
@@ -11,7 +9,7 @@ using namespace Rendering::Vulkan;
 
 WindowManager::WindowManager(const unsigned int width,
                              const unsigned int height)
-    : mWidth(width), mHeight(height) {
+    : mWidth(width), mHeight(height), mOpen(true) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   mWindow = SDL_CreateWindow("Flatter", SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED, width, height, 0);
@@ -23,41 +21,36 @@ WindowManager::WindowManager(const unsigned int width,
   SDL_GetWindowWMInfo(mWindow, &info);
   mSurface = std::make_shared<Surface>(info, mInstance, width, height);
   mContext = std::make_shared<Context>(mInstance, mSurface);
-  mRenderer = std::make_shared<Renderer>(mContext, mSurface);
+  mRenderer = std::make_shared<SinglePassRenderer>(mContext, mSurface);
 
   Rendering::GLTFLoader loader(mContext);
   mScene = std::make_unique<Rendering::Scene>();
   mScene->add(loader.load("assets/monkey.glb")[0]);
   mScene->add(loader.load("assets/cube.glb")[0]);
+
+  mCameraController = std::make_shared<Input::CameraController>();
+
+  mDeff = std::make_shared<DeferredRenderer>(mContext, mSurface);
 }
 
-void WindowManager::loop() {
-  bool open = true;
-  Input::CameraController cameraController(mWidth, mHeight);
+void WindowManager::onQuit() {
+  mOpen = false;
+}
 
-  Commons::Timer timer;
-  float timeDelta = 0.0f;
-
-  do {
-    SDL_Event evt;
-    while (SDL_PollEvent(&evt)) {
-      open = !(evt.type == SDL_QUIT || (evt.type == SDL_KEYDOWN &&
-                                        (evt.key.keysym.sym == SDLK_ESCAPE)));
-    }
-    SDL_WarpMouseInWindow(mWindow, static_cast<unsigned int>(mWidth / 2),
-                          static_cast<unsigned int>(mHeight / 2));
-    cameraController.process(timeDelta);
-    mRenderer->draw(cameraController.getCamera(), mScene);
-    timer.end();
-    timeDelta = timer.getDeltaMs();
-    timer.restart();
-
-  } while (open);
+void WindowManager::update(const float timeDelta) {
+  mDeff->draw(mCameraController->getCamera(), mScene);
 }
 
 WindowManager ::~WindowManager() {
   const vk::Device& device = mContext->getDevice();
   device.waitIdle();
+
+  mRenderer.reset();
+  delete mRenderer.get();
+
+  mContext.reset();
+  delete mContext.get();
+
   SDL_DestroyWindow(mWindow);
   SDL_Quit();
 }

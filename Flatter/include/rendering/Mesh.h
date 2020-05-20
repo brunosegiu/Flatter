@@ -6,7 +6,6 @@
 #include "rendering/vulkan/IndexedVertexBuffer.h"
 
 namespace Rendering {
-
 class Mesh {
  public:
   using MeshRef = std::shared_ptr<Mesh>;
@@ -32,5 +31,4 @@ class Mesh {
 };
 
 using MeshRef = std::shared_ptr<Mesh>;
-
 }  // namespace Rendering

@@ -26,21 +26,14 @@ void Camera::updateViewProjection() {
 
 void Camera::rotate(const float& angle, const glm::vec3& axis) {
   mDir = glm::mat3(glm::rotate(angle, axis)) * mDir;
-  updateViewProjection();
 }
 
 void Camera::translate(const glm::vec3& value) {
   mEye += value;
-  updateViewProjection();
 }
 
 void Camera::translateTo(const glm::vec3& value) {
   mEye = value;
-  updateViewProjection();
-}
-
-void Camera::scale(const glm::vec3& value) {
-  updateViewProjection();
 }
 
 void Camera::moveRight(const float& value) {

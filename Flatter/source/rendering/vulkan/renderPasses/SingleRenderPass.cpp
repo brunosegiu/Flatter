@@ -1,10 +1,11 @@
-﻿#include "rendering/vulkan/core/RenderPass.h"
+﻿#include "rendering/vulkan/renderpasses/SingleRenderPass.h"
 
 using namespace Rendering::Vulkan;
 
-RenderPass::RenderPass(const ContextRef& context,
-                       const vk::Format& surfaceFormat)
-    : mContext(context) {
+SingleRenderPass::SingleRenderPass(const ContextRef& context,
+                                   const vk::Format& surfaceFormat,
+                                   const vk::Format& depthFormat)
+    : RenderPass(context) {
   auto const colorAttachmentDescription =
       vk::AttachmentDescription{}
           .setFormat(surfaceFormat)
@@ -23,7 +24,7 @@ RenderPass::RenderPass(const ContextRef& context,
 
   auto const depthAttachmentDescription =
       vk::AttachmentDescription{}
-          .setFormat(vk::Format::eD32Sfloat)
+          .setFormat(depthFormat)
           .setSamples(vk::SampleCountFlagBits::e1)
           .setLoadOp(vk::AttachmentLoadOp::eClear)
           .setStoreOp(vk::AttachmentStoreOp::eDontCare)
@@ -57,19 +58,18 @@ RenderPass::RenderPass(const ContextRef& context,
   const std::vector<vk::AttachmentDescription> attachments{
       colorAttachmentDescription, depthAttachmentDescription};
 
-  auto const renderPassCreateInfo = vk::RenderPassCreateInfo{}
-                                        .setAttachmentCount(attachments.size())
-                                        .setPAttachments(attachments.data())
-                                        .setSubpassCount(1)
-                                        .setPSubpasses(&subpassDescription)
-                                        .setDependencyCount(1)
-                                        .setPDependencies(&subpassDependency);
+  auto const renderPassCreateInfo =
+      vk::RenderPassCreateInfo{}
+          .setAttachmentCount(static_cast<unsigned int>(attachments.size()))
+          .setPAttachments(attachments.data())
+          .setSubpassCount(1)
+          .setPSubpasses(&subpassDescription)
+          .setDependencyCount(1)
+          .setPDependencies(&subpassDependency);
+
   const vk::Device& device = mContext->getDevice();
   assert(device.createRenderPass(&renderPassCreateInfo, nullptr,
                                  &mRenderPassHandle) == vk::Result::eSuccess);
 }
 
-RenderPass::~RenderPass() {
-  const vk::Device& device = mContext->getDevice();
-  device.destroyRenderPass(mRenderPassHandle, NULL);
-}
+SingleRenderPass::~SingleRenderPass() {}

@@ -6,16 +6,13 @@ ScreenFramebufferRing::ScreenFramebufferRing(
     const ContextRef& context,
     const SurfaceRef& surface,
     const RenderPassRef& renderPass,
-    const VkDescriptorSetLayout& descriptorSetLayout)
+    const DepthBufferAttachmentRef& depthBufferAtt)
     : mContext(context),
       mSurface(surface),
       mSurfaceFormat(surface->getFormat(context->getPhysicalDevice()).format),
       mImageCount(context->getSwapchain()->getImageCount()),
       mCurrentFrameIndex(0) {
-  const SwapchainRef& swapchain = mContext->getSwapchain();
-  mDepthBuffer =
-      std::make_shared<DepthBuffer>(mContext, swapchain->getExtent());
-  initImagesResources(renderPass, descriptorSetLayout);
+  initImagesResources(renderPass, depthBufferAtt);
   initInFlightFrameResources();
 }
 
@@ -43,7 +40,7 @@ void ScreenFramebufferRing::initInFlightFrameResources() {
 
 void ScreenFramebufferRing::initImagesResources(
     const RenderPassRef& renderPass,
-    const VkDescriptorSetLayout& descriptorSetLayout) {
+    const DepthBufferAttachmentRef& depthBufferAtt) {
   mImagesResources.reserve(mImageCount);
   const vk::Device& device = mContext->getDevice();
   const SwapchainRef& swapchain = mContext->getSwapchain();
@@ -51,9 +48,9 @@ void ScreenFramebufferRing::initImagesResources(
     mImagesResources.emplace_back();
     SwapchainImageResources& commandResources = mImagesResources[imageIndex];
 
-    commandResources.framebuffer = std::make_shared<Framebuffer>(
+    commandResources.framebuffer = std::make_shared<SwapchainFramebuffer>(
         mContext, swapchain->getImage(imageIndex), mSurfaceFormat,
-        swapchain->getExtent(), renderPass, mDepthBuffer);
+        swapchain->getExtent(), renderPass, depthBufferAtt);
 
     auto const commandBufferAllocInfo =
         vk::CommandBufferAllocateInfo{}
@@ -62,9 +59,6 @@ void ScreenFramebufferRing::initImagesResources(
             .setCommandBufferCount(1);
     device.allocateCommandBuffers(&commandBufferAllocInfo,
                                   &commandResources.commandBuffer);
-
-    commandResources.matrixUniform = std::make_shared<Uniform<glm::mat4>>(
-        mContext, descriptorSetLayout, glm::mat4(1.0f));
   }
 }
 
@@ -81,8 +75,7 @@ const RenderingResources ScreenFramebufferRing::swapBuffers() {
   return RenderingResources(
       frameResources.frameInUseFence, frameResources.imageAvailableSemaphore,
       frameResources.imageRenderedSemaphore, commandResources.commandBuffer,
-      commandResources.framebuffer, mCurrentImageIndex,
-      commandResources.matrixUniform);
+      commandResources.framebuffer, mCurrentImageIndex);
 }
 
 ScreenFramebufferRing::~ScreenFramebufferRing() {}

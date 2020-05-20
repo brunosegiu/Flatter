@@ -28,7 +28,8 @@ MeshRef processPrimitive(const Rendering::Vulkan ::ContextRef context,
     const unsigned char* positionData =
         &positionBuffer.data[positionBufferOffset];
 
-    const unsigned int positionCount = positionAccessor.count;
+    const unsigned int positionCount =
+        static_cast<unsigned int>(positionAccessor.count);
     for (unsigned int positionIndex = 0; positionIndex < positionCount;
          ++positionIndex) {
       const float* positionDataFloat = reinterpret_cast<const float*>(
@@ -41,7 +42,8 @@ MeshRef processPrimitive(const Rendering::Vulkan ::ContextRef context,
   const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
   std::vector<uint16_t> indices;
   {
-    const unsigned int indexCount = indexAccessor.count;
+    const unsigned int indexCount =
+        static_cast<unsigned int>(indexAccessor.count);
     const tinygltf::BufferView& indexBufferView =
         model.bufferViews[indexAccessor.bufferView];
     const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];

@@ -7,20 +7,24 @@
 
 #include "rendering/vulkan/core/Buffer.h"
 #include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/uniforms/DescriptorLayout.h"
+#include "rendering/vulkan/uniforms/DescriptorPool.h"
 
 namespace Rendering {
 namespace Vulkan {
-
 template <typename ValueType>
 class Uniform {
  public:
   Uniform(const ContextRef& context,
-          const vk::DescriptorSetLayout& descriptorSetLayout,
+          const DescriptorLayoutRef& layout,
+          const DescriptorPoolRef& descriptorPool,
+          const unsigned int binding,
           ValueType value);
 
   const vk::DescriptorSet& getDescriptorHandle() const {
     return mDescriptorSet;
   };
+
   void update(const ValueType& newValue);
 
   virtual ~Uniform(){};
@@ -35,7 +39,6 @@ class Uniform {
 };
 
 using UniformMatrixRef = std::shared_ptr<Uniform<glm::mat4>>;
-
 }  // namespace Vulkan
 }  // namespace Rendering
 
@@ -43,7 +46,9 @@ using namespace Rendering::Vulkan;
 
 template <typename ValueType>
 Uniform<ValueType>::Uniform(const ContextRef& context,
-                            const vk::DescriptorSetLayout& descriptorSetLayout,
+                            const DescriptorLayoutRef& layout,
+                            const DescriptorPoolRef& descriptorPool,
+                            const unsigned int binding,
                             ValueType value)
     : mValue(value), mContext(context) {
   const vk::Device& device = mContext->getDevice();
@@ -55,11 +60,11 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
       vk::MemoryPropertyFlagBits::eHostVisible |
           vk::MemoryPropertyFlagBits::eHostCoherent);
 
-  const vk::DescriptorPool& descriptorPool = mContext->getDescriptorPool();
-  auto const allocInfo = vk::DescriptorSetAllocateInfo{}
-                             .setDescriptorPool(descriptorPool)
-                             .setDescriptorSetCount(1)
-                             .setPSetLayouts(&descriptorSetLayout);
+  auto const allocInfo =
+      vk::DescriptorSetAllocateInfo{}
+          .setDescriptorPool(descriptorPool->getDescriptorPool())
+          .setDescriptorSetCount(1)
+          .setPSetLayouts(&layout->getHandle());
   device.allocateDescriptorSets(&allocInfo, &mDescriptorSet);
 
   auto const bufferInfo = vk::DescriptorBufferInfo{}
@@ -70,7 +75,7 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
   auto const descriptorWrite =
       vk::WriteDescriptorSet{}
           .setDstSet(mDescriptorSet)
-          .setDstBinding(0)
+          .setDstBinding(binding)
           .setDstArrayElement(0)
           .setDescriptorType(vk::DescriptorType::eUniformBuffer)
           .setDescriptorCount(1)

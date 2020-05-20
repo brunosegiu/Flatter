@@ -7,7 +7,6 @@
 
 namespace Rendering {
 namespace Vulkan {
-
 class Instance : public vk::Instance {
  public:
   Instance();
@@ -33,6 +32,5 @@ class Instance : public vk::Instance {
 };
 
 using InstanceRef = std::shared_ptr<Instance>;
-
 }  // namespace Vulkan
 }  // namespace Rendering
