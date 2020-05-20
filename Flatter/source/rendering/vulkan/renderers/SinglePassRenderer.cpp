@@ -12,27 +12,29 @@ SinglePassRenderer::SinglePassRenderer(const ContextRef& context,
       mDepthBuffer->getFormat());
   const vk::Device& device = mContext->getDevice();
 
-  mUniformLayout = std::make_shared<UniformLayout>(
+  mDescriptorPool = std::make_shared<DescriptorPool>(mContext, 1, 0, 3);
+
+  mDescriptorLayout = std::make_shared<DescriptorLayout>(
       mContext,
-      std::vector<vk::DescriptorType>{vk::DescriptorType::eUniformBuffer},
-      vk::ShaderStageFlagBits::eVertex);
+      std::vector<std::pair<vk::DescriptorType, vk::ShaderStageFlags>>{
+          {vk::DescriptorType::eUniformBuffer,
+           vk::ShaderStageFlagBits::eVertex}});
 
   mMatrixUniform = std::make_shared<Uniform<glm::mat4>>(
-      mContext, mUniformLayout, glm::mat4(1.0f));
+      mContext, mDescriptorLayout, mDescriptorPool, 0, glm::mat4(1.0f));
 
   mPipeline = std::make_shared<SinglePassPipeline>(mContext, mRenderPass,
-                                                   mUniformLayout);
+                                                   mDescriptorLayout);
   mScreenFramebufferRing = std::make_shared<ScreenFramebufferRing>(
       mContext, surface, mRenderPass, mDepthBuffer);
 }
 
 void SinglePassRenderer::draw(Camera& camera, const SceneRef& scene) {
-  const glm::mat4& mvp = camera.getViewProjection();
   const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
-  mMatrixUniform->update(mvp);
   const vk::CommandBuffer& currentCommandBuffer(resources.commandBuffer);
-
   const vk::Extent2D& imageExtent = mContext->getSwapchain()->getExtent();
+  const glm::mat4& mvp = camera.getViewProjection();
+  mMatrixUniform->update(mvp);
   beginCommand(currentCommandBuffer);
   bindPipeline(currentCommandBuffer, mPipeline);
   setViewportConstrains(currentCommandBuffer, imageExtent);
@@ -64,12 +66,13 @@ void SinglePassRenderer::beginCommand(const vk::CommandBuffer& commandBuffer) {
   commandBuffer.begin(&beginInfo);
 }
 
-void SinglePassRenderer::beginRenderPass(const vk::CommandBuffer& commandBuffer,
-                                         const FramebufferRef& framebuffer,
-                                         const RenderPassRef& renderPass,
-                                         const vk::Extent2D extent,
-                                         const vk::Offset2D offset,
-                                         const vk::ClearValue clearValue) {
+void SinglePassRenderer::beginRenderPass(
+    const vk::CommandBuffer& commandBuffer,
+    const SwapchainFramebufferRef& framebuffer,
+    const RenderPassRef& renderPass,
+    const vk::Extent2D extent,
+    const vk::Offset2D offset,
+    const vk::ClearValue clearValue) {
   vk::Rect2D renderArea(offset, extent);
 
   std::array<vk::ClearValue, 2> clearValues{};

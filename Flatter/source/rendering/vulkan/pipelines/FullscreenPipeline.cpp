@@ -4,26 +4,17 @@ using namespace Rendering::Vulkan;
 
 FullscreenPipeline::FullscreenPipeline(
     const ContextRef& context,
+    const DescriptorLayoutRef& descriptorLayout,
     const FullscreenRenderPassRef& renderPass)
     : Pipeline(context) {
-  mVertexShader =
-      Shader::fromFile("shaders/build/fullscreen.vert.spv", context);
+  mVertexShader = Shader::fromFile("shaders/build/fullscreen.vert.spv", context,
+                                   vk::ShaderStageFlagBits::eVertex);
   mFragmentShader =
-      Shader::fromFile("shaders/build/fullscreen.frag.spv", context);
-
-  auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo{}
-                                     .setStage(vk::ShaderStageFlagBits::eVertex)
-                                     .setModule(mVertexShader->getHandle())
-                                     .setPName("main");
-
-  auto const fragmentShaderStage =
-      vk::PipelineShaderStageCreateInfo{}
-          .setStage(vk::ShaderStageFlagBits::eFragment)
-          .setModule(mFragmentShader->getHandle())
-          .setPName("main");
+      Shader::fromFile("shaders/build/fullscreen.frag.spv", context,
+                       vk::ShaderStageFlagBits::eFragment);
 
   const std::vector<vk::PipelineShaderStageCreateInfo> stages{
-      vertexShaderStage, fragmentShaderStage};
+      mVertexShader->getStageInfo(), mFragmentShader->getStageInfo()};
 
   // Pipeline stages setup
 
@@ -92,8 +83,8 @@ FullscreenPipeline::FullscreenPipeline(
           .setDynamicStateCount(static_cast<unsigned int>(dynamicStates.size()))
           .setPDynamicStates(dynamicStates.data());
   auto const pipelineLayoutCreateInfo =
-      vk::PipelineLayoutCreateInfo().setSetLayoutCount(0).setPSetLayouts(
-          nullptr);
+      vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
+          &descriptorLayout->getHandle());
   const vk::Device& device = mContext->getDevice();
   assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
                                      &mPipelineLayout) == vk::Result::eSuccess);

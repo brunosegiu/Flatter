@@ -4,26 +4,18 @@
 
 using namespace Rendering::Vulkan;
 
-SinglePassPipeline::SinglePassPipeline(const ContextRef& context,
-                                       const SingleRenderPassRef& renderPass,
-                                       const UniformLayoutRef& uniformLayout)
+SinglePassPipeline::SinglePassPipeline(
+    const ContextRef& context,
+    const SingleRenderPassRef& renderPass,
+    const DescriptorLayoutRef& DescriptorLayout)
     : Pipeline(context) {
-  mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", context);
-  mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", context);
-
-  auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo{}
-                                     .setStage(vk::ShaderStageFlagBits::eVertex)
-                                     .setModule(mVertexShader->getHandle())
-                                     .setPName("main");
-
-  auto const fragmentShaderStage =
-      vk::PipelineShaderStageCreateInfo{}
-          .setStage(vk::ShaderStageFlagBits::eFragment)
-          .setModule(mFragmentShader->getHandle())
-          .setPName("main");
+  mVertexShader = Shader::fromFile("shaders/build/main.vert.spv", context,
+                                   vk::ShaderStageFlagBits::eVertex);
+  mFragmentShader = Shader::fromFile("shaders/build/main.frag.spv", context,
+                                     vk::ShaderStageFlagBits::eFragment);
 
   const std::vector<vk::PipelineShaderStageCreateInfo> stages{
-      vertexShaderStage, fragmentShaderStage};
+      mVertexShader->getStageInfo(), mFragmentShader->getStageInfo()};
 
   // Pipeline stages setup
 
@@ -40,17 +32,18 @@ SinglePassPipeline::SinglePassPipeline(const ContextRef& context,
       vk::PipelineInputAssemblyStateCreateInfo{}
           .setTopology(vk::PrimitiveTopology::eTriangleList)
           .setPrimitiveRestartEnable(VK_FALSE);
-  auto const rasterizationState = vk::PipelineRasterizationStateCreateInfo{}
-                                      .setDepthClampEnable(VK_FALSE)
-                                      .setRasterizerDiscardEnable(VK_FALSE)
-                                      .setPolygonMode(vk::PolygonMode::eFill)
-                                      .setCullMode(vk::CullModeFlagBits::eBack)
-                                      .setFrontFace(vk::FrontFace::eClockwise)
-                                      .setDepthBiasEnable(VK_FALSE)
-                                      .setDepthBiasConstantFactor(0.0f)
-                                      .setDepthBiasClamp(0.0f)
-                                      .setDepthBiasSlopeFactor(0.0f)
-                                      .setLineWidth(1.0f);
+  auto const rasterizationState =
+      vk::PipelineRasterizationStateCreateInfo{}
+          .setDepthClampEnable(VK_FALSE)
+          .setRasterizerDiscardEnable(VK_FALSE)
+          .setPolygonMode(vk::PolygonMode::eFill)
+          .setCullMode(vk::CullModeFlagBits::eBack)
+          .setFrontFace(vk::FrontFace::eCounterClockwise)
+          .setDepthBiasEnable(VK_FALSE)
+          .setDepthBiasConstantFactor(0.0f)
+          .setDepthBiasClamp(0.0f)
+          .setDepthBiasSlopeFactor(0.0f)
+          .setLineWidth(1.0f);
   auto const viewportState = vk::PipelineViewportStateCreateInfo{}
                                  .setViewportCount(1)
                                  .setPViewports(0)
@@ -98,7 +91,7 @@ SinglePassPipeline::SinglePassPipeline(const ContextRef& context,
           .setPDynamicStates(dynamicStates.data());
   auto const pipelineLayoutCreateInfo =
       vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
-          &uniformLayout->getHandle());
+          &DescriptorLayout->getHandle());
   const vk::Device& device = mContext->getDevice();
   assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
                                      &mPipelineLayout) == vk::Result::eSuccess);

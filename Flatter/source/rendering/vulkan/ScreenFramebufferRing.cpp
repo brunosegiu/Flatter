@@ -48,7 +48,7 @@ void ScreenFramebufferRing::initImagesResources(
     mImagesResources.emplace_back();
     SwapchainImageResources& commandResources = mImagesResources[imageIndex];
 
-    commandResources.framebuffer = std::make_shared<Framebuffer>(
+    commandResources.framebuffer = std::make_shared<SwapchainFramebuffer>(
         mContext, swapchain->getImage(imageIndex), mSurfaceFormat,
         swapchain->getExtent(), renderPass, depthBufferAtt);
 

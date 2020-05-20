@@ -35,18 +35,6 @@ Context::Context(const InstanceRef& instance, const SurfaceRef& surface)
          vk::Result::eSuccess);
   mDevice.getQueue(mQueueFamilyIndex, 0, &mQueue);
 
-  // Uniform descriptor pool
-  vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer,
-                                  MAX_DESC_SETS);
-  auto const poolCreateInfo = vk::DescriptorPoolCreateInfo{}
-                                  .setPoolSizeCount(1)
-                                  .setPPoolSizes(&poolSize)
-                                  .setMaxSets(MAX_DESC_SETS);
-
-  assert(mDevice.createDescriptorPool(&poolCreateInfo, nullptr,
-                                      &mDescriptorPoolHandle) ==
-         vk::Result::eSuccess);
-
   // Command pool
   auto const commandPoolCreateInfo =
       vk::CommandPoolCreateInfo{}
@@ -137,6 +125,5 @@ const vk::Format Context::findSupportedFormat(
 }
 
 Context::~Context() {
-  mDevice.destroyDescriptorPool(mDescriptorPoolHandle, nullptr);
   mDevice.destroyCommandPool(mCommandPoolHandle, nullptr);
 }

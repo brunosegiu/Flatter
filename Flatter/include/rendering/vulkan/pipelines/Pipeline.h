@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "rendering/vulkan/core/Context.h"
+#include "rendering/vulkan/renderpasses/RenderPass.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -17,6 +18,7 @@ class Pipeline {
   const vk::PipelineLayout& getPipelineLayout() const {
     return mPipelineLayout;
   };
+  const RenderPassRef& getRenderPass() const { return mRenderPass; };
 
   virtual ~Pipeline();
 
@@ -28,6 +30,7 @@ class Pipeline {
   vk::PipelineLayout mPipelineLayout;
 
   ContextRef mContext;
+  RenderPassRef mRenderPass;
 };
 
 using PipelineRef = std::shared_ptr<Pipeline>;

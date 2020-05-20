@@ -33,9 +33,6 @@
     <ClCompile Include="source\rendering\vulkan\core\Context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\core\Framebuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\rendering\vulkan\core\Instance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -108,7 +105,19 @@
     <ClCompile Include="source\rendering\vulkan\renderers\DeferredRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\rendering\vulkan\uniforms\UniformLayout.cpp">
+    <ClCompile Include="source\rendering\vulkan\core\SwapchainFramebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\core\Framebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\uniforms\DescriptorLayout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\uniforms\DescriptorPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\rendering\vulkan\uniforms\Sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -126,9 +135,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\rendering\vulkan\core\Context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rendering\vulkan\core\Framebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\rendering\vulkan\core\Instance.h">
@@ -209,7 +215,19 @@
     <ClInclude Include="include\rendering\vulkan\uniforms\Uniform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\rendering\vulkan\uniforms\UniformLayout.h">
+    <ClInclude Include="include\rendering\vulkan\core\SwapchainFramebuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\core\Framebuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\uniforms\DescriptorLayout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\uniforms\DescriptorPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rendering\vulkan\uniforms\Sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,15 +9,20 @@
 #include "rendering/vulkan/core/Shader.h"
 #include "rendering/vulkan/pipelines/Pipeline.h"
 #include "rendering/vulkan/renderPasses/GBufferRenderPass.h"
+#include "rendering/vulkan/uniforms/DescriptorLayout.h"
 
 namespace Rendering {
 namespace Vulkan {
 class DeferredPipeline : public Pipeline {
  public:
   DeferredPipeline(const ContextRef& context,
-                   const GBufferRenderPassRef& renderPass);
+                   const DescriptorLayoutRef& descriptorLayout,
+                   const vk::Format& colorFormat,
+                   const vk::Format& depthFormat);
 
   virtual ~DeferredPipeline();
+
+  enum class Descriptors { ModelViewProjectionMatrix };
 
  private:
   DeferredPipeline(DeferredPipeline const&) = delete;

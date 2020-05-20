@@ -6,9 +6,9 @@
 
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/DepthBufferAttachment.h"
-#include "rendering/vulkan/core/Framebuffer.h"
 #include "rendering/vulkan/core/Surface.h"
 #include "rendering/vulkan/core/Swapchain.h"
+#include "rendering/vulkan/core/SwapchainFramebuffer.h"
 #include "rendering/vulkan/renderpasses/RenderPass.h"
 
 namespace Rendering {
@@ -22,7 +22,7 @@ using InFlightFrameResources = struct {
 };
 
 using SwapchainImageResources = struct {
-  FramebufferRef framebuffer;
+  SwapchainFramebufferRef framebuffer;
   vk::CommandBuffer commandBuffer;
 };
 
@@ -31,14 +31,14 @@ using RenderingResources = struct RenderingResources {
   const vk::Semaphore& imageAvailableSemaphore;
   const vk::Semaphore& imageRenderedSemaphore;
   const vk::CommandBuffer& commandBuffer;
-  const FramebufferRef& framebuffer;
+  const SwapchainFramebufferRef& framebuffer;
   const unsigned int imageIndex;
 
   RenderingResources(const vk::Fence& in_frameFenceHandle,
                      const vk::Semaphore& in_availableImageSemaphore,
                      const vk::Semaphore& in_finishedRenderSemaphore,
                      const vk::CommandBuffer& in_commandBuffer,
-                     const FramebufferRef& in_framebuffer,
+                     const SwapchainFramebufferRef& in_framebuffer,
                      const unsigned int in_imageIndex)
       : frameInUseFence(in_frameFenceHandle),
         imageAvailableSemaphore(in_availableImageSemaphore),

@@ -32,6 +32,7 @@ class IndexedVertexBuffer {
 
   static vk::VertexInputBindingDescription sBindingDescription;
   static vk::VertexInputAttributeDescription sAttributeDescription;
+  static vk::IndexType sIndexType;
 
   virtual ~IndexedVertexBuffer();
 

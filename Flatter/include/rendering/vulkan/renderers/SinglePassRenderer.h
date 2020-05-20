@@ -10,8 +10,8 @@
 #include "rendering/vulkan/pipelines/SinglePassPipeline.h"
 #include "rendering/vulkan/renderPasses/SingleRenderPass.h"
 #include "rendering/vulkan/renderers/Renderer.h"
+#include "rendering/vulkan/uniforms/DescriptorLayout.h"
 #include "rendering/vulkan/uniforms/Uniform.h"
-#include "rendering/vulkan/uniforms/UniformLayout.h"
 
 namespace Rendering {
 namespace Vulkan {
@@ -27,10 +27,12 @@ class SinglePassRenderer : public Renderer {
   SinglePassRenderer(SinglePassRenderer const&) = delete;
   SinglePassRenderer& operator=(SinglePassRenderer const&) = delete;
 
+  DescriptorPoolRef mDescriptorPool;
+
   SingleRenderPassRef mRenderPass;
   SinglePassPipelineRef mPipeline;
 
-  UniformLayoutRef mUniformLayout;
+  DescriptorLayoutRef mDescriptorLayout;
   UniformMatrixRef mMatrixUniform;
 
   DepthBufferAttachmentRef mDepthBuffer;
@@ -41,7 +43,7 @@ class SinglePassRenderer : public Renderer {
   void setViewportConstrains(const vk::CommandBuffer& commandBuffer,
                              const vk::Extent2D extent);
   void beginRenderPass(const vk::CommandBuffer& commandBuffer,
-                       const FramebufferRef& framebuffer,
+                       const SwapchainFramebufferRef& framebuffer,
                        const RenderPassRef& renderPass,
                        const vk::Extent2D extent,
                        const vk::Offset2D offset = vk::Offset2D(0, 0),

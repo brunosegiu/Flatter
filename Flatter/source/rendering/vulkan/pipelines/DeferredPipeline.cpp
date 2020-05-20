@@ -5,24 +5,20 @@
 using namespace Rendering::Vulkan;
 
 DeferredPipeline::DeferredPipeline(const ContextRef& context,
-                                   const GBufferRenderPassRef& renderPass)
+                                   const DescriptorLayoutRef& descriptorLayout,
+                                   const vk::Format& colorFormat,
+                                   const vk::Format& depthFormat)
     : Pipeline(context) {
-  mVertexShader = Shader::fromFile("shaders/build/gbuffer.vert.spv", context);
-  mFragmentShader = Shader::fromFile("shaders/build/gbuffer.frag.spv", context);
+  mRenderPass =
+      std::make_shared<GBufferRenderPass>(mContext, colorFormat, depthFormat);
 
-  auto const vertexShaderStage = vk::PipelineShaderStageCreateInfo{}
-                                     .setStage(vk::ShaderStageFlagBits::eVertex)
-                                     .setModule(mVertexShader->getHandle())
-                                     .setPName("main");
-
-  auto const fragmentShaderStage =
-      vk::PipelineShaderStageCreateInfo{}
-          .setStage(vk::ShaderStageFlagBits::eFragment)
-          .setModule(mFragmentShader->getHandle())
-          .setPName("main");
+  mVertexShader = Shader::fromFile("shaders/build/gbuffer.vert.spv", context,
+                                   vk::ShaderStageFlagBits::eVertex);
+  mFragmentShader = Shader::fromFile("shaders/build/gbuffer.frag.spv", context,
+                                     vk::ShaderStageFlagBits::eFragment);
 
   const std::vector<vk::PipelineShaderStageCreateInfo> stages{
-      vertexShaderStage, fragmentShaderStage};
+      mVertexShader->getStageInfo(), mFragmentShader->getStageInfo()};
 
   // Pipeline stages setup
 
@@ -40,17 +36,18 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
           .setTopology(vk::PrimitiveTopology::eTriangleList)
           .setPrimitiveRestartEnable(false);
 
-  auto const rasterizationState = vk::PipelineRasterizationStateCreateInfo{}
-                                      .setDepthClampEnable(false)
-                                      .setRasterizerDiscardEnable(false)
-                                      .setPolygonMode(vk::PolygonMode::eFill)
-                                      .setCullMode(vk::CullModeFlagBits::eBack)
-                                      .setFrontFace(vk::FrontFace::eClockwise)
-                                      .setDepthBiasEnable(false)
-                                      .setDepthBiasConstantFactor(0.0f)
-                                      .setDepthBiasClamp(0.0f)
-                                      .setDepthBiasSlopeFactor(0.0f)
-                                      .setLineWidth(1.0f);
+  auto const rasterizationState =
+      vk::PipelineRasterizationStateCreateInfo{}
+          .setDepthClampEnable(false)
+          .setRasterizerDiscardEnable(false)
+          .setPolygonMode(vk::PolygonMode::eFill)
+          .setCullMode(vk::CullModeFlagBits::eBack)
+          .setFrontFace(vk::FrontFace::eCounterClockwise)
+          .setDepthBiasEnable(false)
+          .setDepthBiasConstantFactor(0.0f)
+          .setDepthBiasClamp(0.0f)
+          .setDepthBiasSlopeFactor(0.0f)
+          .setLineWidth(1.0f);
   auto const viewportState = vk::PipelineViewportStateCreateInfo{}
                                  .setViewportCount(1)
                                  .setPViewports(0)
@@ -97,8 +94,8 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
           .setDynamicStateCount(static_cast<unsigned int>(dynamicStates.size()))
           .setPDynamicStates(dynamicStates.data());
   auto const pipelineLayoutCreateInfo =
-      vk::PipelineLayoutCreateInfo().setSetLayoutCount(0).setPSetLayouts(
-          nullptr);
+      vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
+          &descriptorLayout->getHandle());
   const vk::Device& device = mContext->getDevice();
   assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
                                      &mPipelineLayout) == vk::Result::eSuccess);
@@ -116,7 +113,7 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
           .setPDepthStencilState(&depthStencilState)
           .setPDynamicState(&dynamicState)
           .setLayout(mPipelineLayout)
-          .setRenderPass(renderPass->getHandle());
+          .setRenderPass(mRenderPass->getHandle());
 
   assert(device.createGraphicsPipelines(nullptr, 1, &pipelineCreateInfo,
                                         nullptr, &mPipelineHandle) ==

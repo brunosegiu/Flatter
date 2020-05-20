@@ -8,27 +8,27 @@
 
 namespace Rendering {
 namespace Vulkan {
-class UniformLayout {
+class DescriptorLayout {
  public:
-  UniformLayout(
+  DescriptorLayout(
       const ContextRef& context,
-      const std::vector<vk::DescriptorType>& uniformTypes,
-      vk::ShaderStageFlags stages = vk::ShaderStageFlagBits::eAllGraphics);
+      const std::vector<std::pair<vk::DescriptorType, vk::ShaderStageFlags>>&
+          descriptorLayouts);
 
   const vk::DescriptorSetLayout& getHandle() const {
     return mDescriptorSetLayout;
   };
 
-  virtual ~UniformLayout();
+  virtual ~DescriptorLayout();
 
  private:
-  UniformLayout(UniformLayout const&) = delete;
-  UniformLayout& operator=(UniformLayout const&) = delete;
+  DescriptorLayout(DescriptorLayout const&) = delete;
+  DescriptorLayout& operator=(DescriptorLayout const&) = delete;
 
   ContextRef mContext;
   vk::DescriptorSetLayout mDescriptorSetLayout;
 };
 
-using UniformLayoutRef = std::shared_ptr<UniformLayout>;
+using DescriptorLayoutRef = std::shared_ptr<DescriptorLayout>;
 }  // namespace Vulkan
 }  // namespace Rendering
