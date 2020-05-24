@@ -11,7 +11,7 @@ class CameraController : public InputEventListener {
   void onKeyPress(const float timeDelta, const SDL_Scancode key) override;
   void onCursorMovement(const float timeDelta,
                         const glm::vec2& position) override;
-  void onMouseClick(const float timeDelta) override;
+  void onLeftClick(const float timeDelta) override;
 
   Rendering::Camera& getCamera() { return mCamera; };
 
@@ -21,6 +21,7 @@ class CameraController : public InputEventListener {
   Rendering::Camera mCamera;
   float mSpeed;
   bool mIsFirstUpdate;
+  bool mIsEnabled;
 };
 
 using CameraControllerRef = std::shared_ptr<CameraController>;

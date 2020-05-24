@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
   do {
     inputController->wrapCursorToCenter();
     inputController->processEvents(timeDelta);
-    inputController->wrapCursorToCenter();
     window->update(timeDelta);
     timer.end();
     timeDelta = timer.getDeltaMs();

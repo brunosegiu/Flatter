@@ -124,9 +124,20 @@ DeferredPipeline::DeferredPipeline(const ContextRef& context,
       vk::PipelineDynamicStateCreateInfo()
           .setDynamicStateCount(static_cast<unsigned int>(dynamicStates.size()))
           .setPDynamicStates(dynamicStates.data());
+
+  const auto pushConstantRange =
+      vk::PushConstantRange{}
+          .setOffset(0)
+          .setSize(sizeof(glm::mat4))
+          .setStageFlags(vk::ShaderStageFlagBits::eVertex);
+
   auto const pipelineLayoutCreateInfo =
-      vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
-          &descriptorLayout->getHandle());
+      vk::PipelineLayoutCreateInfo()
+          .setSetLayoutCount(1)
+          .setPSetLayouts(&descriptorLayout->getHandle())
+          .setPushConstantRangeCount(1)
+          .setPPushConstantRanges(&pushConstantRange);
+
   const vk::Device& device = mContext->getDevice();
   assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
                                      &mPipelineLayout) == vk::Result::eSuccess);

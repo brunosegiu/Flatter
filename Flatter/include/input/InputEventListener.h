@@ -15,7 +15,8 @@ class InputEventListener {
   virtual void onKeyPress(const float timeDelta, const SDL_Scancode key){};
   virtual void onCursorMovement(const float timeDelta,
                                 const glm::vec2& position){};
-  virtual void onMouseClick(const float timeDelta){};
+  virtual void onRightClick(const float timeDelta){};
+  virtual void onLeftClick(const float timeDelta){};
   virtual void onQuit(){};
 
   virtual ~InputEventListener(){};

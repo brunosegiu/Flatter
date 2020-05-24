@@ -308,6 +308,7 @@
     <ClCompile Include="source\rendering\loaders\GLTFLoader.cpp" />
     <ClCompile Include="source\rendering\Mesh.cpp" />
     <ClCompile Include="source\rendering\Scene.cpp" />
+    <ClCompile Include="source\rendering\Transform.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Buffer.cpp" />
     <ClCompile Include="source\rendering\vulkan\core\Context.cpp" />
     <ClCompile Include="source\rendering\vulkan\uniforms\DescriptorPool.cpp" />
@@ -345,6 +346,7 @@
     <ClInclude Include="include\rendering\loaders\GLTFLoader.h" />
     <ClInclude Include="include\rendering\Mesh.h" />
     <ClInclude Include="include\rendering\Scene.h" />
+    <ClInclude Include="include\rendering\Transform.h" />
     <ClInclude Include="include\rendering\vulkan\core\Buffer.h" />
     <ClInclude Include="include\rendering\vulkan\core\Context.h" />
     <ClInclude Include="include\rendering\vulkan\uniforms\DescriptorPool.h" />

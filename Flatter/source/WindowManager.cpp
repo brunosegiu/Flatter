@@ -38,7 +38,13 @@ void WindowManager::onQuit() {
 }
 
 void WindowManager::update(const float timeDelta) {
+  mScene->getMeshes()[0]->getTransform()->rotate(
+      glm::vec3(0.0f, timeDelta / 200000.0f, 0.0f));
+  mScene->getMeshes()[1]->getTransform()->translate(
+      glm::vec3(0.0f, timeDelta / 10000000.0f, 0.0f));
   mDeff->draw(mCameraController->getCamera(), mScene);
+  mScene->getMeshes()[1]->getTransform()->rotate(
+      glm::vec3(0.0f, 0.0f, timeDelta / 200000.0f));
 }
 
 WindowManager ::~WindowManager() {

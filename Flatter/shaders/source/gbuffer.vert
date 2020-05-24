@@ -5,18 +5,24 @@
 layout(location = 0) in vec3 position;
 
 layout(set = 0, binding = 0) uniform View {
-    mat4 mvp;
+    mat4 viewProjectionMatrix;
 } view;
+
+layout(push_constant) uniform PushConstants {
+	mat4 modelMatrix;
+} pushConstants;
 
 layout (location = 0) out vec3 outFragPos;
 
-out gl_PerVertex
-{
+out gl_PerVertex {
     vec4 gl_Position;
 };
 
-void main()
-{
-    gl_Position = view.mvp * vec4(position, 1.0);
-    outFragPos = position;
+void main() {
+    const mat4 viewProjection = view.viewProjectionMatrix;
+    const mat4 model = pushConstants.modelMatrix;
+
+    gl_Position = viewProjection * model * vec4(position, 1.0f);
+    outFragPos = (model * vec4(position, 1.0f)).xyz;
+    outFragPos.y = -outFragPos.y;
 }

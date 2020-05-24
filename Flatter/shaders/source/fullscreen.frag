@@ -10,7 +10,7 @@ layout (binding = 2) uniform sampler2D normalSampler;
 
 layout(location = 0) out vec4 outColor;
 
-vec3 lightPos = vec3(0,-3,0);
+vec3 lightPos = vec3(0,-2,1);
 
 void main() {
     vec3 position = texture(positionSampler, uv).xyz;

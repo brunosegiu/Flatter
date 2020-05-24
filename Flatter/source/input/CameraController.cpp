@@ -3,10 +3,16 @@
 using namespace Input;
 
 CameraController::CameraController()
-    : InputEventListener(), mCamera(), mSpeed(0.00001f), mIsFirstUpdate(true) {}
+    : InputEventListener(),
+      mCamera(),
+      mSpeed(0.00001f),
+      mIsFirstUpdate(true),
+      mIsEnabled(false) {}
 
 void CameraController::onKeyPress(const float timeDelta,
                                   const SDL_Scancode key) {
+  if (!mIsEnabled)
+    return;
   const float factor = mSpeed * timeDelta;
   switch (key) {
     case SDL_SCANCODE_W:
@@ -32,6 +38,8 @@ void CameraController::onKeyPress(const float timeDelta,
 
 void CameraController::onCursorMovement(const float timeDelta,
                                         const glm::vec2& position) {
+  if (!mIsEnabled)
+    return;
   if (mIsFirstUpdate) {
     mIsFirstUpdate = false;
   } else {
@@ -39,6 +47,8 @@ void CameraController::onCursorMovement(const float timeDelta,
   }
 }
 
-void CameraController::onMouseClick(const float timeDelta) {}
+void CameraController::onLeftClick(const float timeDelta) {
+  mIsEnabled = !mIsEnabled;
+}
 
 CameraController::~CameraController() {}

@@ -16,7 +16,7 @@ class InputController {
                   const unsigned int winHeight);
 
   void attach(const InputEventListenerRef& listener);
-  void processEvents(const float timeDelta) const;
+  void processEvents(const float timeDelta);
 
   void wrapCursor(const unsigned int xCoords, const unsigned int yCoords);
   void wrapCursorToCenter();
@@ -29,6 +29,7 @@ class InputController {
   SDL_Window* mWindow;
   const unsigned int mWinWidth;
   const unsigned int mWinHeight;
+  bool mShouldWrapCursor;
 };
 
 using InputControllerRef = std::shared_ptr<InputController>;

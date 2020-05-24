@@ -154,6 +154,11 @@ void DeferredRenderer::drawDeferred(const RenderingResources& resources,
       vk::PipelineBindPoint::eGraphics, mDeferredPipeline->getPipelineLayout(),
       0, 1, &mMatrixUniform->getDescriptorHandle(), 0, nullptr);
   for (const auto& mesh : scene->getMeshes()) {
+    mDeferredCB.pushConstants(mDeferredPipeline->getPipelineLayout(),
+                              vk::ShaderStageFlagBits::eVertex, 0,
+                              sizeof(glm::mat4),
+                              &mesh->getTransform()->getMatrix());
+
     const IndexedVertexBufferRef& indexedVertexBuffer =
         mesh->getIndexedVertexBuffer();
     vk::DeviceSize offset{0};
