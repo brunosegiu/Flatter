@@ -16,8 +16,9 @@ namespace Vulkan {
 class FullscreenPipeline : public Pipeline {
  public:
   FullscreenPipeline(const ContextRef& context,
-                     const DescriptorLayoutRef& descriptorLayout,
-                     const FullscreenRenderPassRef& renderPass);
+                     const std::vector<DescriptorLayoutRef>& descriptorLayouts,
+                     const FullscreenRenderPassRef& renderPass,
+                     const unsigned int maxLightCount);
 
   virtual ~FullscreenPipeline();
 

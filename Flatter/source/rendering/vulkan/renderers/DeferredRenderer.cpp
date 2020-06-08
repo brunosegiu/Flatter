@@ -9,6 +9,8 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
   const vk::Device& device = mContext->getDevice();
   const vk::Extent2D extent(mContext->getSwapchain()->getExtent());
   mDescriptorPool = std::make_shared<DescriptorPool>(mContext, 1, 3, 10);
+  const unsigned int maxLightCount = 3;
+  mLightController = std::make_shared<LightController>(mContext, maxLightCount);
 
   // GBuffer resources
   mDeferredLayout = std::make_shared<DescriptorLayout>(
@@ -59,11 +61,15 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
           {vk::DescriptorType::eCombinedImageSampler,
            vk::ShaderStageFlagBits::eFragment},
           {vk::DescriptorType::eCombinedImageSampler,
-           vk::ShaderStageFlagBits::eFragment}});
+           vk::ShaderStageFlagBits::eFragment},
+      });
   mFullscreenRenderPass = std::make_shared<FullscreenRenderPass>(
       mContext, surface->getFormat(mContext->getPhysicalDevice()).format);
   mFullscreenPipeline = std::make_shared<FullscreenPipeline>(
-      mContext, mFullscreenLayout, mFullscreenRenderPass);
+      mContext,
+      std::vector<DescriptorLayoutRef>{mFullscreenLayout,
+                                       mLightController->getLayout()},
+      mFullscreenRenderPass, maxLightCount);
 
   mScreenFramebufferRing = std::make_shared<ScreenFramebufferRing>(
       mContext, surface, mFullscreenRenderPass);
@@ -105,7 +111,7 @@ DeferredRenderer::DeferredRenderer(const ContextRef& context,
 void DeferredRenderer::draw(Rendering::Camera& camera, const SceneRef& scene) {
   const RenderingResources& resources = mScreenFramebufferRing->swapBuffers();
   drawDeferred(resources, camera, scene);
-  drawFullscreen(resources);
+  drawFullscreen(resources, camera);
 }
 
 void DeferredRenderer::drawDeferred(const RenderingResources& resources,
@@ -174,7 +180,8 @@ void DeferredRenderer::drawDeferred(const RenderingResources& resources,
          mDeferredFence);
 }
 
-void DeferredRenderer::drawFullscreen(const RenderingResources& resources) {
+void DeferredRenderer::drawFullscreen(const RenderingResources& resources,
+                                      const Rendering::Camera& camera) {
   const vk::CommandBuffer& currentCommandBuffer(resources.commandBuffer);
   auto const beginInfo = vk::CommandBufferBeginInfo{}.setFlags(
       vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -185,6 +192,13 @@ void DeferredRenderer::drawFullscreen(const RenderingResources& resources) {
       vk::PipelineBindPoint::eGraphics,
       mFullscreenPipeline->getPipelineLayout(), 0, 1, &mDescriptorSet, 0,
       nullptr);
+  currentCommandBuffer.pushConstants(mFullscreenPipeline->getPipelineLayout(),
+                                     vk::ShaderStageFlagBits::eFragment, 0,
+                                     sizeof(glm::vec3), &camera.getEye());
+  currentCommandBuffer.bindDescriptorSets(
+      vk::PipelineBindPoint::eGraphics,
+      mFullscreenPipeline->getPipelineLayout(), 1, 1,
+      &mLightController->getUniform()->getDescriptorHandle(), 0, nullptr);
   const auto clearValues = vk::ClearValue{}.setColor(
       vk::ClearColorValue(std::array<float, 4>{1.0f, 0.0f, 0.0f, 1.0f}));
   const vk::Extent2D screenExtent = mContext->getSwapchain()->getExtent();

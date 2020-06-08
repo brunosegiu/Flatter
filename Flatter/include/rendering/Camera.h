@@ -12,6 +12,9 @@ class Camera {
     return mVP;
   };
 
+  const glm::vec3& getDirection() const { return mDirection; };
+  const glm::vec3& getEye() const { return mEye; };
+
   void rotate(const float& angle, const glm::vec3& axis = glm::vec3(0, 1, 0));
   void rotate(const float& yaw, const float& pitch);
 
@@ -29,7 +32,7 @@ class Camera {
   void updateViewProjection();
 
   glm::vec3 mEye;
-  glm::vec3 mDir;
+  glm::vec3 mDirection;
   glm::vec3 mUp;
 
   glm::mat4 mProjection;

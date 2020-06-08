@@ -22,6 +22,8 @@ class Mesh {
   };
   const TransformRef& getTransform() const { return mTransform; };
 
+  void setTransform(const TransformRef& transform) { mTransform = transform; };
+
   virtual ~Mesh();
 
  private:

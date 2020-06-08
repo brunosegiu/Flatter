@@ -19,7 +19,7 @@ class Buffer {
          const vk::MemoryPropertyFlags memoryProperty);
 
   void copy(const BufferRef& target);
-  void map(void* hostData);
+  void map(const void* hostData);
 
   const vk::Buffer& getBuffer() const { return mBuffer; };
 

@@ -20,9 +20,10 @@ DescriptorLayout::DescriptorLayout(
             .setDescriptorCount(1)
             .setStageFlags(descriptorLayouts[unifIndex].second));
   }
-  auto const layoutInfo = vk::DescriptorSetLayoutCreateInfo{}
-                              .setBindingCount(uboLayoutBindings.size())
-                              .setPBindings(uboLayoutBindings.data());
+  auto const layoutInfo =
+      vk::DescriptorSetLayoutCreateInfo{}
+          .setBindingCount(static_cast<unsigned int>(uboLayoutBindings.size()))
+          .setPBindings(uboLayoutBindings.data());
 
   mContext->getDevice().createDescriptorSetLayout(&layoutInfo, nullptr,
                                                   &mDescriptorSetLayout);

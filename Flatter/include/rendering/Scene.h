@@ -11,6 +11,8 @@ class Scene {
   Scene();
 
   void add(const MeshRef mesh);
+  void add(const std::vector<MeshRef> meshes);
+
   const std::vector<MeshRef>& getMeshes() const { return mMeshes; };
 
   virtual ~Scene();

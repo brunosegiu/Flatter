@@ -10,7 +10,7 @@ layout(location = 2) out vec3 outNormal;
 
 
 void main() {
-    outColor = vec3(0.0f, 0.5f, 0.6f);
+    outColor = vec3(0.3f, 0.5f, 0.6f);
     outPosition = inPosition;
-    outNormal = normalize(cross(dFdx(inPosition), dFdy(inPosition)));
+    outNormal = -normalize(cross(dFdx(inPosition), dFdy(inPosition)));
 }

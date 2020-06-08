@@ -19,7 +19,8 @@ class Uniform {
           const DescriptorLayoutRef& layout,
           const DescriptorPoolRef& descriptorPool,
           const unsigned int binding,
-          ValueType value);
+          ValueType value,
+          const size_t size = sizeof(ValueType));
 
   const vk::DescriptorSet& getDescriptorHandle() const {
     return mDescriptorSet;
@@ -31,7 +32,6 @@ class Uniform {
 
  private:
   vk::DescriptorSet mDescriptorSet;
-  ValueType mValue;
 
   BufferRef mBuffer;
 
@@ -49,11 +49,12 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
                             const DescriptorLayoutRef& layout,
                             const DescriptorPoolRef& descriptorPool,
                             const unsigned int binding,
-                            ValueType value)
-    : mValue(value), mContext(context) {
+                            ValueType value,
+                            const size_t size)
+    : mContext(context) {
   const vk::Device& device = mContext->getDevice();
 
-  vk::DeviceSize bufferSize = sizeof(ValueType);
+  vk::DeviceSize bufferSize{size};
 
   mBuffer = std::make_shared<Buffer>(
       mContext, bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
@@ -70,7 +71,7 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
   auto const bufferInfo = vk::DescriptorBufferInfo{}
                               .setBuffer(mBuffer->getBuffer())
                               .setOffset(0)
-                              .setRange(sizeof(ValueType));
+                              .setRange(bufferSize);
 
   auto const descriptorWrite =
       vk::WriteDescriptorSet{}
@@ -82,12 +83,11 @@ Uniform<ValueType>::Uniform(const ContextRef& context,
           .setPBufferInfo(&bufferInfo);
 
   device.updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
+  update(value);
 }
 
 template <typename ValueType>
 void Uniform<ValueType>::update(const ValueType& newValue) {
-  if (newValue != mValue) {
-    mValue = newValue;
-    mBuffer->map(&mValue);
-  }
+  // TODO: Figure out a better way to access ptr
+  mBuffer->map(&newValue[0]);
 }

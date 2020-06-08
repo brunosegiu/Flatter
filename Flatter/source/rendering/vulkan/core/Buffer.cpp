@@ -57,7 +57,7 @@ void Buffer::copy(const BufferRef& target) {
                                            commandBuffer);
 }
 
-void Buffer::map(void* hostData) {
+void Buffer::map(const void* hostData) {
   const vk::Device device = mContext->getDevice();
   auto data =
       device.mapMemory(mBufferMemory, 0, mBufferSize, vk::MemoryMapFlags{});

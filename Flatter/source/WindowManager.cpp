@@ -25,9 +25,19 @@ WindowManager::WindowManager(const unsigned int width,
 
   Rendering::GLTFLoader loader(mContext);
   mScene = std::make_unique<Rendering::Scene>();
-  mScene->add(loader.load("assets/monkey.glb")[0]);
-  mScene->add(loader.load("assets/cube.glb")[0]);
-
+  mScene->add(loader.load("assets/scene.glb"));
+  mScene->getMeshes()[2]->getTransform()->setPosition(
+      glm::vec3(20.0f, -5.0f, 0.0f));
+  mScene->getMeshes()[2]->getTransform()->setScale(
+      glm::vec3(50.0f, 0.5f, 50.0f));
+  mScene->getMeshes()[0]->getTransform()->setPosition(
+      glm::vec3(10.0f, 3.0f, 3.0f));
+  mScene->getMeshes()[1]->getTransform()->setPosition(
+      glm::vec3(3.0f, 3.0f, -3.0f));
+  mScene->getMeshes()[4]->getTransform()->setPosition(
+      glm::vec3(3.0f, 3.0f, 3.0f));
+  mScene->getMeshes()[3]->getTransform()->setPosition(
+      glm::vec3(30000.0f, 3.0f, 3.0f));
   mCameraController = std::make_shared<Input::CameraController>();
 
   mDeff = std::make_shared<DeferredRenderer>(mContext, mSurface);
@@ -38,13 +48,9 @@ void WindowManager::onQuit() {
 }
 
 void WindowManager::update(const float timeDelta) {
-  mScene->getMeshes()[0]->getTransform()->rotate(
-      glm::vec3(0.0f, timeDelta / 200000.0f, 0.0f));
-  mScene->getMeshes()[1]->getTransform()->translate(
-      glm::vec3(0.0f, timeDelta / 10000000.0f, 0.0f));
-  mDeff->draw(mCameraController->getCamera(), mScene);
   mScene->getMeshes()[1]->getTransform()->rotate(
-      glm::vec3(0.0f, 0.0f, timeDelta / 200000.0f));
+      glm::vec3(0.0f, timeDelta / 800000.0f, 0.0f));
+  mDeff->draw(mCameraController->getCamera(), mScene);
 }
 
 WindowManager ::~WindowManager() {

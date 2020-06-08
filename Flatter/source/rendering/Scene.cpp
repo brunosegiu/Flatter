@@ -10,4 +10,8 @@ void Scene::add(const MeshRef mesh) {
   mMeshes.push_back(mesh);
 }
 
+void Scene::add(const std::vector<MeshRef> meshes) {
+  mMeshes.insert(mMeshes.end(), meshes.begin(), meshes.end());
+}
+
 Scene::~Scene() {}

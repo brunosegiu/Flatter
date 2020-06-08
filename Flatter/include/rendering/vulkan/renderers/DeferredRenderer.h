@@ -6,6 +6,7 @@
 
 #include "rendering/Camera.h"
 #include "rendering/Scene.h"
+#include "rendering/lighting/LightController.h"
 #include "rendering/vulkan/ScreenFramebufferRing.h"
 #include "rendering/vulkan/core/Context.h"
 #include "rendering/vulkan/core/Framebuffer.h"
@@ -33,6 +34,8 @@ class DeferredRenderer : public Renderer {
   DeferredRenderer(DeferredRenderer const&) = delete;
   DeferredRenderer& operator=(DeferredRenderer const&) = delete;
 
+  LightControllerRef mLightController;
+
   DescriptorPoolRef mDescriptorPool;
   DescriptorLayoutRef mDeferredLayout;
   DescriptorLayoutRef mFullscreenLayout;
@@ -58,7 +61,8 @@ class DeferredRenderer : public Renderer {
   void drawDeferred(const RenderingResources& resources,
                     Rendering::Camera& camera,
                     const SceneRef& scene);
-  void drawFullscreen(const RenderingResources& resources);
+  void drawFullscreen(const RenderingResources& resources,
+                      const Rendering::Camera& camera);
   void present(const vk::CommandBuffer& commandBuffer,
                const vk::Semaphore& waitFor,
                const vk::Semaphore& signalReady,

@@ -4,8 +4,9 @@ using namespace Rendering::Vulkan;
 
 FullscreenPipeline::FullscreenPipeline(
     const ContextRef& context,
-    const DescriptorLayoutRef& descriptorLayout,
-    const FullscreenRenderPassRef& renderPass)
+    const std::vector<DescriptorLayoutRef>& descriptorLayouts,
+    const FullscreenRenderPassRef& renderPass,
+    const unsigned int maxLightCount)
     : Pipeline(context) {
   mVertexShader = Shader::fromFile("shaders/build/fullscreen.vert.spv", context,
                                    vk::ShaderStageFlagBits::eVertex);
@@ -13,8 +14,22 @@ FullscreenPipeline::FullscreenPipeline(
       Shader::fromFile("shaders/build/fullscreen.frag.spv", context,
                        vk::ShaderStageFlagBits::eFragment);
 
+  const auto lightConstantEntry = vk::SpecializationMapEntry{}
+                                      .setConstantID(0)
+                                      .setSize(sizeof(unsigned int))
+                                      .setOffset(0);
+
+  const auto specializationInfo = vk::SpecializationInfo{}
+                                      .setDataSize(sizeof(unsigned int))
+                                      .setMapEntryCount(1)
+                                      .setPMapEntries(&lightConstantEntry)
+                                      .setPData(&maxLightCount);
+
+  vk::PipelineShaderStageCreateInfo customFragmentStage =
+      mFragmentShader->getStageInfo();
+  customFragmentStage.setPSpecializationInfo(&specializationInfo);
   const std::vector<vk::PipelineShaderStageCreateInfo> stages{
-      mVertexShader->getStageInfo(), mFragmentShader->getStageInfo()};
+      mVertexShader->getStageInfo(), customFragmentStage};
 
   // Pipeline stages setup
 
@@ -82,9 +97,26 @@ FullscreenPipeline::FullscreenPipeline(
       vk::PipelineDynamicStateCreateInfo()
           .setDynamicStateCount(static_cast<unsigned int>(dynamicStates.size()))
           .setPDynamicStates(dynamicStates.data());
+
+  const auto pushConstantRange =
+      vk::PushConstantRange{}
+          .setOffset(0)
+          .setSize(sizeof(glm::vec3))
+          .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+  std::vector<vk::DescriptorSetLayout> descriptorLayoutHandles{};
+  descriptorLayoutHandles.reserve(descriptorLayouts.size());
+  for (const DescriptorLayoutRef& layout : descriptorLayouts) {
+    descriptorLayoutHandles.push_back(layout->getHandle());
+  }
   auto const pipelineLayoutCreateInfo =
-      vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(
-          &descriptorLayout->getHandle());
+      vk::PipelineLayoutCreateInfo()
+          .setSetLayoutCount(
+              static_cast<unsigned int>(descriptorLayoutHandles.size()))
+          .setPSetLayouts(descriptorLayoutHandles.data())
+          .setPushConstantRangeCount(1)
+          .setPPushConstantRanges(&pushConstantRange);
+
   const vk::Device& device = mContext->getDevice();
   assert(device.createPipelineLayout(&pipelineLayoutCreateInfo, nullptr,
                                      &mPipelineLayout) == vk::Result::eSuccess);

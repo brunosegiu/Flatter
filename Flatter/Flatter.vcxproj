@@ -107,9 +107,7 @@
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
-;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
-;TINYGLTF_NO_INCLUDE_JSON;VK_USE_LUNARG_VALIDATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION;TINYGLTF_NO_INCLUDE_JSON;VK_USE_LUNARG_VALIDATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,9 +153,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
-;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
-;TINYGLTF_NO_INCLUDE_JSON;VK_USE_LUNARG_VALIDATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION;TINYGLTF_NO_INCLUDE_JSON;VK_USE_LUNARG_VALIDATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -205,9 +201,7 @@
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
-;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
-;TINYGLTF_NO_INCLUDE_JSON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION;TINYGLTF_NO_INCLUDE_JSON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -257,9 +251,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION
-;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION
-;TINYGLTF_NO_INCLUDE_JSON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLM_FORCE_DEFAULT_ALIGNED_GENTYPES;VK_USE_PLATFORM_WIN32_KHR;VULKAN_ENABLE_LUNARG_VALIDATION;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;VULKAN_HPP_TYPESAFE_CONVERSION;TINYGLTF_IMPLEMENTATION;STB_IMAGE_IMPLEMENTATION;STB_IMAGE_WRITE_IMPLEMENTATION;TINYGLTF_NO_INCLUDE_JSON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -305,6 +297,7 @@
     <ClCompile Include="source\input\CameraController.cpp" />
     <ClCompile Include="source\input\InputController.cpp" />
     <ClCompile Include="source\rendering\Camera.cpp" />
+    <ClCompile Include="source\rendering\lighting\LightController.cpp" />
     <ClCompile Include="source\rendering\loaders\GLTFLoader.cpp" />
     <ClCompile Include="source\rendering\Mesh.cpp" />
     <ClCompile Include="source\rendering\Scene.cpp" />
@@ -343,6 +336,7 @@
     <ClInclude Include="include\input\InputEventListener.h" />
     <ClInclude Include="include\rendering\Camera.h" />
     <ClInclude Include="include\input\CameraController.h" />
+    <ClInclude Include="include\rendering\lighting\LightController.h" />
     <ClInclude Include="include\rendering\loaders\GLTFLoader.h" />
     <ClInclude Include="include\rendering\Mesh.h" />
     <ClInclude Include="include\rendering\Scene.h" />
