@@ -33,35 +33,27 @@ void main() {
     vec3 normal = texture(normalSampler, uv).xyz;
     vec3 albedo = texture(albedoSampler, uv).xyz;
 	
-	vec3 color = vec3(0.0f);
+	vec3 color = albedo * 0.1f;
 
 	for (int i = 0; i < LIGHT_COUNT; ++i) {
 		const Light currLight = lighUBO.lights[i];
 		float intensity = currLight.color.a;
 		vec3 lightPos = currLight.position;
 		vec3 lightColor = currLight.color.rgb;
-		// Vector to light
 		vec3 L = lightPos - position;
-		// Distance from light to fragment position
 		float dist = length(L);
 
-		// Viewer to fragment
 		vec3 V = pushConstants.viewPos - position;
 		V = normalize(V);
 		
-		// Light to fragment
 		L = normalize(L);
 
-		// Attenuation
-		float atten = intensity / (pow(dist, 2.0) + 1.0);
+		float atten = intensity / max(dist * dist, 0.01f);
 
-		// Diffuse part
 		vec3 N = normal;
 		float NdotL = max(0.0, dot(N, L));
 		vec3 diff = albedo.rgb * NdotL * atten;
 
-		// Specular part
-		// Specular map values are stored in alpha of albedo mrt
 		vec3 R = reflect(-L, N);
 		float NdotR = max(0.0, dot(R, V));
 		vec3 spec = vec3( pow(NdotR, 16.0) * atten );

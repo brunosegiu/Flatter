@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "WindowManager.h"
-#include "commons/Timer.h"
+#include "commons/time/Timer.h"
 
 int main(int argc, char* argv[]) {
   const unsigned int width = 1280;
@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
   inputController->attach(window);
   inputController->attach(window->getCameraController());
 
-  Commons::Timer timer;
+  Flatter::Timer timer;
   float timeDelta = 0.0f;
   do {
     inputController->wrapCursorToCenter();

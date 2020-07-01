@@ -8,13 +8,13 @@
 #include "input/CameraController.h"
 #include "input/InputController.h"
 #include "input/InputEventListener.h"
+#include "rendering//core/Context.h"
+#include "rendering//core/Instance.h"
+#include "rendering//core/Surface.h"
+#include "rendering//core/Swapchain.h"
+#include "rendering//renderers/DeferredRenderer.h"
+#include "rendering//renderers/SinglePassRenderer.h"
 #include "rendering/Scene.h"
-#include "rendering/vulkan/core/Context.h"
-#include "rendering/vulkan/core/Instance.h"
-#include "rendering/vulkan/core/Surface.h"
-#include "rendering/vulkan/core/Swapchain.h"
-#include "rendering/vulkan/renderers/DeferredRenderer.h"
-#include "rendering/vulkan/renderers/SinglePassRenderer.h"
 
 using namespace Rendering::Vulkan;
 

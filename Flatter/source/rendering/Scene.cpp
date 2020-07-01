@@ -6,12 +6,12 @@ using namespace Rendering;
 
 Scene::Scene() {}
 
-void Scene::add(const MeshRef mesh) {
-  mMeshes.push_back(mesh);
+void Scene::add(const EntityRef& entity) {
+  mEntities.push_back(entity);
 }
 
-void Scene::add(const std::vector<MeshRef> meshes) {
-  mMeshes.insert(mMeshes.end(), meshes.begin(), meshes.end());
+void Scene::add(const std::vector<EntityRef>& entities) {
+  mEntities.insert(mEntities.end(), entities.begin(), entities.end());
 }
 
 Scene::~Scene() {}

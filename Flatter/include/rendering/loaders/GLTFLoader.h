@@ -1,13 +1,14 @@
 ﻿#pragma once
 
-#include "rendering/Mesh.h"
+#include "Entity.h"
+#include "rendering//core/Context.h"
 
 namespace Rendering {
 class GLTFLoader {
  public:
   GLTFLoader(const Rendering::Vulkan::ContextRef& context);
 
-  std::vector<MeshRef> load(std::string path);
+  std::vector<EntityRef> load(std::string path);
 
   virtual ~GLTFLoader() = default;
 

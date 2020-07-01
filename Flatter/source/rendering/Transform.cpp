@@ -1,11 +1,9 @@
-﻿#include "rendering/Transform.h"
+﻿#include "Transform.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
-
-using namespace Rendering;
 
 Transform::Transform()
     : mMatrix(glm::mat4(1.0f)),
@@ -42,11 +40,10 @@ void Transform::scale(const glm::vec3& value) {
 }
 
 void Transform::updateMatrix() {
-  mMatrix = glm::mat4(1.0f);
-  mMatrix *= glm::translate(glm::mat4(1.0f), mCurrentTranslation);
-  mMatrix *= glm::scale(glm::mat4(1.0f), mCurrentScale);
-  mMatrix *= glm::eulerAngleYXZ(mCurrentRotation.y, mCurrentRotation.x,
-                                mCurrentRotation.z);
+  mMatrix = glm::translate(glm::mat4(1.0f), mCurrentTranslation) *
+            glm::scale(glm::mat4(1.0f), mCurrentScale) *
+            glm::eulerAngleYXZ(mCurrentRotation.y, mCurrentRotation.x,
+                               mCurrentRotation.z);
 }
 
 Transform::~Transform() {}

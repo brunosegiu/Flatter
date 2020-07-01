@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "rendering/loaders/GLTFLoader.h"
+#include "terrain/Terrain.h"
 
 using namespace Game;
 using namespace Rendering::Vulkan;
@@ -25,20 +26,27 @@ WindowManager::WindowManager(const unsigned int width,
 
   Rendering::GLTFLoader loader(mContext);
   mScene = std::make_unique<Rendering::Scene>();
-  mScene->add(loader.load("assets/scene.glb"));
-  mScene->getMeshes()[2]->getTransform()->setPosition(
-      glm::vec3(20.0f, -5.0f, 0.0f));
-  mScene->getMeshes()[2]->getTransform()->setScale(
-      glm::vec3(50.0f, 0.5f, 50.0f));
-  mScene->getMeshes()[0]->getTransform()->setPosition(
-      glm::vec3(10.0f, 3.0f, 3.0f));
-  mScene->getMeshes()[1]->getTransform()->setPosition(
-      glm::vec3(3.0f, 3.0f, -3.0f));
-  mScene->getMeshes()[4]->getTransform()->setPosition(
-      glm::vec3(3.0f, 3.0f, 3.0f));
-  mScene->getMeshes()[3]->getTransform()->setPosition(
-      glm::vec3(30000.0f, 3.0f, 3.0f));
+  std::vector<EntityRef> entities = loader.load("assets/cube.glb");
+  mScene->add(entities[0]);
+  entities[0]->getTransform()->setPosition(glm::vec3(-25.0f, 0.0f, -25.0f));
+
+  entities = loader.load("assets/cube.glb");
+  mScene->add(entities[0]);
+  entities[0]->getTransform()->setPosition(glm::vec3(25.0f, 0.0f, -25.0f));
+
+  entities = loader.load("assets/cube.glb");
+  mScene->add(entities[0]);
+  entities[0]->getTransform()->setPosition(glm::vec3(-25.0f, 0.0f, 25.0f));
+
+  entities = loader.load("assets/cube.glb");
+  mScene->add(entities[0]);
+  entities[0]->getTransform()->setPosition(glm::vec3(25.0f, 0.0f, 25.0f));
+
   mCameraController = std::make_shared<Input::CameraController>();
+
+  EntityRef terrain = std::make_shared<Terrain>(mContext, glm::uvec2(30, 30),
+                                                glm::vec2(50.0f, 50.0f));
+  mScene->add(terrain);
 
   mDeff = std::make_shared<DeferredRenderer>(mContext, mSurface);
 }
@@ -48,8 +56,6 @@ void WindowManager::onQuit() {
 }
 
 void WindowManager::update(const float timeDelta) {
-  mScene->getMeshes()[1]->getTransform()->rotate(
-      glm::vec3(0.0f, timeDelta / 800000.0f, 0.0f));
   mDeff->draw(mCameraController->getCamera(), mScene);
 }
 

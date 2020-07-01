@@ -4,10 +4,10 @@
 #include <memory>
 #include <vector>
 
-#include "rendering/vulkan/core/Context.h"
-#include "rendering/vulkan/uniforms/DescriptorLayout.h"
-#include "rendering/vulkan/uniforms/DescriptorPool.h"
-#include "rendering/vulkan/uniforms/Uniform.h"
+#include "rendering//core/Context.h"
+#include "rendering//uniforms/DescriptorLayout.h"
+#include "rendering//uniforms/DescriptorPool.h"
+#include "rendering//uniforms/Uniform.h"
 
 struct Light {
   alignas(16) glm::vec3 mPosition;

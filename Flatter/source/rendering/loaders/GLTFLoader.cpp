@@ -8,10 +8,10 @@ using namespace Rendering;
 GLTFLoader::GLTFLoader(const Rendering::Vulkan::ContextRef& context)
     : mContext(context) {}
 
-MeshRef processPrimitive(const Rendering::Vulkan ::ContextRef context,
-                         const tinygltf::Model& model,
-                         const tinygltf::Mesh& mesh,
-                         const tinygltf::Primitive& primitive) {
+EntityRef processPrimitive(const Rendering::Vulkan ::ContextRef context,
+                           const tinygltf::Model& model,
+                           const tinygltf::Mesh& mesh,
+                           const tinygltf::Primitive& primitive) {
   const std::string positionName = "POSITION";
   const tinygltf::Accessor& positionAccessor =
       model.accessors[primitive.attributes.at(positionName)];
@@ -54,24 +54,28 @@ MeshRef processPrimitive(const Rendering::Vulkan ::ContextRef context,
     indices = std::vector<uint16_t>(pIndexData, pIndexData + indexCount);
   }
 
-  return std::make_shared<Rendering::Mesh>(context, positions, indices);
+  const Rendering::Vulkan::IndexedVertexBufferRef geometry =
+      std::make_shared<Rendering::Vulkan::IndexedVertexBuffer>(
+          context, positions, indices);
+  const TransformRef transform = std::make_shared<Transform>();
+  return std::make_shared<Entity>(transform, geometry);
 }
 
-std::vector<MeshRef> GLTFLoader::load(std::string path) {
+std::vector<EntityRef> GLTFLoader::load(std::string path) {
   tinygltf::Model model;
   tinygltf::TinyGLTF loader;
   std::string err;
   std::string warn;
 
-  std::vector<MeshRef> meshes;
-  meshes.reserve(model.meshes.size());
+  std::vector<EntityRef> entities;
+  entities.reserve(model.meshes.size());
 
   if (loader.LoadBinaryFromFile(&model, &err, &warn, path)) {
     for (const auto& mesh : model.meshes) {
       for (const auto& primitive : mesh.primitives) {
-        meshes.push_back(processPrimitive(mContext, model, mesh, primitive));
+        entities.push_back(processPrimitive(mContext, model, mesh, primitive));
       }
     }
   }
-  return meshes;
+  return entities;
 }
